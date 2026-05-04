@@ -15,6 +15,57 @@ class _AxisDraft {
   String description;
 }
 
+class _KickoffStep extends StatelessWidget {
+  const _KickoffStep({
+    required this.palette,
+    required this.icon,
+    required this.title,
+    required this.body,
+  });
+
+  final NoeticaPalette palette;
+  final IconData icon;
+  final String title;
+  final String body;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: palette.surface,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: palette.line),
+      ),
+      child: Row(
+        children: [
+          Icon(icon, color: palette.fg, size: 20),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: TextStyle(
+                    color: palette.fg,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  body,
+                  style: TextStyle(color: palette.muted, fontSize: 12),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
 const _fallbackPresets = <Map<String, String>>[
   {'name': 'Тело', 'symbol': '◐'},
   {'name': 'Ум', 'symbol': '◇'},
@@ -112,44 +163,94 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
     if (aspiration.isEmpty) return;
     if (!mounted) return;
     final palette = context.palette;
-    final accept = await showDialog<bool>(
+    await showModalBottomSheet<void>(
       context: context,
-      builder: (ctx) => AlertDialog(
-        backgroundColor: palette.bg,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(14),
-          side: BorderSide(color: palette.line),
-        ),
-        title: Text(
-          'Сразу набросать план?',
-          style: TextStyle(color: palette.fg),
-        ),
-        content: Text(
-          'AI разложит «$aspiration» на первый план из маленьких задач '
-          'с учётом твоего контекста, препятствий, времени и стиля поддержки. '
-          'Промпт уже заполнен — можно отредактировать перед генерацией.',
-          style: TextStyle(color: palette.muted, height: 1.4),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(ctx).pop(false),
-            child: Text('Позже', style: TextStyle(color: palette.muted)),
+      isScrollControlled: true,
+      backgroundColor: palette.bg,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (ctx) => SafeArea(
+        top: false,
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(20, 18, 20, 20),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Container(
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: palette.line,
+                  borderRadius: BorderRadius.circular(999),
+                ),
+              ),
+              const SizedBox(height: 18),
+              Text(
+                'Система готова',
+                style: TextStyle(
+                  color: palette.fg,
+                  fontSize: 22,
+                  fontWeight: FontWeight.w800,
+                  height: 1.1,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                'Следующий шаг — превратить цель «$aspiration» в первые задачи. '
+                'Так dashboard сразу покажет фокус дня, а не пустой экран.',
+                style: TextStyle(color: palette.muted, height: 1.45),
+              ),
+              const SizedBox(height: 16),
+              _KickoffStep(
+                palette: palette,
+                icon: Icons.auto_awesome,
+                title: 'AI делает план',
+                body:
+                    'С учётом препятствий, времени, энергии и стиля поддержки.',
+              ),
+              const SizedBox(height: 8),
+              _KickoffStep(
+                palette: palette,
+                icon: Icons.check_circle_outline,
+                title: 'Ты импортируешь задачи',
+                body: 'После этого верх dashboard станет “что делать сейчас”.',
+              ),
+              const SizedBox(height: 18),
+              FilledButton.icon(
+                style: FilledButton.styleFrom(
+                  minimumSize: const Size.fromHeight(48),
+                  backgroundColor: palette.fg,
+                  foregroundColor: palette.bg,
+                ),
+                onPressed: () {
+                  Navigator.of(ctx).pop();
+                  Navigator.of(context).push(MaterialPageRoute<void>(
+                    builder: (_) => RoadmapScreen(
+                      initialGoal: aspiration,
+                      autoGenerate: true,
+                      kickoffMode: true,
+                    ),
+                  ));
+                },
+                icon: const Icon(Icons.route_outlined),
+                label: const Text('Сгенерировать первый план'),
+              ),
+              const SizedBox(height: 8),
+              TextButton(
+                style: TextButton.styleFrom(
+                  minimumSize: const Size.fromHeight(44),
+                  foregroundColor: palette.muted,
+                ),
+                onPressed: () => Navigator.of(ctx).pop(),
+                child: const Text('Позже, открыть dashboard'),
+              ),
+            ],
           ),
-          FilledButton(
-            style: FilledButton.styleFrom(
-              backgroundColor: palette.fg,
-              foregroundColor: palette.bg,
-            ),
-            onPressed: () => Navigator.of(ctx).pop(true),
-            child: const Text('Сгенерировать'),
-          ),
-        ],
+        ),
       ),
     );
-    if (accept != true || !mounted) return;
-    await Navigator.of(context).push(MaterialPageRoute<void>(
-      builder: (_) => const RoadmapScreen(),
-    ));
   }
 
   void _addAxis() {
