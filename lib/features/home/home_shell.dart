@@ -474,6 +474,8 @@ class _HomeShellState extends ConsumerState<HomeShell> {
             toolsSelected: _index == _toolsIndex,
             onTools: () => _switchTab(_toolsIndex),
             onKnowledge: () => _switchTab(_knowledgeIndex),
+            menuSelected: false,
+            onMenu: () {},
             settingsSelected: _index == _settingsIndex,
             onSettings: () => _switchTab(_settingsIndex),
             onPomodoro: () => PomodoroSheet.show(context),
