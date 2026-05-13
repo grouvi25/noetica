@@ -1306,4 +1306,168 @@ class SRu extends S {
 
   @override
   String get backendsUrlError => 'Введите валидный URL начинающийся с http(s)://';
+
+  @override
+  String get menuTitle => 'Меню недели';
+
+  @override
+  String get menuNewConfirmTitle => 'Создать новое меню?';
+
+  @override
+  String get menuNewConfirmBody => 'Текущие задачи и рецепты останутся в базе знаний — их можно найти по тегу menu/… или открыть по ссылке.\n\nФорма генерации откроется заново.';
+
+  @override
+  String get actionCreate => 'Создать';
+
+  @override
+  String get menuBreakfast => 'Завтрак';
+
+  @override
+  String get menuLunch => 'Обед';
+
+  @override
+  String get menuDinner => 'Ужин';
+
+  @override
+  String get menuSnack => 'Перекус';
+
+  @override
+  String menuRecipeStubTitle(String name) {
+    return 'Рецепт: $name';
+  }
+
+  @override
+  String get menuRecipeStubBody => '_Рецепт ещё не сгенерирован._\n\nОткрой меню недели → нажми «Получить рецепт» рядом с этим блюдом.';
+
+  @override
+  String menuShoppingTitle(String range) {
+    return 'Список покупок · меню $range';
+  }
+
+  @override
+  String get menuShoppingHeader => 'Список покупок на неделю';
+
+  @override
+  String menuGoalServings(String goal, int n) {
+    return 'Цель: $goal · $n порций';
+  }
+
+  @override
+  String menuImportError(String error) {
+    return 'Не удалось импортировать меню: $error';
+  }
+
+  @override
+  String get menuIngredients => 'Ингредиенты';
+
+  @override
+  String menuFullRecipe(String link) {
+    return 'Полный рецепт: [[$link]]';
+  }
+
+  @override
+  String get menuGenerating => 'AI составляет меню…';
+
+  @override
+  String get menuImporting => 'Создаю задачи и список покупок…';
+
+  @override
+  String menuDateRange(String from, String to) {
+    return '7 дней с $from по $to';
+  }
+
+  @override
+  String get menuWhatCreated => 'Что я создам';
+
+  @override
+  String get menuBullet1 => '21 задача (завтрак / обед / ужин на 7 дней)';
+
+  @override
+  String get menuBullet2 => '1 заметка «Список покупок» с чек-листом';
+
+  @override
+  String get menuBullet3 => 'Рецепты подгрузятся по тапу и сохранятся в связанные заметки';
+
+  @override
+  String get menuRegenerate => 'Перегенерировать';
+
+  @override
+  String get menuImportBtn => 'Импортировать в задачи';
+
+  @override
+  String menuImportedCount(int n) {
+    return 'Меню импортировано · $n задач';
+  }
+
+  @override
+  String get menuNew => 'Новое меню';
+
+  @override
+  String menuImportedHint(String tag) {
+    return 'Тег #$tag группирует все эти записи. Тапни блюдо — открой задачу. Нажми «Получить рецепт» на любом блюде — рецепт сохранится в связанной заметке.';
+  }
+
+  @override
+  String menuServings(int n) {
+    return '$n порций';
+  }
+
+  @override
+  String menuDailyCalories(int n) {
+    return '~$n ккал в день';
+  }
+
+  @override
+  String get menuOpenRecipe => 'Открыть';
+
+  @override
+  String get menuGetRecipe => 'Получить рецепт';
+
+  @override
+  String get habitsTitle => 'Микро-привычки';
+
+  @override
+  String get habitsIntentError => 'Опиши, какую привычку хочешь освоить.';
+
+  @override
+  String habitsDayOf(int day, int total, String intent) {
+    return 'День $day из $total · челлендж «$intent»';
+  }
+
+  @override
+  String habitsImported(String intent, int n) {
+    return 'Челлендж «$intent» добавлен — $n мини-задач в Задачах.';
+  }
+
+  @override
+  String habitsImportError(String error) {
+    return 'Не удалось импортировать челлендж: $error';
+  }
+
+  @override
+  String get habitsGenerating => 'AI подбирает крошечные шаги…';
+
+  @override
+  String get habitsImporting => 'Создаю задачи в Noetica…';
+
+  @override
+  String habitsBullet1(int n) {
+    return '$n задач — по одной на день, от лёгкой к закрепляющей';
+  }
+
+  @override
+  String get habitsBullet2 => 'Каждое действие ≤ 2 минут реального усилия';
+
+  @override
+  String get habitsBullet3 => 'Появятся в Задачах в секциях «Сегодня» / «Завтра» / …';
+
+  @override
+  String habitsDaysMini(int n) {
+    return '$n дней · по одной мини-задаче';
+  }
+
+  @override
+  String habitsAddTasks(int n) {
+    return 'Добавить $n задач';
+  }
 }

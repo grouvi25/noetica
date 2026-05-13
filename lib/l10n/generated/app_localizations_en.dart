@@ -1304,4 +1304,168 @@ class SEn extends S {
 
   @override
   String get backendsUrlError => 'Enter a valid URL starting with http(s)://';
+
+  @override
+  String get menuTitle => 'Weekly menu';
+
+  @override
+  String get menuNewConfirmTitle => 'Create a new menu?';
+
+  @override
+  String get menuNewConfirmBody => 'Current tasks and recipes will stay in the knowledge base — you can find them by tag menu/… or open by link.\n\nThe generation form will reopen.';
+
+  @override
+  String get actionCreate => 'Create';
+
+  @override
+  String get menuBreakfast => 'Breakfast';
+
+  @override
+  String get menuLunch => 'Lunch';
+
+  @override
+  String get menuDinner => 'Dinner';
+
+  @override
+  String get menuSnack => 'Snack';
+
+  @override
+  String menuRecipeStubTitle(String name) {
+    return 'Recipe: $name';
+  }
+
+  @override
+  String get menuRecipeStubBody => '_Recipe not yet generated._\n\nOpen the weekly menu → tap «Get recipe» next to this dish.';
+
+  @override
+  String menuShoppingTitle(String range) {
+    return 'Shopping list · menu $range';
+  }
+
+  @override
+  String get menuShoppingHeader => 'Shopping list for the week';
+
+  @override
+  String menuGoalServings(String goal, int n) {
+    return 'Goal: $goal · $n servings';
+  }
+
+  @override
+  String menuImportError(String error) {
+    return 'Failed to import menu: $error';
+  }
+
+  @override
+  String get menuIngredients => 'Ingredients';
+
+  @override
+  String menuFullRecipe(String link) {
+    return 'Full recipe: [[$link]]';
+  }
+
+  @override
+  String get menuGenerating => 'AI is creating the menu…';
+
+  @override
+  String get menuImporting => 'Creating tasks and shopping list…';
+
+  @override
+  String menuDateRange(String from, String to) {
+    return '7 days from $from to $to';
+  }
+
+  @override
+  String get menuWhatCreated => 'What I will create';
+
+  @override
+  String get menuBullet1 => '21 tasks (breakfast / lunch / dinner for 7 days)';
+
+  @override
+  String get menuBullet2 => '1 note «Shopping list» with a checklist';
+
+  @override
+  String get menuBullet3 => 'Recipes will load on tap and be saved to linked notes';
+
+  @override
+  String get menuRegenerate => 'Regenerate';
+
+  @override
+  String get menuImportBtn => 'Import to tasks';
+
+  @override
+  String menuImportedCount(int n) {
+    return 'Menu imported · $n tasks';
+  }
+
+  @override
+  String get menuNew => 'New menu';
+
+  @override
+  String menuImportedHint(String tag) {
+    return 'Tag #$tag groups all these entries. Tap a dish — open the task. Tap «Get recipe» on any dish — the recipe will be saved to the linked note.';
+  }
+
+  @override
+  String menuServings(int n) {
+    return '$n servings';
+  }
+
+  @override
+  String menuDailyCalories(int n) {
+    return '~$n kcal per day';
+  }
+
+  @override
+  String get menuOpenRecipe => 'Open';
+
+  @override
+  String get menuGetRecipe => 'Get recipe';
+
+  @override
+  String get habitsTitle => 'Micro-habits';
+
+  @override
+  String get habitsIntentError => 'Describe the habit you want to build.';
+
+  @override
+  String habitsDayOf(int day, int total, String intent) {
+    return 'Day $day of $total · challenge «$intent»';
+  }
+
+  @override
+  String habitsImported(String intent, int n) {
+    return 'Challenge «$intent» added — $n mini-tasks in Tasks.';
+  }
+
+  @override
+  String habitsImportError(String error) {
+    return 'Failed to import challenge: $error';
+  }
+
+  @override
+  String get habitsGenerating => 'AI is finding tiny steps…';
+
+  @override
+  String get habitsImporting => 'Creating tasks in Noetica…';
+
+  @override
+  String habitsBullet1(int n) {
+    return '$n tasks — one per day, from easy to reinforcing';
+  }
+
+  @override
+  String get habitsBullet2 => 'Each action ≤ 2 minutes of real effort';
+
+  @override
+  String get habitsBullet3 => 'Will appear in Tasks under «Today» / «Tomorrow» / …';
+
+  @override
+  String habitsDaysMini(int n) {
+    return '$n days · one mini-task each';
+  }
+
+  @override
+  String habitsAddTasks(int n) {
+    return 'Add $n tasks';
+  }
 }

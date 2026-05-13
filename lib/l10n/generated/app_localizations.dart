@@ -2398,6 +2398,270 @@ abstract class S {
   /// In ru, this message translates to:
   /// **'Введите валидный URL начинающийся с http(s)://'**
   String get backendsUrlError;
+
+  /// No description provided for @menuTitle.
+  ///
+  /// In ru, this message translates to:
+  /// **'Меню недели'**
+  String get menuTitle;
+
+  /// No description provided for @menuNewConfirmTitle.
+  ///
+  /// In ru, this message translates to:
+  /// **'Создать новое меню?'**
+  String get menuNewConfirmTitle;
+
+  /// No description provided for @menuNewConfirmBody.
+  ///
+  /// In ru, this message translates to:
+  /// **'Текущие задачи и рецепты останутся в базе знаний — их можно найти по тегу menu/… или открыть по ссылке.\n\nФорма генерации откроется заново.'**
+  String get menuNewConfirmBody;
+
+  /// No description provided for @actionCreate.
+  ///
+  /// In ru, this message translates to:
+  /// **'Создать'**
+  String get actionCreate;
+
+  /// No description provided for @menuBreakfast.
+  ///
+  /// In ru, this message translates to:
+  /// **'Завтрак'**
+  String get menuBreakfast;
+
+  /// No description provided for @menuLunch.
+  ///
+  /// In ru, this message translates to:
+  /// **'Обед'**
+  String get menuLunch;
+
+  /// No description provided for @menuDinner.
+  ///
+  /// In ru, this message translates to:
+  /// **'Ужин'**
+  String get menuDinner;
+
+  /// No description provided for @menuSnack.
+  ///
+  /// In ru, this message translates to:
+  /// **'Перекус'**
+  String get menuSnack;
+
+  /// No description provided for @menuRecipeStubTitle.
+  ///
+  /// In ru, this message translates to:
+  /// **'Рецепт: {name}'**
+  String menuRecipeStubTitle(String name);
+
+  /// No description provided for @menuRecipeStubBody.
+  ///
+  /// In ru, this message translates to:
+  /// **'_Рецепт ещё не сгенерирован._\n\nОткрой меню недели → нажми «Получить рецепт» рядом с этим блюдом.'**
+  String get menuRecipeStubBody;
+
+  /// No description provided for @menuShoppingTitle.
+  ///
+  /// In ru, this message translates to:
+  /// **'Список покупок · меню {range}'**
+  String menuShoppingTitle(String range);
+
+  /// No description provided for @menuShoppingHeader.
+  ///
+  /// In ru, this message translates to:
+  /// **'Список покупок на неделю'**
+  String get menuShoppingHeader;
+
+  /// No description provided for @menuGoalServings.
+  ///
+  /// In ru, this message translates to:
+  /// **'Цель: {goal} · {n} порций'**
+  String menuGoalServings(String goal, int n);
+
+  /// No description provided for @menuImportError.
+  ///
+  /// In ru, this message translates to:
+  /// **'Не удалось импортировать меню: {error}'**
+  String menuImportError(String error);
+
+  /// No description provided for @menuIngredients.
+  ///
+  /// In ru, this message translates to:
+  /// **'Ингредиенты'**
+  String get menuIngredients;
+
+  /// No description provided for @menuFullRecipe.
+  ///
+  /// In ru, this message translates to:
+  /// **'Полный рецепт: [[{link}]]'**
+  String menuFullRecipe(String link);
+
+  /// No description provided for @menuGenerating.
+  ///
+  /// In ru, this message translates to:
+  /// **'AI составляет меню…'**
+  String get menuGenerating;
+
+  /// No description provided for @menuImporting.
+  ///
+  /// In ru, this message translates to:
+  /// **'Создаю задачи и список покупок…'**
+  String get menuImporting;
+
+  /// No description provided for @menuDateRange.
+  ///
+  /// In ru, this message translates to:
+  /// **'7 дней с {from} по {to}'**
+  String menuDateRange(String from, String to);
+
+  /// No description provided for @menuWhatCreated.
+  ///
+  /// In ru, this message translates to:
+  /// **'Что я создам'**
+  String get menuWhatCreated;
+
+  /// No description provided for @menuBullet1.
+  ///
+  /// In ru, this message translates to:
+  /// **'21 задача (завтрак / обед / ужин на 7 дней)'**
+  String get menuBullet1;
+
+  /// No description provided for @menuBullet2.
+  ///
+  /// In ru, this message translates to:
+  /// **'1 заметка «Список покупок» с чек-листом'**
+  String get menuBullet2;
+
+  /// No description provided for @menuBullet3.
+  ///
+  /// In ru, this message translates to:
+  /// **'Рецепты подгрузятся по тапу и сохранятся в связанные заметки'**
+  String get menuBullet3;
+
+  /// No description provided for @menuRegenerate.
+  ///
+  /// In ru, this message translates to:
+  /// **'Перегенерировать'**
+  String get menuRegenerate;
+
+  /// No description provided for @menuImportBtn.
+  ///
+  /// In ru, this message translates to:
+  /// **'Импортировать в задачи'**
+  String get menuImportBtn;
+
+  /// No description provided for @menuImportedCount.
+  ///
+  /// In ru, this message translates to:
+  /// **'Меню импортировано · {n} задач'**
+  String menuImportedCount(int n);
+
+  /// No description provided for @menuNew.
+  ///
+  /// In ru, this message translates to:
+  /// **'Новое меню'**
+  String get menuNew;
+
+  /// No description provided for @menuImportedHint.
+  ///
+  /// In ru, this message translates to:
+  /// **'Тег #{tag} группирует все эти записи. Тапни блюдо — открой задачу. Нажми «Получить рецепт» на любом блюде — рецепт сохранится в связанной заметке.'**
+  String menuImportedHint(String tag);
+
+  /// No description provided for @menuServings.
+  ///
+  /// In ru, this message translates to:
+  /// **'{n} порций'**
+  String menuServings(int n);
+
+  /// No description provided for @menuDailyCalories.
+  ///
+  /// In ru, this message translates to:
+  /// **'~{n} ккал в день'**
+  String menuDailyCalories(int n);
+
+  /// No description provided for @menuOpenRecipe.
+  ///
+  /// In ru, this message translates to:
+  /// **'Открыть'**
+  String get menuOpenRecipe;
+
+  /// No description provided for @menuGetRecipe.
+  ///
+  /// In ru, this message translates to:
+  /// **'Получить рецепт'**
+  String get menuGetRecipe;
+
+  /// No description provided for @habitsTitle.
+  ///
+  /// In ru, this message translates to:
+  /// **'Микро-привычки'**
+  String get habitsTitle;
+
+  /// No description provided for @habitsIntentError.
+  ///
+  /// In ru, this message translates to:
+  /// **'Опиши, какую привычку хочешь освоить.'**
+  String get habitsIntentError;
+
+  /// No description provided for @habitsDayOf.
+  ///
+  /// In ru, this message translates to:
+  /// **'День {day} из {total} · челлендж «{intent}»'**
+  String habitsDayOf(int day, int total, String intent);
+
+  /// No description provided for @habitsImported.
+  ///
+  /// In ru, this message translates to:
+  /// **'Челлендж «{intent}» добавлен — {n} мини-задач в Задачах.'**
+  String habitsImported(String intent, int n);
+
+  /// No description provided for @habitsImportError.
+  ///
+  /// In ru, this message translates to:
+  /// **'Не удалось импортировать челлендж: {error}'**
+  String habitsImportError(String error);
+
+  /// No description provided for @habitsGenerating.
+  ///
+  /// In ru, this message translates to:
+  /// **'AI подбирает крошечные шаги…'**
+  String get habitsGenerating;
+
+  /// No description provided for @habitsImporting.
+  ///
+  /// In ru, this message translates to:
+  /// **'Создаю задачи в Noetica…'**
+  String get habitsImporting;
+
+  /// No description provided for @habitsBullet1.
+  ///
+  /// In ru, this message translates to:
+  /// **'{n} задач — по одной на день, от лёгкой к закрепляющей'**
+  String habitsBullet1(int n);
+
+  /// No description provided for @habitsBullet2.
+  ///
+  /// In ru, this message translates to:
+  /// **'Каждое действие ≤ 2 минут реального усилия'**
+  String get habitsBullet2;
+
+  /// No description provided for @habitsBullet3.
+  ///
+  /// In ru, this message translates to:
+  /// **'Появятся в Задачах в секциях «Сегодня» / «Завтра» / …'**
+  String get habitsBullet3;
+
+  /// No description provided for @habitsDaysMini.
+  ///
+  /// In ru, this message translates to:
+  /// **'{n} дней · по одной мини-задаче'**
+  String habitsDaysMini(int n);
+
+  /// No description provided for @habitsAddTasks.
+  ///
+  /// In ru, this message translates to:
+  /// **'Добавить {n} задач'**
+  String habitsAddTasks(int n);
 }
 
 class _SDelegate extends LocalizationsDelegate<S> {
