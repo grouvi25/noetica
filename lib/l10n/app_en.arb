@@ -1534,5 +1534,83 @@
       }
     }
   },
-  "pulseDeadlineLabel": "Deadline"
+  "pulseDeadlineLabel": "Deadline",
+  "pluralTaskOne": "task",
+  "pluralTaskFew": "tasks",
+  "pluralTaskMany": "tasks",
+  "pluralDeadlineOne": "deadline",
+  "pluralDeadlineFew": "deadlines",
+  "pluralDeadlineMany": "deadlines",
+  "pluralNoteOne": "note",
+  "pluralNoteFew": "notes",
+  "pluralNoteMany": "notes",
+  "pluralBranchOne": "branch",
+  "pluralBranchFew": "branches",
+  "pluralBranchMany": "branches",
+  "heatmapNothing": "nothing",
+  "miniTreeBest": "best: {symbol} {name} · L{level}",
+  "@miniTreeBest": {
+    "placeholders": {
+      "symbol": {
+        "type": "String"
+      },
+      "name": {
+        "type": "String"
+      },
+      "level": {
+        "type": "int"
+      }
+    }
+  },
+  "timeJustNow": "just now",
+  "timeNow": "now",
+  "timeAgoFmt": "{value} {unit} ago",
+  "@timeAgoFmt": {
+    "placeholders": {
+      "value": {
+        "type": "int"
+      },
+      "unit": {
+        "type": "String"
+      }
+    }
+  },
+  "timeInFmt": "in {value} {unit}",
+  "@timeInFmt": {
+    "placeholders": {
+      "value": {
+        "type": "int"
+      },
+      "unit": {
+        "type": "String"
+      }
+    }
+  },
+  "timeRightAfter": "right after",
+  "timePlusFmt": "+ {value} {unit}",
+  "@timePlusFmt": {
+    "placeholders": {
+      "value": {
+        "type": "int"
+      },
+      "unit": {
+        "type": "String"
+      }
+    }
+  },
+  "pluralDayOne": "day",
+  "pluralDayFew": "days",
+  "pluralDayMany": "days",
+  "pluralHourOne": "hour",
+  "pluralHourFew": "hours",
+  "pluralHourMany": "hours",
+  "pluralMinuteOne": "minute",
+  "pluralMinuteFew": "minutes",
+  "pluralMinuteMany": "minutes",
+  "pluralMonthOne": "month",
+  "pluralMonthFew": "months",
+  "pluralMonthMany": "months",
+  "pluralYearOne": "year",
+  "pluralYearFew": "years",
+  "pluralYearMany": "years"
 }

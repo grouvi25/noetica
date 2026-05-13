@@ -155,6 +155,7 @@ class _ActivityHeatmapState extends State<ActivityHeatmap> {
             }
 
             final grid = _buildGrid(
+              context: context,
               cols: cols,
               rows: rows,
               cell: cell,
@@ -210,6 +211,7 @@ class _ActivityHeatmapState extends State<ActivityHeatmap> {
   }
 
   Widget _buildGrid({
+    required BuildContext context,
     required int cols,
     required int rows,
     required double cell,
@@ -288,6 +290,7 @@ class _ActivityHeatmapState extends State<ActivityHeatmap> {
                       children: [
                         for (var r = 0; r < rows; r++) ...[
                           _buildCell(
+                            context,
                             firstCol.add(Duration(days: c * 7 + r)),
                             year,
                             todayD,
@@ -313,6 +316,7 @@ class _ActivityHeatmapState extends State<ActivityHeatmap> {
   }
 
   Widget _buildCell(
+    BuildContext context,
     DateTime date,
     int year,
     DateTime todayD,
@@ -340,10 +344,11 @@ class _ActivityHeatmapState extends State<ActivityHeatmap> {
     final t = maxCount == 0 ? 0.0 : (value / maxCount);
     final color =
         value == 0 ? palette.line.withOpacity(0.35) : _bucketColor(t);
+    final tr = S.of(context)!;
     final label = value == 0
-        ? '${date.day} ${monthName(date.month)} $year · ничего'
+        ? '${date.day} ${monthName(date.month)} $year · ${tr.heatmapNothing}'
         : '${date.day} ${monthName(date.month)} $year · '
-            '$value ${plural(value, "задача", "задачи", "задач")}';
+            '$value ${plural(value, tr.pluralTaskOne, tr.pluralTaskFew, tr.pluralTaskMany)}';
     final cell = Container(
       width: size,
       height: size,

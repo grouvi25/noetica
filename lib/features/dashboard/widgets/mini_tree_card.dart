@@ -58,7 +58,7 @@ class MiniTreeCard extends ConsumerWidget {
                   children: [
                     Text(
                       '${scores.length} '
-                      '${plural(scores.length, "ветвь", "ветви", "ветвей")}',
+                      '${plural(scores.length, S.of(context)!.pluralBranchOne, S.of(context)!.pluralBranchFew, S.of(context)!.pluralBranchMany)}',
                       style: TextStyle(
                         color: palette.fg,
                         fontSize: 14,
@@ -66,8 +66,7 @@ class MiniTreeCard extends ConsumerWidget {
                       ),
                     ),
                     Text(
-                      '  ·  лучшая: ${topAxis.axis.symbol} '
-                      '${topAxis.axis.name.toLowerCase()} · L$topLevel',
+                      '  ·  ${S.of(context)!.miniTreeBest(topAxis.axis.symbol, topAxis.axis.name.toLowerCase(), topLevel)}',
                       style: TextStyle(
                         color: palette.muted,
                         fontSize: 12,

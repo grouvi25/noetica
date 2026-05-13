@@ -2409,4 +2409,117 @@ class SEn extends S {
 
   @override
   String get pulseDeadlineLabel => 'Deadline';
+
+  @override
+  String get pluralTaskOne => 'task';
+
+  @override
+  String get pluralTaskFew => 'tasks';
+
+  @override
+  String get pluralTaskMany => 'tasks';
+
+  @override
+  String get pluralDeadlineOne => 'deadline';
+
+  @override
+  String get pluralDeadlineFew => 'deadlines';
+
+  @override
+  String get pluralDeadlineMany => 'deadlines';
+
+  @override
+  String get pluralNoteOne => 'note';
+
+  @override
+  String get pluralNoteFew => 'notes';
+
+  @override
+  String get pluralNoteMany => 'notes';
+
+  @override
+  String get pluralBranchOne => 'branch';
+
+  @override
+  String get pluralBranchFew => 'branches';
+
+  @override
+  String get pluralBranchMany => 'branches';
+
+  @override
+  String get heatmapNothing => 'nothing';
+
+  @override
+  String miniTreeBest(String symbol, String name, int level) {
+    return 'best: $symbol $name · L$level';
+  }
+
+  @override
+  String get timeJustNow => 'just now';
+
+  @override
+  String get timeNow => 'now';
+
+  @override
+  String timeAgoFmt(int value, String unit) {
+    return '$value $unit ago';
+  }
+
+  @override
+  String timeInFmt(int value, String unit) {
+    return 'in $value $unit';
+  }
+
+  @override
+  String get timeRightAfter => 'right after';
+
+  @override
+  String timePlusFmt(int value, String unit) {
+    return '+ $value $unit';
+  }
+
+  @override
+  String get pluralDayOne => 'day';
+
+  @override
+  String get pluralDayFew => 'days';
+
+  @override
+  String get pluralDayMany => 'days';
+
+  @override
+  String get pluralHourOne => 'hour';
+
+  @override
+  String get pluralHourFew => 'hours';
+
+  @override
+  String get pluralHourMany => 'hours';
+
+  @override
+  String get pluralMinuteOne => 'minute';
+
+  @override
+  String get pluralMinuteFew => 'minutes';
+
+  @override
+  String get pluralMinuteMany => 'minutes';
+
+  @override
+  String get pluralMonthOne => 'month';
+
+  @override
+  String get pluralMonthFew => 'months';
+
+  @override
+  String get pluralMonthMany => 'months';
+
+  @override
+  String get pluralYearOne => 'year';
+
+  @override
+  String get pluralYearFew => 'years';
+
+  @override
+  String get pluralYearMany => 'years';
 }

@@ -2411,4 +2411,117 @@ class SRu extends S {
 
   @override
   String get pulseDeadlineLabel => 'Дедлайн';
+
+  @override
+  String get pluralTaskOne => 'задача';
+
+  @override
+  String get pluralTaskFew => 'задачи';
+
+  @override
+  String get pluralTaskMany => 'задач';
+
+  @override
+  String get pluralDeadlineOne => 'дедлайн';
+
+  @override
+  String get pluralDeadlineFew => 'дедлайна';
+
+  @override
+  String get pluralDeadlineMany => 'дедлайнов';
+
+  @override
+  String get pluralNoteOne => 'заметка';
+
+  @override
+  String get pluralNoteFew => 'заметки';
+
+  @override
+  String get pluralNoteMany => 'заметок';
+
+  @override
+  String get pluralBranchOne => 'ветвь';
+
+  @override
+  String get pluralBranchFew => 'ветви';
+
+  @override
+  String get pluralBranchMany => 'ветвей';
+
+  @override
+  String get heatmapNothing => 'ничего';
+
+  @override
+  String miniTreeBest(String symbol, String name, int level) {
+    return 'лучшая: $symbol $name · L$level';
+  }
+
+  @override
+  String get timeJustNow => 'только что';
+
+  @override
+  String get timeNow => 'сейчас';
+
+  @override
+  String timeAgoFmt(int value, String unit) {
+    return '$value $unit назад';
+  }
+
+  @override
+  String timeInFmt(int value, String unit) {
+    return 'через $value $unit';
+  }
+
+  @override
+  String get timeRightAfter => 'сразу после';
+
+  @override
+  String timePlusFmt(int value, String unit) {
+    return '+ $value $unit';
+  }
+
+  @override
+  String get pluralDayOne => 'день';
+
+  @override
+  String get pluralDayFew => 'дня';
+
+  @override
+  String get pluralDayMany => 'дней';
+
+  @override
+  String get pluralHourOne => 'час';
+
+  @override
+  String get pluralHourFew => 'часа';
+
+  @override
+  String get pluralHourMany => 'часов';
+
+  @override
+  String get pluralMinuteOne => 'минута';
+
+  @override
+  String get pluralMinuteFew => 'минуты';
+
+  @override
+  String get pluralMinuteMany => 'минут';
+
+  @override
+  String get pluralMonthOne => 'месяц';
+
+  @override
+  String get pluralMonthFew => 'месяца';
+
+  @override
+  String get pluralMonthMany => 'месяцев';
+
+  @override
+  String get pluralYearOne => 'год';
+
+  @override
+  String get pluralYearFew => 'года';
+
+  @override
+  String get pluralYearMany => 'лет';
 }

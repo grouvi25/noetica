@@ -165,7 +165,7 @@ class GapDivider extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final palette = context.palette;
-    final label = formatGapSince(to, from);
+    final label = formatGapSince(to, from, context);
     final emphasised = to.difference(from).abs().inDays >= 1;
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 4),

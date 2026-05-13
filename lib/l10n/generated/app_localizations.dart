@@ -4432,6 +4432,216 @@ abstract class S {
   /// In ru, this message translates to:
   /// **'Дедлайн'**
   String get pulseDeadlineLabel;
+
+  /// No description provided for @pluralTaskOne.
+  ///
+  /// In ru, this message translates to:
+  /// **'задача'**
+  String get pluralTaskOne;
+
+  /// No description provided for @pluralTaskFew.
+  ///
+  /// In ru, this message translates to:
+  /// **'задачи'**
+  String get pluralTaskFew;
+
+  /// No description provided for @pluralTaskMany.
+  ///
+  /// In ru, this message translates to:
+  /// **'задач'**
+  String get pluralTaskMany;
+
+  /// No description provided for @pluralDeadlineOne.
+  ///
+  /// In ru, this message translates to:
+  /// **'дедлайн'**
+  String get pluralDeadlineOne;
+
+  /// No description provided for @pluralDeadlineFew.
+  ///
+  /// In ru, this message translates to:
+  /// **'дедлайна'**
+  String get pluralDeadlineFew;
+
+  /// No description provided for @pluralDeadlineMany.
+  ///
+  /// In ru, this message translates to:
+  /// **'дедлайнов'**
+  String get pluralDeadlineMany;
+
+  /// No description provided for @pluralNoteOne.
+  ///
+  /// In ru, this message translates to:
+  /// **'заметка'**
+  String get pluralNoteOne;
+
+  /// No description provided for @pluralNoteFew.
+  ///
+  /// In ru, this message translates to:
+  /// **'заметки'**
+  String get pluralNoteFew;
+
+  /// No description provided for @pluralNoteMany.
+  ///
+  /// In ru, this message translates to:
+  /// **'заметок'**
+  String get pluralNoteMany;
+
+  /// No description provided for @pluralBranchOne.
+  ///
+  /// In ru, this message translates to:
+  /// **'ветвь'**
+  String get pluralBranchOne;
+
+  /// No description provided for @pluralBranchFew.
+  ///
+  /// In ru, this message translates to:
+  /// **'ветви'**
+  String get pluralBranchFew;
+
+  /// No description provided for @pluralBranchMany.
+  ///
+  /// In ru, this message translates to:
+  /// **'ветвей'**
+  String get pluralBranchMany;
+
+  /// No description provided for @heatmapNothing.
+  ///
+  /// In ru, this message translates to:
+  /// **'ничего'**
+  String get heatmapNothing;
+
+  /// No description provided for @miniTreeBest.
+  ///
+  /// In ru, this message translates to:
+  /// **'лучшая: {symbol} {name} · L{level}'**
+  String miniTreeBest(String symbol, String name, int level);
+
+  /// No description provided for @timeJustNow.
+  ///
+  /// In ru, this message translates to:
+  /// **'только что'**
+  String get timeJustNow;
+
+  /// No description provided for @timeNow.
+  ///
+  /// In ru, this message translates to:
+  /// **'сейчас'**
+  String get timeNow;
+
+  /// No description provided for @timeAgoFmt.
+  ///
+  /// In ru, this message translates to:
+  /// **'{value} {unit} назад'**
+  String timeAgoFmt(int value, String unit);
+
+  /// No description provided for @timeInFmt.
+  ///
+  /// In ru, this message translates to:
+  /// **'через {value} {unit}'**
+  String timeInFmt(int value, String unit);
+
+  /// No description provided for @timeRightAfter.
+  ///
+  /// In ru, this message translates to:
+  /// **'сразу после'**
+  String get timeRightAfter;
+
+  /// No description provided for @timePlusFmt.
+  ///
+  /// In ru, this message translates to:
+  /// **'+ {value} {unit}'**
+  String timePlusFmt(int value, String unit);
+
+  /// No description provided for @pluralDayOne.
+  ///
+  /// In ru, this message translates to:
+  /// **'день'**
+  String get pluralDayOne;
+
+  /// No description provided for @pluralDayFew.
+  ///
+  /// In ru, this message translates to:
+  /// **'дня'**
+  String get pluralDayFew;
+
+  /// No description provided for @pluralDayMany.
+  ///
+  /// In ru, this message translates to:
+  /// **'дней'**
+  String get pluralDayMany;
+
+  /// No description provided for @pluralHourOne.
+  ///
+  /// In ru, this message translates to:
+  /// **'час'**
+  String get pluralHourOne;
+
+  /// No description provided for @pluralHourFew.
+  ///
+  /// In ru, this message translates to:
+  /// **'часа'**
+  String get pluralHourFew;
+
+  /// No description provided for @pluralHourMany.
+  ///
+  /// In ru, this message translates to:
+  /// **'часов'**
+  String get pluralHourMany;
+
+  /// No description provided for @pluralMinuteOne.
+  ///
+  /// In ru, this message translates to:
+  /// **'минута'**
+  String get pluralMinuteOne;
+
+  /// No description provided for @pluralMinuteFew.
+  ///
+  /// In ru, this message translates to:
+  /// **'минуты'**
+  String get pluralMinuteFew;
+
+  /// No description provided for @pluralMinuteMany.
+  ///
+  /// In ru, this message translates to:
+  /// **'минут'**
+  String get pluralMinuteMany;
+
+  /// No description provided for @pluralMonthOne.
+  ///
+  /// In ru, this message translates to:
+  /// **'месяц'**
+  String get pluralMonthOne;
+
+  /// No description provided for @pluralMonthFew.
+  ///
+  /// In ru, this message translates to:
+  /// **'месяца'**
+  String get pluralMonthFew;
+
+  /// No description provided for @pluralMonthMany.
+  ///
+  /// In ru, this message translates to:
+  /// **'месяцев'**
+  String get pluralMonthMany;
+
+  /// No description provided for @pluralYearOne.
+  ///
+  /// In ru, this message translates to:
+  /// **'год'**
+  String get pluralYearOne;
+
+  /// No description provided for @pluralYearFew.
+  ///
+  /// In ru, this message translates to:
+  /// **'года'**
+  String get pluralYearFew;
+
+  /// No description provided for @pluralYearMany.
+  ///
+  /// In ru, this message translates to:
+  /// **'лет'**
+  String get pluralYearMany;
 }
 
 class _SDelegate extends LocalizationsDelegate<S> {

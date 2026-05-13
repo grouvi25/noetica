@@ -1534,5 +1534,83 @@
       }
     }
   },
-  "pulseDeadlineLabel": "Дедлайн"
+  "pulseDeadlineLabel": "Дедлайн",
+  "pluralTaskOne": "задача",
+  "pluralTaskFew": "задачи",
+  "pluralTaskMany": "задач",
+  "pluralDeadlineOne": "дедлайн",
+  "pluralDeadlineFew": "дедлайна",
+  "pluralDeadlineMany": "дедлайнов",
+  "pluralNoteOne": "заметка",
+  "pluralNoteFew": "заметки",
+  "pluralNoteMany": "заметок",
+  "pluralBranchOne": "ветвь",
+  "pluralBranchFew": "ветви",
+  "pluralBranchMany": "ветвей",
+  "heatmapNothing": "ничего",
+  "miniTreeBest": "лучшая: {symbol} {name} · L{level}",
+  "@miniTreeBest": {
+    "placeholders": {
+      "symbol": {
+        "type": "String"
+      },
+      "name": {
+        "type": "String"
+      },
+      "level": {
+        "type": "int"
+      }
+    }
+  },
+  "timeJustNow": "только что",
+  "timeNow": "сейчас",
+  "timeAgoFmt": "{value} {unit} назад",
+  "@timeAgoFmt": {
+    "placeholders": {
+      "value": {
+        "type": "int"
+      },
+      "unit": {
+        "type": "String"
+      }
+    }
+  },
+  "timeInFmt": "через {value} {unit}",
+  "@timeInFmt": {
+    "placeholders": {
+      "value": {
+        "type": "int"
+      },
+      "unit": {
+        "type": "String"
+      }
+    }
+  },
+  "timeRightAfter": "сразу после",
+  "timePlusFmt": "+ {value} {unit}",
+  "@timePlusFmt": {
+    "placeholders": {
+      "value": {
+        "type": "int"
+      },
+      "unit": {
+        "type": "String"
+      }
+    }
+  },
+  "pluralDayOne": "день",
+  "pluralDayFew": "дня",
+  "pluralDayMany": "дней",
+  "pluralHourOne": "час",
+  "pluralHourFew": "часа",
+  "pluralHourMany": "часов",
+  "pluralMinuteOne": "минута",
+  "pluralMinuteFew": "минуты",
+  "pluralMinuteMany": "минут",
+  "pluralMonthOne": "месяц",
+  "pluralMonthFew": "месяца",
+  "pluralMonthMany": "месяцев",
+  "pluralYearOne": "год",
+  "pluralYearFew": "года",
+  "pluralYearMany": "лет"
 }

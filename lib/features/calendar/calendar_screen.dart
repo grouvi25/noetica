@@ -497,11 +497,12 @@ class _DayDetail extends ConsumerWidget {
   }
 
   String _summaryLine(BuildContext context, int done, int xp, int due, int notes) {
+    final tr = S.of(context)!;
     final parts = <String>[];
-    if (done > 0) parts.add('$done ${_pluralize(done, "задача", "задачи", "задач")} · +$xp XP');
-    if (due > 0) parts.add('$due ${_pluralize(due, "дедлайн", "дедлайна", "дедлайнов")}');
-    if (notes > 0) parts.add('$notes ${_pluralize(notes, "заметка", "заметки", "заметок")}');
-    if (parts.isEmpty) return S.of(context)!.calNothingRecorded;
+    if (done > 0) parts.add('$done ${_pluralize(done, tr.pluralTaskOne, tr.pluralTaskFew, tr.pluralTaskMany)} · +$xp XP');
+    if (due > 0) parts.add('$due ${_pluralize(due, tr.pluralDeadlineOne, tr.pluralDeadlineFew, tr.pluralDeadlineMany)}');
+    if (notes > 0) parts.add('$notes ${_pluralize(notes, tr.pluralNoteOne, tr.pluralNoteFew, tr.pluralNoteMany)}');
+    if (parts.isEmpty) return tr.calNothingRecorded;
     return parts.join(' · ');
   }
 
