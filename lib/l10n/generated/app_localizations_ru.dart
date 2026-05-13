@@ -2864,4 +2864,12 @@ class SRu extends S {
 
   @override
   String get onboardAxisSoul => 'Душа';
+
+  @override
+  String menuMacroLine(int cal, int p, int f, int c) {
+    return '$cal ккал · $pб/$fж/$cу';
+  }
+
+  @override
+  String get backendUrlEmpty => 'URL не должен быть пустым.';
 }

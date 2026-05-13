@@ -455,7 +455,7 @@ class _DayDetail extends ConsumerWidget {
             _EmptyDay(palette: palette)
           else ...[
             if (completed.isNotEmpty) ...[
-              _Heading('✓ Выполнено (${completed.length})', palette: palette),
+              _Heading(S.of(context)!.dayDone(completed.length), palette: palette),
               const SizedBox(height: 4),
               for (final e in completed)
                 _EntryRow(
@@ -597,7 +597,7 @@ class _EntryRow extends ConsumerWidget {
             ],
             Expanded(
               child: Text(
-                entry.title.isEmpty ? '(без названия)' : entry.title,
+                entry.title.isEmpty ? S.of(context)!.untitled : entry.title,
                 style: TextStyle(
                   color: palette.fg,
                   fontSize: 14,

@@ -877,7 +877,7 @@ class _MealLine extends StatelessWidget {
                         ?.copyWith(fontWeight: FontWeight.w600)),
                 if (meal.calories > 0)
                   Text(
-                    '${meal.calories} ккал · ${meal.protein}б/${meal.fat}ж/${meal.carbs}у',
+                    S.of(context)!.menuMacroLine(meal.calories, meal.protein, meal.fat, meal.carbs),
                     style: theme.textTheme.bodySmall
                         ?.copyWith(color: palette.muted),
                   ),
@@ -939,9 +939,7 @@ class _MealRow extends StatelessWidget {
                 ),
                 if (imported.meal.calories > 0)
                   Text(
-                    '${imported.meal.calories} ккал · '
-                    '${imported.meal.protein}б/${imported.meal.fat}ж/'
-                    '${imported.meal.carbs}у',
+                    S.of(context)!.menuMacroLine(imported.meal.calories, imported.meal.protein, imported.meal.fat, imported.meal.carbs),
                     style: theme.textTheme.bodySmall
                         ?.copyWith(color: palette.muted),
                   ),

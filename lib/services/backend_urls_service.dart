@@ -184,7 +184,7 @@ class BackendUrlsService {
     final state = await load();
     final cleanUrl = _normalize(url);
     if (cleanUrl.isEmpty) {
-      throw const FormatException('URL не должен быть пустым.');
+      throw FormatException(_tr?.backendUrlEmpty ?? 'URL must not be empty.');
     }
     final ep = BackendEndpoint(
       id: _uuid.v4(),

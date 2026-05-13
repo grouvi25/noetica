@@ -1779,5 +1779,17 @@
   "onboardAxisMind": "Ум",
   "onboardAxisWork": "Дело",
   "onboardAxisRelations": "Связи",
-  "onboardAxisSoul": "Душа"
+  "onboardAxisSoul": "Душа",
+
+  "menuMacroLine": "{cal} ккал · {p}б/{f}ж/{c}у",
+  "@menuMacroLine": {
+    "placeholders": {
+      "cal": { "type": "int" },
+      "p": { "type": "int" },
+      "f": { "type": "int" },
+      "c": { "type": "int" }
+    }
+  },
+
+  "backendUrlEmpty": "URL не должен быть пустым."
 }

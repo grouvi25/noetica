@@ -2862,4 +2862,12 @@ class SEn extends S {
 
   @override
   String get onboardAxisSoul => 'Soul';
+
+  @override
+  String menuMacroLine(int cal, int p, int f, int c) {
+    return '$cal kcal · ${p}P/${f}F/${c}C';
+  }
+
+  @override
+  String get backendUrlEmpty => 'URL must not be empty.';
 }

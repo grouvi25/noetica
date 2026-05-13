@@ -1779,5 +1779,17 @@
   "onboardAxisMind": "Mind",
   "onboardAxisWork": "Work",
   "onboardAxisRelations": "Relationships",
-  "onboardAxisSoul": "Soul"
+  "onboardAxisSoul": "Soul",
+
+  "menuMacroLine": "{cal} kcal · {p}P/{f}F/{c}C",
+  "@menuMacroLine": {
+    "placeholders": {
+      "cal": { "type": "int" },
+      "p": { "type": "int" },
+      "f": { "type": "int" },
+      "c": { "type": "int" }
+    }
+  },
+
+  "backendUrlEmpty": "URL must not be empty."
 }

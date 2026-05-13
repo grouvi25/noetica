@@ -5290,6 +5290,18 @@ abstract class S {
   /// In ru, this message translates to:
   /// **'Душа'**
   String get onboardAxisSoul;
+
+  /// No description provided for @menuMacroLine.
+  ///
+  /// In ru, this message translates to:
+  /// **'{cal} ккал · {p}б/{f}ж/{c}у'**
+  String menuMacroLine(int cal, int p, int f, int c);
+
+  /// No description provided for @backendUrlEmpty.
+  ///
+  /// In ru, this message translates to:
+  /// **'URL не должен быть пустым.'**
+  String get backendUrlEmpty;
 }
 
 class _SDelegate extends LocalizationsDelegate<S> {
