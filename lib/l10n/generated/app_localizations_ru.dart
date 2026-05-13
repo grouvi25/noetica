@@ -233,7 +233,7 @@ class SRu extends S {
   String get pomodoroTitle => 'Помодоро';
 
   @override
-  String get pomodoroStart => 'Старт';
+  String get pomodoroStart => 'Начать фокус';
 
   @override
   String get pomodoroPause => 'Пауза';
@@ -1767,4 +1767,102 @@ class SRu extends S {
 
   @override
   String get weeklyFocus7 => 'отношения';
+
+  @override
+  String epochPeak(int n) {
+    return 'ЭПОХА $n · ПИК';
+  }
+
+  @override
+  String get epochPostpone => 'Отложить';
+
+  @override
+  String get epochTreeFull => 'Ты заполнил древо.';
+
+  @override
+  String epochTwoPaths(int n) {
+    return 'Два пути дальше — можешь обновить сам набор осей и начать Эпоху $n с чистого листа, либо остаться в текущем фокусе и взять следующий, более трудный тир задач.';
+  }
+
+  @override
+  String get epochNewEpoch => 'Новая эпоха';
+
+  @override
+  String epochNewEpochSub(int n) {
+    return 'Перерисовать ветви — Эпоха $n. XP и уровень остаются.';
+  }
+
+  @override
+  String get epochGoDeeper => 'Углубиться';
+
+  @override
+  String epochGoDeeperSub(int n) {
+    return 'Тир $n в той же Эпохе — задачи станут сложнее, древо обнулится.';
+  }
+
+  @override
+  String get graphBranchGoals => 'Цели';
+
+  @override
+  String get graphBranchConstraints => 'Ограничения';
+
+  @override
+  String get graphBranchHighlights => 'Достижения';
+
+  @override
+  String get graphBranchReflections => 'Рефлексии';
+
+  @override
+  String get graphBranchPreferences => 'Предпочтения';
+
+  @override
+  String get graphFilterAll => 'Все';
+
+  @override
+  String get graphFilterNotes => 'Заметки';
+
+  @override
+  String get graphFilterTasks => 'Задачи';
+
+  @override
+  String get graphFilterBookmarks => 'Закладки';
+
+  @override
+  String get graphFilterDaily => 'Дневник';
+
+  @override
+  String get graphFilterKnowledge => 'Знания о себе';
+
+  @override
+  String get pomodoroStop => 'Стоп';
+
+  @override
+  String get pomodoroSeries => 'Серия фокус-сессий';
+
+  @override
+  String get pomodoroSeriesReset => 'Серия фокус-сессий — нажми чтобы сбросить';
+
+  @override
+  String get pomodoroSettings => 'Настройки';
+
+  @override
+  String get pomodoroFocusMin => 'Фокус, мин';
+
+  @override
+  String get pomodoroShortBreak => 'Короткий отдых, мин';
+
+  @override
+  String get pomodoroLongBreak => 'Длинный отдых, мин';
+
+  @override
+  String get pomodoroAutoStart => 'Авто-старт следующей фазы';
+
+  @override
+  String get pomodoroAutoStartSub => 'После окончания фокуса/отдыха таймер продолжается сам';
+
+  @override
+  String get pomodoroSoundVibro => 'Звук + вибрация';
+
+  @override
+  String get pomodoroSoundVibroSub => 'Системный «дзынь» и хаптик при смене фазы (уведомление приходит в любом случае)';
 }

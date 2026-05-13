@@ -542,7 +542,7 @@ abstract class S {
   /// No description provided for @pomodoroStart.
   ///
   /// In ru, this message translates to:
-  /// **'Старт'**
+  /// **'Начать фокус'**
   String get pomodoroStart;
 
   /// No description provided for @pomodoroPause.
@@ -3220,6 +3220,186 @@ abstract class S {
   /// In ru, this message translates to:
   /// **'отношения'**
   String get weeklyFocus7;
+
+  /// No description provided for @epochPeak.
+  ///
+  /// In ru, this message translates to:
+  /// **'ЭПОХА {n} · ПИК'**
+  String epochPeak(int n);
+
+  /// No description provided for @epochPostpone.
+  ///
+  /// In ru, this message translates to:
+  /// **'Отложить'**
+  String get epochPostpone;
+
+  /// No description provided for @epochTreeFull.
+  ///
+  /// In ru, this message translates to:
+  /// **'Ты заполнил древо.'**
+  String get epochTreeFull;
+
+  /// No description provided for @epochTwoPaths.
+  ///
+  /// In ru, this message translates to:
+  /// **'Два пути дальше — можешь обновить сам набор осей и начать Эпоху {n} с чистого листа, либо остаться в текущем фокусе и взять следующий, более трудный тир задач.'**
+  String epochTwoPaths(int n);
+
+  /// No description provided for @epochNewEpoch.
+  ///
+  /// In ru, this message translates to:
+  /// **'Новая эпоха'**
+  String get epochNewEpoch;
+
+  /// No description provided for @epochNewEpochSub.
+  ///
+  /// In ru, this message translates to:
+  /// **'Перерисовать ветви — Эпоха {n}. XP и уровень остаются.'**
+  String epochNewEpochSub(int n);
+
+  /// No description provided for @epochGoDeeper.
+  ///
+  /// In ru, this message translates to:
+  /// **'Углубиться'**
+  String get epochGoDeeper;
+
+  /// No description provided for @epochGoDeeperSub.
+  ///
+  /// In ru, this message translates to:
+  /// **'Тир {n} в той же Эпохе — задачи станут сложнее, древо обнулится.'**
+  String epochGoDeeperSub(int n);
+
+  /// No description provided for @graphBranchGoals.
+  ///
+  /// In ru, this message translates to:
+  /// **'Цели'**
+  String get graphBranchGoals;
+
+  /// No description provided for @graphBranchConstraints.
+  ///
+  /// In ru, this message translates to:
+  /// **'Ограничения'**
+  String get graphBranchConstraints;
+
+  /// No description provided for @graphBranchHighlights.
+  ///
+  /// In ru, this message translates to:
+  /// **'Достижения'**
+  String get graphBranchHighlights;
+
+  /// No description provided for @graphBranchReflections.
+  ///
+  /// In ru, this message translates to:
+  /// **'Рефлексии'**
+  String get graphBranchReflections;
+
+  /// No description provided for @graphBranchPreferences.
+  ///
+  /// In ru, this message translates to:
+  /// **'Предпочтения'**
+  String get graphBranchPreferences;
+
+  /// No description provided for @graphFilterAll.
+  ///
+  /// In ru, this message translates to:
+  /// **'Все'**
+  String get graphFilterAll;
+
+  /// No description provided for @graphFilterNotes.
+  ///
+  /// In ru, this message translates to:
+  /// **'Заметки'**
+  String get graphFilterNotes;
+
+  /// No description provided for @graphFilterTasks.
+  ///
+  /// In ru, this message translates to:
+  /// **'Задачи'**
+  String get graphFilterTasks;
+
+  /// No description provided for @graphFilterBookmarks.
+  ///
+  /// In ru, this message translates to:
+  /// **'Закладки'**
+  String get graphFilterBookmarks;
+
+  /// No description provided for @graphFilterDaily.
+  ///
+  /// In ru, this message translates to:
+  /// **'Дневник'**
+  String get graphFilterDaily;
+
+  /// No description provided for @graphFilterKnowledge.
+  ///
+  /// In ru, this message translates to:
+  /// **'Знания о себе'**
+  String get graphFilterKnowledge;
+
+  /// No description provided for @pomodoroStop.
+  ///
+  /// In ru, this message translates to:
+  /// **'Стоп'**
+  String get pomodoroStop;
+
+  /// No description provided for @pomodoroSeries.
+  ///
+  /// In ru, this message translates to:
+  /// **'Серия фокус-сессий'**
+  String get pomodoroSeries;
+
+  /// No description provided for @pomodoroSeriesReset.
+  ///
+  /// In ru, this message translates to:
+  /// **'Серия фокус-сессий — нажми чтобы сбросить'**
+  String get pomodoroSeriesReset;
+
+  /// No description provided for @pomodoroSettings.
+  ///
+  /// In ru, this message translates to:
+  /// **'Настройки'**
+  String get pomodoroSettings;
+
+  /// No description provided for @pomodoroFocusMin.
+  ///
+  /// In ru, this message translates to:
+  /// **'Фокус, мин'**
+  String get pomodoroFocusMin;
+
+  /// No description provided for @pomodoroShortBreak.
+  ///
+  /// In ru, this message translates to:
+  /// **'Короткий отдых, мин'**
+  String get pomodoroShortBreak;
+
+  /// No description provided for @pomodoroLongBreak.
+  ///
+  /// In ru, this message translates to:
+  /// **'Длинный отдых, мин'**
+  String get pomodoroLongBreak;
+
+  /// No description provided for @pomodoroAutoStart.
+  ///
+  /// In ru, this message translates to:
+  /// **'Авто-старт следующей фазы'**
+  String get pomodoroAutoStart;
+
+  /// No description provided for @pomodoroAutoStartSub.
+  ///
+  /// In ru, this message translates to:
+  /// **'После окончания фокуса/отдыха таймер продолжается сам'**
+  String get pomodoroAutoStartSub;
+
+  /// No description provided for @pomodoroSoundVibro.
+  ///
+  /// In ru, this message translates to:
+  /// **'Звук + вибрация'**
+  String get pomodoroSoundVibro;
+
+  /// No description provided for @pomodoroSoundVibroSub.
+  ///
+  /// In ru, this message translates to:
+  /// **'Системный «дзынь» и хаптик при смене фазы (уведомление приходит в любом случае)'**
+  String get pomodoroSoundVibroSub;
 }
 
 class _SDelegate extends LocalizationsDelegate<S> {

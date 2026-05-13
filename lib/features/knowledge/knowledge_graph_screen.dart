@@ -126,6 +126,7 @@ class _KnowledgeGraphScreenState extends ConsumerState<KnowledgeGraphScreen>
   // ======================== graph construction ========================
 
   Future<void> _rebuildGraph() async {
+    final tr = S.of(context)!;
     final repo = await ref.read(repositoryProvider.future);
 
     // Read entries directly from the repository instead of via
@@ -263,7 +264,7 @@ class _KnowledgeGraphScreenState extends ConsumerState<KnowledgeGraphScreen>
         final headerIdx = nodes.length;
         nodes.add(GraphNode(
           id: '__branch_${b.name}__',
-          label: b.title,
+          label: b.localTitle(tr),
           color: b.color,
           isCentre: false,
           isBranchHeader: true,
@@ -866,7 +867,7 @@ class _KnowledgeGraphScreenState extends ConsumerState<KnowledgeGraphScreen>
                                   const EdgeInsets.symmetric(horizontal: 3),
                               child: FilterChip(
                                 selected: _filter == f && _activeTag == null,
-                                label: Text(f.label),
+                                label: Text(f.localLabel(S.of(context)!)),
                                 avatar: Icon(f.icon, size: 16),
                                 onSelected: (_) {
                                   setState(() {

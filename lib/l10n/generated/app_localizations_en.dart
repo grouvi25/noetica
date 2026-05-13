@@ -233,7 +233,7 @@ class SEn extends S {
   String get pomodoroTitle => 'Pomodoro';
 
   @override
-  String get pomodoroStart => 'Start';
+  String get pomodoroStart => 'Start focus';
 
   @override
   String get pomodoroPause => 'Pause';
@@ -1765,4 +1765,102 @@ class SEn extends S {
 
   @override
   String get weeklyFocus7 => 'relationships';
+
+  @override
+  String epochPeak(int n) {
+    return 'EPOCH $n · PEAK';
+  }
+
+  @override
+  String get epochPostpone => 'Postpone';
+
+  @override
+  String get epochTreeFull => 'You\'ve filled the tree.';
+
+  @override
+  String epochTwoPaths(int n) {
+    return 'Two paths ahead — you can refresh your axes and start Epoch $n with a clean slate, or stay focused and take on a harder tier of tasks.';
+  }
+
+  @override
+  String get epochNewEpoch => 'New epoch';
+
+  @override
+  String epochNewEpochSub(int n) {
+    return 'Redraw branches — Epoch $n. XP and level remain.';
+  }
+
+  @override
+  String get epochGoDeeper => 'Go deeper';
+
+  @override
+  String epochGoDeeperSub(int n) {
+    return 'Tier $n in the same Epoch — tasks will be harder, tree resets.';
+  }
+
+  @override
+  String get graphBranchGoals => 'Goals';
+
+  @override
+  String get graphBranchConstraints => 'Constraints';
+
+  @override
+  String get graphBranchHighlights => 'Highlights';
+
+  @override
+  String get graphBranchReflections => 'Reflections';
+
+  @override
+  String get graphBranchPreferences => 'Preferences';
+
+  @override
+  String get graphFilterAll => 'All';
+
+  @override
+  String get graphFilterNotes => 'Notes';
+
+  @override
+  String get graphFilterTasks => 'Tasks';
+
+  @override
+  String get graphFilterBookmarks => 'Bookmarks';
+
+  @override
+  String get graphFilterDaily => 'Daily';
+
+  @override
+  String get graphFilterKnowledge => 'Self-knowledge';
+
+  @override
+  String get pomodoroStop => 'Stop';
+
+  @override
+  String get pomodoroSeries => 'Focus session series';
+
+  @override
+  String get pomodoroSeriesReset => 'Focus session series — tap to reset';
+
+  @override
+  String get pomodoroSettings => 'Settings';
+
+  @override
+  String get pomodoroFocusMin => 'Focus, min';
+
+  @override
+  String get pomodoroShortBreak => 'Short break, min';
+
+  @override
+  String get pomodoroLongBreak => 'Long break, min';
+
+  @override
+  String get pomodoroAutoStart => 'Auto-start next phase';
+
+  @override
+  String get pomodoroAutoStartSub => 'Timer continues automatically after focus/break ends';
+
+  @override
+  String get pomodoroSoundVibro => 'Sound + vibration';
+
+  @override
+  String get pomodoroSoundVibroSub => 'System ding and haptic on phase change (notification always comes)';
 }

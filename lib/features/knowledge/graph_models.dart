@@ -2,6 +2,7 @@ import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 
+import '../../l10n/generated/app_localizations.dart';
 import '../../data/models.dart';
 
 // ---------------------------------------------------------------------------
@@ -17,18 +18,18 @@ enum GraphBranch {
 }
 
 extension GraphBranchX on GraphBranch {
-  String get title {
+  String localTitle(S tr) {
     switch (this) {
       case GraphBranch.goals:
-        return 'Цели';
+        return tr.graphBranchGoals;
       case GraphBranch.constraints:
-        return 'Ограничения';
+        return tr.graphBranchConstraints;
       case GraphBranch.highlights:
-        return 'Достижения';
+        return tr.graphBranchHighlights;
       case GraphBranch.reflections:
-        return 'Рефлексии';
+        return tr.graphBranchReflections;
       case GraphBranch.preferences:
-        return 'Предпочтения';
+        return tr.graphBranchPreferences;
     }
   }
 
@@ -133,20 +134,20 @@ Color entryColor(Entry? e) {
 enum GraphFilterMode { all, notes, tasks, bookmarks, daily, knowledge }
 
 extension GraphFilterModeX on GraphFilterMode {
-  String get label {
+  String localLabel(S tr) {
     switch (this) {
       case GraphFilterMode.all:
-        return 'Все';
+        return tr.graphFilterAll;
       case GraphFilterMode.notes:
-        return 'Заметки';
+        return tr.graphFilterNotes;
       case GraphFilterMode.tasks:
-        return 'Задачи';
+        return tr.graphFilterTasks;
       case GraphFilterMode.bookmarks:
-        return 'Закладки';
+        return tr.graphFilterBookmarks;
       case GraphFilterMode.daily:
-        return 'Дневник';
+        return tr.graphFilterDaily;
       case GraphFilterMode.knowledge:
-        return 'Знания о себе';
+        return tr.graphFilterKnowledge;
     }
   }
 

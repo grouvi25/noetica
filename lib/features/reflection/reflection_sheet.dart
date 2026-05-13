@@ -213,10 +213,10 @@ class _ReflectionSheetState extends ConsumerState<_ReflectionSheet> {
                 controller: _outcomeCtrl,
                 minLines: 2,
                 maxLines: 4,
-                decoration: const InputDecoration(
+                decoration: InputDecoration(
                   labelText: S.of(context)!.reflectionResult,
                   hintText: S.of(context)!.reflectionCanSkip,
-                  border: OutlineInputBorder(),
+                  border: const OutlineInputBorder(),
                 ),
               ),
               const SizedBox(height: 12),
@@ -224,20 +224,20 @@ class _ReflectionSheetState extends ConsumerState<_ReflectionSheet> {
                 controller: _difficultiesCtrl,
                 minLines: 2,
                 maxLines: 4,
-                decoration: const InputDecoration(
+                decoration: InputDecoration(
                   labelText: S.of(context)!.reflectionDifficulties,
                   hintText: S.of(context)!.reflectionCanSkip,
-                  border: OutlineInputBorder(),
+                  border: const OutlineInputBorder(),
                 ),
               ),
               const SizedBox(height: 12),
               TextField(
                 controller: _minutesCtrl,
                 keyboardType: TextInputType.number,
-                decoration: const InputDecoration(
+                decoration: InputDecoration(
                   labelText: S.of(context)!.reflectionMinutes,
                   hintText: S.of(context)!.reflectionCanSkip,
-                  border: OutlineInputBorder(),
+                  border: const OutlineInputBorder(),
                 ),
               ),
               const SizedBox(height: 16),
