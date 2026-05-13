@@ -1169,4 +1169,141 @@ class SRu extends S {
 
   @override
   String get actionNext => 'Далее';
+
+  @override
+  String get onboardPlanTitle => 'Сразу набросать план?';
+
+  @override
+  String onboardPlanBody(String goal) {
+    return 'AI разложит «$goal» на 4–10 конкретных задач, привязанных к осям, которые ты только что собрала. Промпт уже заполнен — можно отредактировать, прежде чем запускать генерацию.';
+  }
+
+  @override
+  String get actionLater => 'Позже';
+
+  @override
+  String get onboardFillAxes => 'Заполни хотя бы 3 оси, чтобы пентаграмма имела смысл';
+
+  @override
+  String get onboardTooManyAxes => 'Слишком много осей: оставь не больше 8, иначе будет хаос';
+
+  @override
+  String onboardSaveAxesError(String error) {
+    return 'Не удалось сохранить оси: $error';
+  }
+
+  @override
+  String get onboardRegenTitle => 'Перегенерация осей';
+
+  @override
+  String get onboardDescribeAxes => 'Опиши свои оси роста';
+
+  @override
+  String get onboardAiGenerating => 'AI придумывает оси…';
+
+  @override
+  String get onboardYourAxes => 'Твои личные оси';
+
+  @override
+  String get onboardAxesHint => 'От 3 до 8 направлений, по которым ты хочешь расти. К ним будут привязываться задачи и заметки. Их можно изменить позже.';
+
+  @override
+  String onboardAiError(String error) {
+    return 'Не удалось связаться с AI: $error. Ниже — запасные оси, отредактируй как хочешь.';
+  }
+
+  @override
+  String onboardAiDrawingAxes(int n) {
+    return 'Из $n твоих направлений AI рисует персональную пентаграмму…';
+  }
+
+  @override
+  String onboardAiGenerated(String model) {
+    return 'Сгенерировано на $model. Переименуй, убери лишние, добавь свои. От 3 до 8.';
+  }
+
+  @override
+  String get onboardRegenBtn => 'Перегенерировать оси';
+
+  @override
+  String get onboardWaitSeconds => 'Это занимает 5–25 секунд';
+
+  @override
+  String get onboardAddAxis => 'Добавить ось';
+
+  @override
+  String get onboardCreatePentagram => 'Создать пентаграмму';
+
+  @override
+  String onboardAxisHint(int n) {
+    return 'Название оси (#$n)';
+  }
+
+  @override
+  String get onboardAxesUpdated => 'Оси обновлены';
+
+  @override
+  String onboardAxesMigrated(int n) {
+    return 'Оси обновлены, перенесено $n связей с задачами';
+  }
+
+  @override
+  String get backendsTitle => 'Бэкенды';
+
+  @override
+  String get backendsAdd => 'Добавить';
+
+  @override
+  String backendsError(String error) {
+    return 'Ошибка: $error';
+  }
+
+  @override
+  String get backendsHint => 'Активный бэкенд используется для AI, синхронизации и входа. Можно держать несколько (например, прод и личный сервер) и переключаться без перезапуска.';
+
+  @override
+  String get backendsDeleteTitle => 'Удалить бэкенд?';
+
+  @override
+  String backendsSaveError(String error) {
+    return 'Не удалось сохранить: $error';
+  }
+
+  @override
+  String get backendsPinging => 'Пингую…';
+
+  @override
+  String get backendsOnline => 'Бэкенд отвечает';
+
+  @override
+  String backendsOffline(String error) {
+    return 'Не отвечает: $error';
+  }
+
+  @override
+  String get backendsPing => 'Пинг';
+
+  @override
+  String get backendsMakeActive => 'Сделать активным';
+
+  @override
+  String get backendsEdit => 'Изменить';
+
+  @override
+  String get backendsLastOne => 'Должен остаться хотя бы один бэкенд';
+
+  @override
+  String get backendsNewTitle => 'Новый бэкенд';
+
+  @override
+  String get backendsEditTitle => 'Изменить бэкенд';
+
+  @override
+  String get backendsName => 'Имя';
+
+  @override
+  String get backendsNameHint => 'Прод · Локалка · Запасной';
+
+  @override
+  String get backendsUrlError => 'Введите валидный URL начинающийся с http(s)://';
 }

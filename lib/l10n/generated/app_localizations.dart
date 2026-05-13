@@ -2164,6 +2164,240 @@ abstract class S {
   /// In ru, this message translates to:
   /// **'Далее'**
   String get actionNext;
+
+  /// No description provided for @onboardPlanTitle.
+  ///
+  /// In ru, this message translates to:
+  /// **'Сразу набросать план?'**
+  String get onboardPlanTitle;
+
+  /// No description provided for @onboardPlanBody.
+  ///
+  /// In ru, this message translates to:
+  /// **'AI разложит «{goal}» на 4–10 конкретных задач, привязанных к осям, которые ты только что собрала. Промпт уже заполнен — можно отредактировать, прежде чем запускать генерацию.'**
+  String onboardPlanBody(String goal);
+
+  /// No description provided for @actionLater.
+  ///
+  /// In ru, this message translates to:
+  /// **'Позже'**
+  String get actionLater;
+
+  /// No description provided for @onboardFillAxes.
+  ///
+  /// In ru, this message translates to:
+  /// **'Заполни хотя бы 3 оси, чтобы пентаграмма имела смысл'**
+  String get onboardFillAxes;
+
+  /// No description provided for @onboardTooManyAxes.
+  ///
+  /// In ru, this message translates to:
+  /// **'Слишком много осей: оставь не больше 8, иначе будет хаос'**
+  String get onboardTooManyAxes;
+
+  /// No description provided for @onboardSaveAxesError.
+  ///
+  /// In ru, this message translates to:
+  /// **'Не удалось сохранить оси: {error}'**
+  String onboardSaveAxesError(String error);
+
+  /// No description provided for @onboardRegenTitle.
+  ///
+  /// In ru, this message translates to:
+  /// **'Перегенерация осей'**
+  String get onboardRegenTitle;
+
+  /// No description provided for @onboardDescribeAxes.
+  ///
+  /// In ru, this message translates to:
+  /// **'Опиши свои оси роста'**
+  String get onboardDescribeAxes;
+
+  /// No description provided for @onboardAiGenerating.
+  ///
+  /// In ru, this message translates to:
+  /// **'AI придумывает оси…'**
+  String get onboardAiGenerating;
+
+  /// No description provided for @onboardYourAxes.
+  ///
+  /// In ru, this message translates to:
+  /// **'Твои личные оси'**
+  String get onboardYourAxes;
+
+  /// No description provided for @onboardAxesHint.
+  ///
+  /// In ru, this message translates to:
+  /// **'От 3 до 8 направлений, по которым ты хочешь расти. К ним будут привязываться задачи и заметки. Их можно изменить позже.'**
+  String get onboardAxesHint;
+
+  /// No description provided for @onboardAiError.
+  ///
+  /// In ru, this message translates to:
+  /// **'Не удалось связаться с AI: {error}. Ниже — запасные оси, отредактируй как хочешь.'**
+  String onboardAiError(String error);
+
+  /// No description provided for @onboardAiDrawingAxes.
+  ///
+  /// In ru, this message translates to:
+  /// **'Из {n} твоих направлений AI рисует персональную пентаграмму…'**
+  String onboardAiDrawingAxes(int n);
+
+  /// No description provided for @onboardAiGenerated.
+  ///
+  /// In ru, this message translates to:
+  /// **'Сгенерировано на {model}. Переименуй, убери лишние, добавь свои. От 3 до 8.'**
+  String onboardAiGenerated(String model);
+
+  /// No description provided for @onboardRegenBtn.
+  ///
+  /// In ru, this message translates to:
+  /// **'Перегенерировать оси'**
+  String get onboardRegenBtn;
+
+  /// No description provided for @onboardWaitSeconds.
+  ///
+  /// In ru, this message translates to:
+  /// **'Это занимает 5–25 секунд'**
+  String get onboardWaitSeconds;
+
+  /// No description provided for @onboardAddAxis.
+  ///
+  /// In ru, this message translates to:
+  /// **'Добавить ось'**
+  String get onboardAddAxis;
+
+  /// No description provided for @onboardCreatePentagram.
+  ///
+  /// In ru, this message translates to:
+  /// **'Создать пентаграмму'**
+  String get onboardCreatePentagram;
+
+  /// No description provided for @onboardAxisHint.
+  ///
+  /// In ru, this message translates to:
+  /// **'Название оси (#{n})'**
+  String onboardAxisHint(int n);
+
+  /// No description provided for @onboardAxesUpdated.
+  ///
+  /// In ru, this message translates to:
+  /// **'Оси обновлены'**
+  String get onboardAxesUpdated;
+
+  /// No description provided for @onboardAxesMigrated.
+  ///
+  /// In ru, this message translates to:
+  /// **'Оси обновлены, перенесено {n} связей с задачами'**
+  String onboardAxesMigrated(int n);
+
+  /// No description provided for @backendsTitle.
+  ///
+  /// In ru, this message translates to:
+  /// **'Бэкенды'**
+  String get backendsTitle;
+
+  /// No description provided for @backendsAdd.
+  ///
+  /// In ru, this message translates to:
+  /// **'Добавить'**
+  String get backendsAdd;
+
+  /// No description provided for @backendsError.
+  ///
+  /// In ru, this message translates to:
+  /// **'Ошибка: {error}'**
+  String backendsError(String error);
+
+  /// No description provided for @backendsHint.
+  ///
+  /// In ru, this message translates to:
+  /// **'Активный бэкенд используется для AI, синхронизации и входа. Можно держать несколько (например, прод и личный сервер) и переключаться без перезапуска.'**
+  String get backendsHint;
+
+  /// No description provided for @backendsDeleteTitle.
+  ///
+  /// In ru, this message translates to:
+  /// **'Удалить бэкенд?'**
+  String get backendsDeleteTitle;
+
+  /// No description provided for @backendsSaveError.
+  ///
+  /// In ru, this message translates to:
+  /// **'Не удалось сохранить: {error}'**
+  String backendsSaveError(String error);
+
+  /// No description provided for @backendsPinging.
+  ///
+  /// In ru, this message translates to:
+  /// **'Пингую…'**
+  String get backendsPinging;
+
+  /// No description provided for @backendsOnline.
+  ///
+  /// In ru, this message translates to:
+  /// **'Бэкенд отвечает'**
+  String get backendsOnline;
+
+  /// No description provided for @backendsOffline.
+  ///
+  /// In ru, this message translates to:
+  /// **'Не отвечает: {error}'**
+  String backendsOffline(String error);
+
+  /// No description provided for @backendsPing.
+  ///
+  /// In ru, this message translates to:
+  /// **'Пинг'**
+  String get backendsPing;
+
+  /// No description provided for @backendsMakeActive.
+  ///
+  /// In ru, this message translates to:
+  /// **'Сделать активным'**
+  String get backendsMakeActive;
+
+  /// No description provided for @backendsEdit.
+  ///
+  /// In ru, this message translates to:
+  /// **'Изменить'**
+  String get backendsEdit;
+
+  /// No description provided for @backendsLastOne.
+  ///
+  /// In ru, this message translates to:
+  /// **'Должен остаться хотя бы один бэкенд'**
+  String get backendsLastOne;
+
+  /// No description provided for @backendsNewTitle.
+  ///
+  /// In ru, this message translates to:
+  /// **'Новый бэкенд'**
+  String get backendsNewTitle;
+
+  /// No description provided for @backendsEditTitle.
+  ///
+  /// In ru, this message translates to:
+  /// **'Изменить бэкенд'**
+  String get backendsEditTitle;
+
+  /// No description provided for @backendsName.
+  ///
+  /// In ru, this message translates to:
+  /// **'Имя'**
+  String get backendsName;
+
+  /// No description provided for @backendsNameHint.
+  ///
+  /// In ru, this message translates to:
+  /// **'Прод · Локалка · Запасной'**
+  String get backendsNameHint;
+
+  /// No description provided for @backendsUrlError.
+  ///
+  /// In ru, this message translates to:
+  /// **'Введите валидный URL начинающийся с http(s)://'**
+  String get backendsUrlError;
 }
 
 class _SDelegate extends LocalizationsDelegate<S> {
