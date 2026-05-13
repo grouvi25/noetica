@@ -47,15 +47,15 @@ extension on _Branch {
   Color get color {
     switch (this) {
       case _Branch.goals:
-        return const Color(0xFF7C3AED);
+        return const Color(0xFF1A1A1A);
       case _Branch.constraints:
-        return const Color(0xFFEF4444);
+        return const Color(0xFF555555);
       case _Branch.highlights:
-        return const Color(0xFFF59E0B);
+        return const Color(0xFF333333);
       case _Branch.reflections:
-        return const Color(0xFF3B82F6);
+        return const Color(0xFF777777);
       case _Branch.preferences:
-        return const Color(0xFF8B5CF6);
+        return const Color(0xFF444444);
     }
   }
 }

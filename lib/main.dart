@@ -8,6 +8,7 @@ import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 import 'package:sqflite_common_ffi_web/sqflite_ffi_web.dart';
 
 import 'app.dart';
+import 'data/demo_seed.dart';
 import 'platform/desktop_check.dart';
 import 'services/analytics_service.dart';
 import 'services/notifications.dart';
@@ -23,6 +24,11 @@ Future<void> main() async {
     databaseFactory = databaseFactoryFfi;
   }
   await initializeDateFormatting('ru', null);
+  // Seed demo data in DEV_SKIP_AUTH mode for visual previews.
+  const devSkip = String.fromEnvironment('DEV_SKIP_AUTH', defaultValue: 'false');
+  if (devSkip == 'true') {
+    await seedDemoDataIfNeeded();
+  }
   // Fire-and-forget: notification setup should never block the app.
   unawaited(NotificationsService.instance.init());
   // Tray icon + close-to-tray on desktop. Must run after binding init so

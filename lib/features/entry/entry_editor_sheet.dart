@@ -4,9 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../data/models.dart';
 import '../../providers.dart';
 import '../../services/analytics_service.dart';
-import '../../services/premium_service.dart';
 import '../../theme/app_theme.dart';
-import '../../widgets/paywall_sheet.dart';
 import '../../utils/body_utils.dart';
 import '../../utils/subtask_utils.dart';
 import '../../utils/time_utils.dart';
@@ -267,18 +265,6 @@ class _EntryEditorFormState extends ConsumerState<_EntryEditorForm> {
   Future<void> _save() async {
     _commitTagInput();
     if (_title.text.trim().isEmpty) return;
-    // Premium gate: check active task count before creating a new task.
-    if (widget.existing == null && _kind == EntryKind.task) {
-      final isPremium = ref.read(isPremiumProvider).valueOrNull ?? false;
-      if (!isPremium) {
-        final entries = ref.read(entriesProvider).valueOrNull ?? const [];
-        final activeCount = entries.where((e) => e.isTask && !e.isCompleted).length;
-        if (activeCount >= FreeLimits.maxActiveTasks) {
-          PaywallSheet.show(context, PaywallFeature.tasks);
-          return;
-        }
-      }
-    }
     setState(() => _saving = true);
     try {
       final repo = await ref.read(repositoryProvider.future);
@@ -344,7 +330,21 @@ class _EntryEditorFormState extends ConsumerState<_EntryEditorForm> {
     AnalyticsService.instance.track(AnalyticsEvents.entryDeleted, {
       'kind': existing.kind.name,
     });
-    if (mounted) Navigator.of(context).pop();
+    if (!mounted) return;
+    Navigator.of(context).pop();
+    ScaffoldMessenger.of(context)
+      ..hideCurrentSnackBar()
+      ..showSnackBar(
+        SnackBar(
+          content: Text('«${existing.title}» удалена'),
+          action: SnackBarAction(
+            label: 'Отменить',
+            onPressed: () async {
+              await repo.restoreEntry(existing.id);
+            },
+          ),
+        ),
+      );
   }
 
   void _expand() {
@@ -399,7 +399,7 @@ class _EntryEditorFormState extends ConsumerState<_EntryEditorForm> {
         focusedBorder: large ? InputBorder.none : null,
         hintStyle: large
             ? theme.textTheme.headlineMedium?.copyWith(
-                color: palette.muted.withValues(alpha: 0.55),
+                color: palette.muted.withOpacity(0.55),
                 fontWeight: FontWeight.w600,
                 height: 1.15,
               )

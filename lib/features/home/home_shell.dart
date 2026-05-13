@@ -19,7 +19,6 @@ import '../settings/settings_screen.dart';
 import '../tasks/tasks_screen.dart';
 import '../coach/coach_screen.dart';
 import '../tools/tools_screen.dart';
-import '../tools/menu/menu_generator_screen.dart';
 import '../roadmap/roadmap_screen.dart';
 
 /// Layout breakpoints. Below `_kRailMin`: bottom navigation bar. Between
@@ -226,7 +225,7 @@ class _HomeShellState extends ConsumerState<HomeShell> {
                     ),
                     _MoreGridItem(
                       icon: Icons.account_tree_outlined,
-                      label: 'База',
+                      label: 'Граф',
                       palette: palette,
                       onTap: () {
                         Navigator.pop(ctx);
@@ -252,26 +251,13 @@ class _HomeShellState extends ConsumerState<HomeShell> {
                     ),
                     _MoreGridItem(
                       icon: Icons.rocket_launch_outlined,
-                      label: 'Роадмап',
+                      label: 'AI-План',
                       palette: palette,
                       onTap: () {
                         Navigator.pop(ctx);
                         Navigator.of(context).push(
                           MaterialPageRoute<void>(
                             builder: (_) => const RoadmapScreen(),
-                          ),
-                        );
-                      },
-                    ),
-                    _MoreGridItem(
-                      icon: Icons.restaurant_menu_outlined,
-                      label: 'Меню',
-                      palette: palette,
-                      onTap: () {
-                        Navigator.pop(ctx);
-                        Navigator.of(context).push(
-                          MaterialPageRoute<void>(
-                            builder: (_) => const MenuGeneratorScreen(),
                           ),
                         );
                       },
@@ -332,7 +318,6 @@ class _HomeShellState extends ConsumerState<HomeShell> {
     const KnowledgeGraphScreen(),
     const CalendarScreen(),
     const ToolsScreen(),
-    const MenuGeneratorScreen(),
     const SettingsScreen(),
   ];
 
@@ -515,8 +500,6 @@ class _DesktopSidebar extends StatelessWidget {
     required this.onCalendar,
     required this.toolsSelected,
     required this.onTools,
-    required this.menuSelected,
-    required this.onMenu,
     required this.settingsSelected,
     required this.onSettings,
     required this.onPomodoro,
@@ -536,8 +519,6 @@ class _DesktopSidebar extends StatelessWidget {
   final VoidCallback onCalendar;
   final bool toolsSelected;
   final VoidCallback onTools;
-  final bool menuSelected;
-  final VoidCallback onMenu;
   final bool settingsSelected;
   final VoidCallback onSettings;
   final VoidCallback onPomodoro;
@@ -641,15 +622,6 @@ class _DesktopSidebar extends StatelessWidget {
                 extended: extended,
                 palette: palette,
                 onTap: onTools,
-              ),
-              _SidebarTile(
-                icon: Icons.restaurant_menu_outlined,
-                selectedIcon: Icons.restaurant_menu,
-                label: 'Меню недели',
-                selected: menuSelected,
-                extended: extended,
-                palette: palette,
-                onTap: onMenu,
               ),
               const SizedBox(height: 12),
               Padding(
