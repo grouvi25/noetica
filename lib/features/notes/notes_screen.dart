@@ -45,7 +45,7 @@ class _NotesScreenState extends ConsumerState<NotesScreen> {
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Не удалось добавить заметку: $e')),
+          SnackBar(content: Text(S.of(context)!.editorSaveError('$e'))),
         );
       }
     } finally {

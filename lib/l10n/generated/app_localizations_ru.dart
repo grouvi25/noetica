@@ -611,4 +611,221 @@ class SRu extends S {
 
   @override
   String get entryKindHabit => 'Привычка';
+
+  @override
+  String editorSaveError(String error) {
+    return 'Не удалось сохранить запись: $error';
+  }
+
+  @override
+  String editorDeletedMsg(String title) {
+    return '«$title» удалена';
+  }
+
+  @override
+  String get editorHintTask => 'Что нужно сделать?';
+
+  @override
+  String get editorNewEntry => 'Новая запись';
+
+  @override
+  String get editorEntry => 'Запись';
+
+  @override
+  String get editorExpand => 'Развернуть';
+
+  @override
+  String get editorClose => 'Закрыть';
+
+  @override
+  String get editorParams => 'Параметры';
+
+  @override
+  String get editorMakeTask => 'Сделать задачей';
+
+  @override
+  String get editorTaskModeHint => 'Дедлайн и XP при выполнении';
+
+  @override
+  String get editorNoteModeHint => 'По умолчанию — заметка';
+
+  @override
+  String get editorNoDeadline => 'Без дедлайна';
+
+  @override
+  String get editorXpOnComplete => 'XP при выполнении';
+
+  @override
+  String get editorAddAxesHint => 'Сначала добавь оси в онбординге.';
+
+  @override
+  String get editorUntitled => '(без названия)';
+
+  @override
+  String editorBacklinksCount(int count) {
+    return 'Сюда ссылаются ($count)';
+  }
+
+  @override
+  String editorSubtasksProgress(int done, int total) {
+    return 'Подзадачи — $done/$total';
+  }
+
+  @override
+  String get editorBodyHint => 'Что у тебя на уме?\nФорматирование: жирный, курсив, заголовки, чек-листы, [[ссылки на заметки]].';
+
+  @override
+  String get editorToolH1 => 'Заголовок 1';
+
+  @override
+  String get editorToolH2 => 'Заголовок 2';
+
+  @override
+  String get editorToolH3 => 'Заголовок 3';
+
+  @override
+  String get editorToolBold => 'Жирный';
+
+  @override
+  String get editorToolItalic => 'Курсив';
+
+  @override
+  String get editorToolStrike => 'Зачёркнутый';
+
+  @override
+  String get editorToolCode => 'Код';
+
+  @override
+  String get editorToolBullet => 'Маркированный список';
+
+  @override
+  String get editorToolNumber => 'Нумерованный список';
+
+  @override
+  String get editorToolCheckbox => 'Чек-лист';
+
+  @override
+  String get editorToolQuote => 'Цитата';
+
+  @override
+  String get editorToolLink => 'Ссылка';
+
+  @override
+  String get editorToolWikiLink => 'Ссылка на заметку';
+
+  @override
+  String get editorToolTag => 'Тег';
+
+  @override
+  String get editorWikiLinkTitle => 'Ссылка на заметку';
+
+  @override
+  String get editorWikiLinkHint => 'Начни печатать название…';
+
+  @override
+  String editorCreateNote(String title) {
+    return 'Создать «$title»';
+  }
+
+  @override
+  String get calendarNoTasks => 'Задач нет';
+
+  @override
+  String get calendarPlanTask => 'Запланировать задачу';
+
+  @override
+  String get calendarDeadlines => 'Дедлайны';
+
+  @override
+  String get notesSearch => 'Поиск заметок…';
+
+  @override
+  String get notesEmpty => 'Заметок пока нет';
+
+  @override
+  String get notesNew => 'Новая заметка';
+
+  @override
+  String get calendarNotes => 'Заметки';
+
+  @override
+  String dashboardOverdue(String date) {
+    return 'просрочена · $date';
+  }
+
+  @override
+  String dashboardDueBy(String date) {
+    return 'до $date';
+  }
+
+  @override
+  String get dashboardPostpone15m => '+15 мин';
+
+  @override
+  String get dashboardPostpone1h => '+1 час';
+
+  @override
+  String get dashboardPostpone1d => '+1 день';
+
+  @override
+  String get dashboardPostpone3d => '+3 дня';
+
+  @override
+  String dashboardTomorrow(String time) {
+    return 'завтра $time';
+  }
+
+  @override
+  String dashboardYesterday(String time) {
+    return 'вчера $time';
+  }
+
+  @override
+  String get dashboardReflectPrompt => 'Заглянем коротко на пройденное?';
+
+  @override
+  String get dashboardGreetingAnon => 'Привет';
+
+  @override
+  String dashboardGreeting(String name) {
+    return 'Привет, $name';
+  }
+
+  @override
+  String get dashboardOnboardingHint => 'С чего начнём? Выбери действие ниже — это разово, потом дашборд оживёт твоими записями.';
+
+  @override
+  String get dashboardRoadmapNoGoal => 'AI разложит твою цель на 4–10 конкретных задач, привязанных к осям пентаграммы.';
+
+  @override
+  String dashboardRoadmapWithGoal(String goal) {
+    return 'AI разложит «$goal» на 4–10 задач. Поле уже заполнено — можно редактировать.';
+  }
+
+  @override
+  String get dashboardGraphHint => 'Граф второго мозга: цели, ограничения, рефлексии и заметки. Тапни ветку — отредактируй.';
+
+  @override
+  String get dashboardNoteHint => 'Лёгкий старт: пара мыслей, наблюдение или идея. Заметку можно потом превратить в задачу.';
+
+  @override
+  String get dashboardRoadmapTitle => 'Сгенерируй план задач';
+
+  @override
+  String get dashboardGenerate => 'Сгенерировать';
+
+  @override
+  String get dashboardGraphTitle => 'Заглянь в базу знаний';
+
+  @override
+  String get dashboardOpenGraph => 'Открыть граф';
+
+  @override
+  String get dashboardNoteTitle => 'Запиши первую заметку';
+
+  @override
+  String get dashboardCreate => 'Создать';
+
+  @override
+  String get dashboardWeekPassed => 'Прошла неделя';
 }

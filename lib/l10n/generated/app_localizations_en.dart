@@ -609,4 +609,221 @@ class SEn extends S {
 
   @override
   String get entryKindHabit => 'Habit';
+
+  @override
+  String editorSaveError(String error) {
+    return 'Failed to save entry: $error';
+  }
+
+  @override
+  String editorDeletedMsg(String title) {
+    return '«$title» deleted';
+  }
+
+  @override
+  String get editorHintTask => 'What needs to be done?';
+
+  @override
+  String get editorNewEntry => 'New entry';
+
+  @override
+  String get editorEntry => 'Entry';
+
+  @override
+  String get editorExpand => 'Expand';
+
+  @override
+  String get editorClose => 'Close';
+
+  @override
+  String get editorParams => 'Parameters';
+
+  @override
+  String get editorMakeTask => 'Make a task';
+
+  @override
+  String get editorTaskModeHint => 'Deadline and XP on completion';
+
+  @override
+  String get editorNoteModeHint => 'Default — note';
+
+  @override
+  String get editorNoDeadline => 'No deadline';
+
+  @override
+  String get editorXpOnComplete => 'XP on completion';
+
+  @override
+  String get editorAddAxesHint => 'Add axes in onboarding first.';
+
+  @override
+  String get editorUntitled => '(untitled)';
+
+  @override
+  String editorBacklinksCount(int count) {
+    return 'Backlinks ($count)';
+  }
+
+  @override
+  String editorSubtasksProgress(int done, int total) {
+    return 'Subtasks — $done/$total';
+  }
+
+  @override
+  String get editorBodyHint => 'What\'s on your mind?\nFormatting: bold, italic, headings, checklists, [[note links]].';
+
+  @override
+  String get editorToolH1 => 'Heading 1';
+
+  @override
+  String get editorToolH2 => 'Heading 2';
+
+  @override
+  String get editorToolH3 => 'Heading 3';
+
+  @override
+  String get editorToolBold => 'Bold';
+
+  @override
+  String get editorToolItalic => 'Italic';
+
+  @override
+  String get editorToolStrike => 'Strikethrough';
+
+  @override
+  String get editorToolCode => 'Code';
+
+  @override
+  String get editorToolBullet => 'Bulleted list';
+
+  @override
+  String get editorToolNumber => 'Numbered list';
+
+  @override
+  String get editorToolCheckbox => 'Checklist';
+
+  @override
+  String get editorToolQuote => 'Quote';
+
+  @override
+  String get editorToolLink => 'Link';
+
+  @override
+  String get editorToolWikiLink => 'Note link';
+
+  @override
+  String get editorToolTag => 'Tag';
+
+  @override
+  String get editorWikiLinkTitle => 'Note link';
+
+  @override
+  String get editorWikiLinkHint => 'Start typing a name…';
+
+  @override
+  String editorCreateNote(String title) {
+    return 'Create «$title»';
+  }
+
+  @override
+  String get calendarNoTasks => 'No tasks';
+
+  @override
+  String get calendarPlanTask => 'Plan a task';
+
+  @override
+  String get calendarDeadlines => 'Deadlines';
+
+  @override
+  String get notesSearch => 'Search notes…';
+
+  @override
+  String get notesEmpty => 'No notes yet';
+
+  @override
+  String get notesNew => 'New note';
+
+  @override
+  String get calendarNotes => 'Notes';
+
+  @override
+  String dashboardOverdue(String date) {
+    return 'overdue · $date';
+  }
+
+  @override
+  String dashboardDueBy(String date) {
+    return 'due $date';
+  }
+
+  @override
+  String get dashboardPostpone15m => '+15 min';
+
+  @override
+  String get dashboardPostpone1h => '+1 hour';
+
+  @override
+  String get dashboardPostpone1d => '+1 day';
+
+  @override
+  String get dashboardPostpone3d => '+3 days';
+
+  @override
+  String dashboardTomorrow(String time) {
+    return 'tomorrow $time';
+  }
+
+  @override
+  String dashboardYesterday(String time) {
+    return 'yesterday $time';
+  }
+
+  @override
+  String get dashboardReflectPrompt => 'Quick look at what you’ve done?';
+
+  @override
+  String get dashboardGreetingAnon => 'Hi';
+
+  @override
+  String dashboardGreeting(String name) {
+    return 'Hi, $name';
+  }
+
+  @override
+  String get dashboardOnboardingHint => 'Where to start? Pick an action below — this is a one-time setup, then your dashboard will fill with your records.';
+
+  @override
+  String get dashboardRoadmapNoGoal => 'AI will break your goal into 4–10 specific tasks linked to pentagon axes.';
+
+  @override
+  String dashboardRoadmapWithGoal(String goal) {
+    return 'AI will break «$goal» into 4–10 tasks. The field is prefilled — you can edit.';
+  }
+
+  @override
+  String get dashboardGraphHint => 'Second brain graph: goals, constraints, reflections, and notes. Tap a branch to edit.';
+
+  @override
+  String get dashboardNoteHint => 'Easy start: a few thoughts, an observation, or an idea. A note can later become a task.';
+
+  @override
+  String get dashboardRoadmapTitle => 'Generate a task plan';
+
+  @override
+  String get dashboardGenerate => 'Generate';
+
+  @override
+  String get dashboardGraphTitle => 'Explore knowledge base';
+
+  @override
+  String get dashboardOpenGraph => 'Open graph';
+
+  @override
+  String get dashboardNoteTitle => 'Write your first note';
+
+  @override
+  String get dashboardCreate => 'Create';
+
+  @override
+  String get dashboardWeekPassed => 'A week has passed';
 }

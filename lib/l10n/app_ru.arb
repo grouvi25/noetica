@@ -269,5 +269,131 @@
 
   "entryKindTask": "Задача",
   "entryKindNote": "Заметка",
-  "entryKindHabit": "Привычка"
+  "entryKindHabit": "Привычка",
+
+  "editorSaveError": "Не удалось сохранить запись: {error}",
+  "@editorSaveError": {
+    "placeholders": {
+      "error": {"type": "String"}
+    }
+  },
+  "editorDeletedMsg": "«{title}» удалена",
+  "@editorDeletedMsg": {
+    "placeholders": {
+      "title": {"type": "String"}
+    }
+  },
+  "editorHintTask": "Что нужно сделать?",
+  "editorNewEntry": "Новая запись",
+  "editorEntry": "Запись",
+  "editorExpand": "Развернуть",
+  "editorClose": "Закрыть",
+  "editorParams": "Параметры",
+  "editorMakeTask": "Сделать задачей",
+  "editorTaskModeHint": "Дедлайн и XP при выполнении",
+  "editorNoteModeHint": "По умолчанию — заметка",
+  "editorNoDeadline": "Без дедлайна",
+  "editorXpOnComplete": "XP при выполнении",
+  "editorAddAxesHint": "Сначала добавь оси в онбординге.",
+  "editorUntitled": "(без названия)",
+  "editorBacklinksCount": "Сюда ссылаются ({count})",
+  "@editorBacklinksCount": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "editorSubtasksProgress": "Подзадачи — {done}/{total}",
+  "@editorSubtasksProgress": {
+    "placeholders": {
+      "done": {"type": "int"},
+      "total": {"type": "int"}
+    }
+  },
+  "editorBodyHint": "Что у тебя на уме?\nФорматирование: жирный, курсив, заголовки, чек-листы, [[ссылки на заметки]].",
+  "editorToolH1": "Заголовок 1",
+  "editorToolH2": "Заголовок 2",
+  "editorToolH3": "Заголовок 3",
+  "editorToolBold": "Жирный",
+  "editorToolItalic": "Курсив",
+  "editorToolStrike": "Зачёркнутый",
+  "editorToolCode": "Код",
+  "editorToolBullet": "Маркированный список",
+  "editorToolNumber": "Нумерованный список",
+  "editorToolCheckbox": "Чек-лист",
+  "editorToolQuote": "Цитата",
+  "editorToolLink": "Ссылка",
+  "editorToolWikiLink": "Ссылка на заметку",
+  "editorToolTag": "Тег",
+  "editorWikiLinkTitle": "Ссылка на заметку",
+  "editorWikiLinkHint": "Начни печатать название…",
+  "editorCreateNote": "Создать «{title}»",
+  "@editorCreateNote": {
+    "placeholders": {
+      "title": {"type": "String"}
+    }
+  },
+
+  "calendarNoTasks": "Задач нет",
+  "calendarPlanTask": "Запланировать задачу",
+  "calendarDeadlines": "Дедлайны",
+
+  "notesSearch": "Поиск заметок…",
+  "notesEmpty": "Заметок пока нет",
+  "notesNew": "Новая заметка",
+
+  "calendarNotes": "Заметки",
+
+  "dashboardOverdue": "просрочена · {date}",
+  "@dashboardOverdue": {
+    "placeholders": {
+      "date": {"type": "String"}
+    }
+  },
+  "dashboardDueBy": "до {date}",
+  "@dashboardDueBy": {
+    "placeholders": {
+      "date": {"type": "String"}
+    }
+  },
+  "dashboardPostpone15m": "+15 мин",
+  "dashboardPostpone1h": "+1 час",
+  "dashboardPostpone1d": "+1 день",
+  "dashboardPostpone3d": "+3 дня",
+  "dashboardTomorrow": "завтра {time}",
+  "@dashboardTomorrow": {
+    "placeholders": {
+      "time": {"type": "String"}
+    }
+  },
+  "dashboardYesterday": "вчера {time}",
+  "@dashboardYesterday": {
+    "placeholders": {
+      "time": {"type": "String"}
+    }
+  },
+  "dashboardReflectPrompt": "Заглянем коротко на пройденное?",
+  "dashboardGreetingAnon": "Привет",
+  "dashboardGreeting": "Привет, {name}",
+  "@dashboardGreeting": {
+    "placeholders": {
+      "name": {"type": "String"}
+    }
+  },
+  "dashboardOnboardingHint": "С чего начнём? Выбери действие ниже — это разово, потом дашборд оживёт твоими записями.",
+  "dashboardRoadmapNoGoal": "AI разложит твою цель на 4–10 конкретных задач, привязанных к осям пентаграммы.",
+  "dashboardRoadmapWithGoal": "AI разложит «{goal}» на 4–10 задач. Поле уже заполнено — можно редактировать.",
+  "@dashboardRoadmapWithGoal": {
+    "placeholders": {
+      "goal": {"type": "String"}
+    }
+  },
+  "dashboardGraphHint": "Граф второго мозга: цели, ограничения, рефлексии и заметки. Тапни ветку — отредактируй.",
+  "dashboardNoteHint": "Лёгкий старт: пара мыслей, наблюдение или идея. Заметку можно потом превратить в задачу.",
+  "dashboardRoadmapTitle": "Сгенерируй план задач",
+  "dashboardGenerate": "Сгенерировать",
+  "dashboardGraphTitle": "Заглянь в базу знаний",
+  "dashboardOpenGraph": "Открыть граф",
+  "dashboardNoteTitle": "Запиши первую заметку",
+  "dashboardCreate": "Создать",
+  "dashboardWeekPassed": "Прошла неделя"
 }

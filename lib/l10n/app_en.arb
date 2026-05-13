@@ -269,5 +269,131 @@
 
   "entryKindTask": "Task",
   "entryKindNote": "Note",
-  "entryKindHabit": "Habit"
+  "entryKindHabit": "Habit",
+
+  "editorSaveError": "Failed to save entry: {error}",
+  "@editorSaveError": {
+    "placeholders": {
+      "error": {"type": "String"}
+    }
+  },
+  "editorDeletedMsg": "\u00ab{title}\u00bb deleted",
+  "@editorDeletedMsg": {
+    "placeholders": {
+      "title": {"type": "String"}
+    }
+  },
+  "editorHintTask": "What needs to be done?",
+  "editorNewEntry": "New entry",
+  "editorEntry": "Entry",
+  "editorExpand": "Expand",
+  "editorClose": "Close",
+  "editorParams": "Parameters",
+  "editorMakeTask": "Make a task",
+  "editorTaskModeHint": "Deadline and XP on completion",
+  "editorNoteModeHint": "Default \u2014 note",
+  "editorNoDeadline": "No deadline",
+  "editorXpOnComplete": "XP on completion",
+  "editorAddAxesHint": "Add axes in onboarding first.",
+  "editorUntitled": "(untitled)",
+  "editorBacklinksCount": "Backlinks ({count})",
+  "@editorBacklinksCount": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "editorSubtasksProgress": "Subtasks \u2014 {done}/{total}",
+  "@editorSubtasksProgress": {
+    "placeholders": {
+      "done": {"type": "int"},
+      "total": {"type": "int"}
+    }
+  },
+  "editorBodyHint": "What's on your mind?\nFormatting: bold, italic, headings, checklists, [[note links]].",
+  "editorToolH1": "Heading 1",
+  "editorToolH2": "Heading 2",
+  "editorToolH3": "Heading 3",
+  "editorToolBold": "Bold",
+  "editorToolItalic": "Italic",
+  "editorToolStrike": "Strikethrough",
+  "editorToolCode": "Code",
+  "editorToolBullet": "Bulleted list",
+  "editorToolNumber": "Numbered list",
+  "editorToolCheckbox": "Checklist",
+  "editorToolQuote": "Quote",
+  "editorToolLink": "Link",
+  "editorToolWikiLink": "Note link",
+  "editorToolTag": "Tag",
+  "editorWikiLinkTitle": "Note link",
+  "editorWikiLinkHint": "Start typing a name\u2026",
+  "editorCreateNote": "Create \u00ab{title}\u00bb",
+  "@editorCreateNote": {
+    "placeholders": {
+      "title": {"type": "String"}
+    }
+  },
+
+  "calendarNoTasks": "No tasks",
+  "calendarPlanTask": "Plan a task",
+  "calendarDeadlines": "Deadlines",
+
+  "notesSearch": "Search notes\u2026",
+  "notesEmpty": "No notes yet",
+  "notesNew": "New note",
+
+  "calendarNotes": "Notes",
+
+  "dashboardOverdue": "overdue \u00b7 {date}",
+  "@dashboardOverdue": {
+    "placeholders": {
+      "date": {"type": "String"}
+    }
+  },
+  "dashboardDueBy": "due {date}",
+  "@dashboardDueBy": {
+    "placeholders": {
+      "date": {"type": "String"}
+    }
+  },
+  "dashboardPostpone15m": "+15 min",
+  "dashboardPostpone1h": "+1 hour",
+  "dashboardPostpone1d": "+1 day",
+  "dashboardPostpone3d": "+3 days",
+  "dashboardTomorrow": "tomorrow {time}",
+  "@dashboardTomorrow": {
+    "placeholders": {
+      "time": {"type": "String"}
+    }
+  },
+  "dashboardYesterday": "yesterday {time}",
+  "@dashboardYesterday": {
+    "placeholders": {
+      "time": {"type": "String"}
+    }
+  },
+  "dashboardReflectPrompt": "Quick look at what you\u2019ve done?",
+  "dashboardGreetingAnon": "Hi",
+  "dashboardGreeting": "Hi, {name}",
+  "@dashboardGreeting": {
+    "placeholders": {
+      "name": {"type": "String"}
+    }
+  },
+  "dashboardOnboardingHint": "Where to start? Pick an action below \u2014 this is a one-time setup, then your dashboard will fill with your records.",
+  "dashboardRoadmapNoGoal": "AI will break your goal into 4\u201310 specific tasks linked to pentagon axes.",
+  "dashboardRoadmapWithGoal": "AI will break \u00ab{goal}\u00bb into 4\u201310 tasks. The field is prefilled \u2014 you can edit.",
+  "@dashboardRoadmapWithGoal": {
+    "placeholders": {
+      "goal": {"type": "String"}
+    }
+  },
+  "dashboardGraphHint": "Second brain graph: goals, constraints, reflections, and notes. Tap a branch to edit.",
+  "dashboardNoteHint": "Easy start: a few thoughts, an observation, or an idea. A note can later become a task.",
+  "dashboardRoadmapTitle": "Generate a task plan",
+  "dashboardGenerate": "Generate",
+  "dashboardGraphTitle": "Explore knowledge base",
+  "dashboardOpenGraph": "Open graph",
+  "dashboardNoteTitle": "Write your first note",
+  "dashboardCreate": "Create",
+  "dashboardWeekPassed": "A week has passed"
 }

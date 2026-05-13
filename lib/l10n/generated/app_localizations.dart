@@ -1228,6 +1228,396 @@ abstract class S {
   /// In ru, this message translates to:
   /// **'Привычка'**
   String get entryKindHabit;
+
+  /// No description provided for @editorSaveError.
+  ///
+  /// In ru, this message translates to:
+  /// **'Не удалось сохранить запись: {error}'**
+  String editorSaveError(String error);
+
+  /// No description provided for @editorDeletedMsg.
+  ///
+  /// In ru, this message translates to:
+  /// **'«{title}» удалена'**
+  String editorDeletedMsg(String title);
+
+  /// No description provided for @editorHintTask.
+  ///
+  /// In ru, this message translates to:
+  /// **'Что нужно сделать?'**
+  String get editorHintTask;
+
+  /// No description provided for @editorNewEntry.
+  ///
+  /// In ru, this message translates to:
+  /// **'Новая запись'**
+  String get editorNewEntry;
+
+  /// No description provided for @editorEntry.
+  ///
+  /// In ru, this message translates to:
+  /// **'Запись'**
+  String get editorEntry;
+
+  /// No description provided for @editorExpand.
+  ///
+  /// In ru, this message translates to:
+  /// **'Развернуть'**
+  String get editorExpand;
+
+  /// No description provided for @editorClose.
+  ///
+  /// In ru, this message translates to:
+  /// **'Закрыть'**
+  String get editorClose;
+
+  /// No description provided for @editorParams.
+  ///
+  /// In ru, this message translates to:
+  /// **'Параметры'**
+  String get editorParams;
+
+  /// No description provided for @editorMakeTask.
+  ///
+  /// In ru, this message translates to:
+  /// **'Сделать задачей'**
+  String get editorMakeTask;
+
+  /// No description provided for @editorTaskModeHint.
+  ///
+  /// In ru, this message translates to:
+  /// **'Дедлайн и XP при выполнении'**
+  String get editorTaskModeHint;
+
+  /// No description provided for @editorNoteModeHint.
+  ///
+  /// In ru, this message translates to:
+  /// **'По умолчанию — заметка'**
+  String get editorNoteModeHint;
+
+  /// No description provided for @editorNoDeadline.
+  ///
+  /// In ru, this message translates to:
+  /// **'Без дедлайна'**
+  String get editorNoDeadline;
+
+  /// No description provided for @editorXpOnComplete.
+  ///
+  /// In ru, this message translates to:
+  /// **'XP при выполнении'**
+  String get editorXpOnComplete;
+
+  /// No description provided for @editorAddAxesHint.
+  ///
+  /// In ru, this message translates to:
+  /// **'Сначала добавь оси в онбординге.'**
+  String get editorAddAxesHint;
+
+  /// No description provided for @editorUntitled.
+  ///
+  /// In ru, this message translates to:
+  /// **'(без названия)'**
+  String get editorUntitled;
+
+  /// No description provided for @editorBacklinksCount.
+  ///
+  /// In ru, this message translates to:
+  /// **'Сюда ссылаются ({count})'**
+  String editorBacklinksCount(int count);
+
+  /// No description provided for @editorSubtasksProgress.
+  ///
+  /// In ru, this message translates to:
+  /// **'Подзадачи — {done}/{total}'**
+  String editorSubtasksProgress(int done, int total);
+
+  /// No description provided for @editorBodyHint.
+  ///
+  /// In ru, this message translates to:
+  /// **'Что у тебя на уме?\nФорматирование: жирный, курсив, заголовки, чек-листы, [[ссылки на заметки]].'**
+  String get editorBodyHint;
+
+  /// No description provided for @editorToolH1.
+  ///
+  /// In ru, this message translates to:
+  /// **'Заголовок 1'**
+  String get editorToolH1;
+
+  /// No description provided for @editorToolH2.
+  ///
+  /// In ru, this message translates to:
+  /// **'Заголовок 2'**
+  String get editorToolH2;
+
+  /// No description provided for @editorToolH3.
+  ///
+  /// In ru, this message translates to:
+  /// **'Заголовок 3'**
+  String get editorToolH3;
+
+  /// No description provided for @editorToolBold.
+  ///
+  /// In ru, this message translates to:
+  /// **'Жирный'**
+  String get editorToolBold;
+
+  /// No description provided for @editorToolItalic.
+  ///
+  /// In ru, this message translates to:
+  /// **'Курсив'**
+  String get editorToolItalic;
+
+  /// No description provided for @editorToolStrike.
+  ///
+  /// In ru, this message translates to:
+  /// **'Зачёркнутый'**
+  String get editorToolStrike;
+
+  /// No description provided for @editorToolCode.
+  ///
+  /// In ru, this message translates to:
+  /// **'Код'**
+  String get editorToolCode;
+
+  /// No description provided for @editorToolBullet.
+  ///
+  /// In ru, this message translates to:
+  /// **'Маркированный список'**
+  String get editorToolBullet;
+
+  /// No description provided for @editorToolNumber.
+  ///
+  /// In ru, this message translates to:
+  /// **'Нумерованный список'**
+  String get editorToolNumber;
+
+  /// No description provided for @editorToolCheckbox.
+  ///
+  /// In ru, this message translates to:
+  /// **'Чек-лист'**
+  String get editorToolCheckbox;
+
+  /// No description provided for @editorToolQuote.
+  ///
+  /// In ru, this message translates to:
+  /// **'Цитата'**
+  String get editorToolQuote;
+
+  /// No description provided for @editorToolLink.
+  ///
+  /// In ru, this message translates to:
+  /// **'Ссылка'**
+  String get editorToolLink;
+
+  /// No description provided for @editorToolWikiLink.
+  ///
+  /// In ru, this message translates to:
+  /// **'Ссылка на заметку'**
+  String get editorToolWikiLink;
+
+  /// No description provided for @editorToolTag.
+  ///
+  /// In ru, this message translates to:
+  /// **'Тег'**
+  String get editorToolTag;
+
+  /// No description provided for @editorWikiLinkTitle.
+  ///
+  /// In ru, this message translates to:
+  /// **'Ссылка на заметку'**
+  String get editorWikiLinkTitle;
+
+  /// No description provided for @editorWikiLinkHint.
+  ///
+  /// In ru, this message translates to:
+  /// **'Начни печатать название…'**
+  String get editorWikiLinkHint;
+
+  /// No description provided for @editorCreateNote.
+  ///
+  /// In ru, this message translates to:
+  /// **'Создать «{title}»'**
+  String editorCreateNote(String title);
+
+  /// No description provided for @calendarNoTasks.
+  ///
+  /// In ru, this message translates to:
+  /// **'Задач нет'**
+  String get calendarNoTasks;
+
+  /// No description provided for @calendarPlanTask.
+  ///
+  /// In ru, this message translates to:
+  /// **'Запланировать задачу'**
+  String get calendarPlanTask;
+
+  /// No description provided for @calendarDeadlines.
+  ///
+  /// In ru, this message translates to:
+  /// **'Дедлайны'**
+  String get calendarDeadlines;
+
+  /// No description provided for @notesSearch.
+  ///
+  /// In ru, this message translates to:
+  /// **'Поиск заметок…'**
+  String get notesSearch;
+
+  /// No description provided for @notesEmpty.
+  ///
+  /// In ru, this message translates to:
+  /// **'Заметок пока нет'**
+  String get notesEmpty;
+
+  /// No description provided for @notesNew.
+  ///
+  /// In ru, this message translates to:
+  /// **'Новая заметка'**
+  String get notesNew;
+
+  /// No description provided for @calendarNotes.
+  ///
+  /// In ru, this message translates to:
+  /// **'Заметки'**
+  String get calendarNotes;
+
+  /// No description provided for @dashboardOverdue.
+  ///
+  /// In ru, this message translates to:
+  /// **'просрочена · {date}'**
+  String dashboardOverdue(String date);
+
+  /// No description provided for @dashboardDueBy.
+  ///
+  /// In ru, this message translates to:
+  /// **'до {date}'**
+  String dashboardDueBy(String date);
+
+  /// No description provided for @dashboardPostpone15m.
+  ///
+  /// In ru, this message translates to:
+  /// **'+15 мин'**
+  String get dashboardPostpone15m;
+
+  /// No description provided for @dashboardPostpone1h.
+  ///
+  /// In ru, this message translates to:
+  /// **'+1 час'**
+  String get dashboardPostpone1h;
+
+  /// No description provided for @dashboardPostpone1d.
+  ///
+  /// In ru, this message translates to:
+  /// **'+1 день'**
+  String get dashboardPostpone1d;
+
+  /// No description provided for @dashboardPostpone3d.
+  ///
+  /// In ru, this message translates to:
+  /// **'+3 дня'**
+  String get dashboardPostpone3d;
+
+  /// No description provided for @dashboardTomorrow.
+  ///
+  /// In ru, this message translates to:
+  /// **'завтра {time}'**
+  String dashboardTomorrow(String time);
+
+  /// No description provided for @dashboardYesterday.
+  ///
+  /// In ru, this message translates to:
+  /// **'вчера {time}'**
+  String dashboardYesterday(String time);
+
+  /// No description provided for @dashboardReflectPrompt.
+  ///
+  /// In ru, this message translates to:
+  /// **'Заглянем коротко на пройденное?'**
+  String get dashboardReflectPrompt;
+
+  /// No description provided for @dashboardGreetingAnon.
+  ///
+  /// In ru, this message translates to:
+  /// **'Привет'**
+  String get dashboardGreetingAnon;
+
+  /// No description provided for @dashboardGreeting.
+  ///
+  /// In ru, this message translates to:
+  /// **'Привет, {name}'**
+  String dashboardGreeting(String name);
+
+  /// No description provided for @dashboardOnboardingHint.
+  ///
+  /// In ru, this message translates to:
+  /// **'С чего начнём? Выбери действие ниже — это разово, потом дашборд оживёт твоими записями.'**
+  String get dashboardOnboardingHint;
+
+  /// No description provided for @dashboardRoadmapNoGoal.
+  ///
+  /// In ru, this message translates to:
+  /// **'AI разложит твою цель на 4–10 конкретных задач, привязанных к осям пентаграммы.'**
+  String get dashboardRoadmapNoGoal;
+
+  /// No description provided for @dashboardRoadmapWithGoal.
+  ///
+  /// In ru, this message translates to:
+  /// **'AI разложит «{goal}» на 4–10 задач. Поле уже заполнено — можно редактировать.'**
+  String dashboardRoadmapWithGoal(String goal);
+
+  /// No description provided for @dashboardGraphHint.
+  ///
+  /// In ru, this message translates to:
+  /// **'Граф второго мозга: цели, ограничения, рефлексии и заметки. Тапни ветку — отредактируй.'**
+  String get dashboardGraphHint;
+
+  /// No description provided for @dashboardNoteHint.
+  ///
+  /// In ru, this message translates to:
+  /// **'Лёгкий старт: пара мыслей, наблюдение или идея. Заметку можно потом превратить в задачу.'**
+  String get dashboardNoteHint;
+
+  /// No description provided for @dashboardRoadmapTitle.
+  ///
+  /// In ru, this message translates to:
+  /// **'Сгенерируй план задач'**
+  String get dashboardRoadmapTitle;
+
+  /// No description provided for @dashboardGenerate.
+  ///
+  /// In ru, this message translates to:
+  /// **'Сгенерировать'**
+  String get dashboardGenerate;
+
+  /// No description provided for @dashboardGraphTitle.
+  ///
+  /// In ru, this message translates to:
+  /// **'Заглянь в базу знаний'**
+  String get dashboardGraphTitle;
+
+  /// No description provided for @dashboardOpenGraph.
+  ///
+  /// In ru, this message translates to:
+  /// **'Открыть граф'**
+  String get dashboardOpenGraph;
+
+  /// No description provided for @dashboardNoteTitle.
+  ///
+  /// In ru, this message translates to:
+  /// **'Запиши первую заметку'**
+  String get dashboardNoteTitle;
+
+  /// No description provided for @dashboardCreate.
+  ///
+  /// In ru, this message translates to:
+  /// **'Создать'**
+  String get dashboardCreate;
+
+  /// No description provided for @dashboardWeekPassed.
+  ///
+  /// In ru, this message translates to:
+  /// **'Прошла неделя'**
+  String get dashboardWeekPassed;
 }
 
 class _SDelegate extends LocalizationsDelegate<S> {

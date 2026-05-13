@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../l10n/generated/app_localizations.dart';
 import '../../../data/models.dart';
 import '../../../data/profile.dart';
 import '../../../providers.dart';
@@ -178,9 +179,9 @@ class NowFocusCard extends ConsumerWidget {
             Text(
               t.dueAt != null
                   ? (overdue
-                      ? 'просрочена · ${formatTimestamp(t.dueAt!)}'
-                      : 'до ${formatTimestamp(t.dueAt!)}')
-                  : 'без дедлайна',
+                      ? S.of(context)!.dashboardOverdue(formatTimestamp(t.dueAt!))
+                      : S.of(context)!.dashboardDueBy(formatTimestamp(t.dueAt!)))
+                  : S.of(context)!.editorNoDeadline,
               style: TextStyle(
                 color: overdue ? palette.fg : palette.muted,
                 fontSize: 12,
@@ -279,10 +280,10 @@ class NowFocusCard extends ConsumerWidget {
                   ),
                 ),
               ),
-              opt('+15 мин', const Duration(minutes: 15)),
-              opt('+1 час', const Duration(hours: 1)),
-              opt('+1 день', const Duration(days: 1)),
-              opt('+3 дня', const Duration(days: 3)),
+              opt(S.of(context)!.dashboardPostpone15m, const Duration(minutes: 15)),
+              opt(S.of(context)!.dashboardPostpone1h, const Duration(hours: 1)),
+              opt(S.of(context)!.dashboardPostpone1d, const Duration(days: 1)),
+              opt(S.of(context)!.dashboardPostpone3d, const Duration(days: 3)),
               const SizedBox(height: 8),
             ],
           ),
@@ -355,7 +356,7 @@ class CompactTaskRow extends ConsumerWidget {
             if (task.dueAt != null) ...[
               const SizedBox(width: 8),
               Text(
-                _shortDue(task.dueAt!),
+                _shortDue(task.dueAt!, S.of(context)!),
                 style: TextStyle(
                   color: overdue ? palette.fg : palette.muted,
                   fontSize: 11,
@@ -457,7 +458,7 @@ class CompactEntryRow extends ConsumerWidget {
   }
 }
 
-String _shortDue(DateTime due) {
+String _shortDue(DateTime due, S tr) {
   final now = DateTime.now();
   final today = DateTime(now.year, now.month, now.day);
   final dueDay = DateTime(due.year, due.month, due.day);
@@ -465,10 +466,10 @@ String _shortDue(DateTime due) {
   final hh = due.hour.toString().padLeft(2, '0');
   final mm = due.minute.toString().padLeft(2, '0');
   if (delta == 0) return '$hh:$mm';
-  if (delta == 1) return 'завтра $hh:$mm';
-  if (delta == -1) return 'вчера $hh:$mm';
-  if (delta < 0) return '${-delta}д назад';
-  if (delta < 7) return 'через $delta д';
+  if (delta == 1) return tr.dashboardTomorrow('$hh:$mm');
+  if (delta == -1) return tr.dashboardYesterday('$hh:$mm');
+  if (delta < 0) return '${-delta}d ago';
+  if (delta < 7) return 'in $delta d';
   return '$dueDay'.substring(0, 10);
 }
 
@@ -527,7 +528,7 @@ class WeeklyBanner extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'Прошла неделя',
+                    S.of(context)!.dashboardWeekPassed,
                     style: TextStyle(
                       color: palette.fg,
                       fontSize: 14,
@@ -535,7 +536,7 @@ class WeeklyBanner extends StatelessWidget {
                     ),
                   ),
                   Text(
-                    'Заглянем коротко на пройденное?',
+                    S.of(context)!.dashboardReflectPrompt,
                     style: TextStyle(color: palette.muted, fontSize: 12),
                   ),
                 ],
@@ -577,7 +578,8 @@ class OnboardingHints extends StatelessWidget {
   Widget build(BuildContext context) {
     final aspiration = profile?.aspiration.trim() ?? '';
     final name = profile?.name.trim() ?? '';
-    final greeting = name.isEmpty ? 'Привет' : 'Привет, $name';
+    final tr = S.of(context)!;
+    final greeting = name.isEmpty ? tr.dashboardGreetingAnon : tr.dashboardGreeting(name);
     return ListView(
       padding: const EdgeInsets.fromLTRB(20, 12, 20, 24 + kFloatingTabBarReserve),
       children: [
@@ -587,9 +589,7 @@ class OnboardingHints extends StatelessWidget {
         ),
         const SizedBox(height: 8),
         Text(
-          aspiration.isEmpty
-              ? 'С чего начнём? Выбери действие ниже — это разово, потом дашборд оживёт твоими записями.'
-              : 'Готовы помочь с целью «$aspiration». Выбери, с чего начать — карточки исчезнут, как только появятся первые записи.',
+          tr.dashboardOnboardingHint,
           style: Theme.of(context)
               .textTheme
               .bodyMedium
@@ -600,11 +600,11 @@ class OnboardingHints extends StatelessWidget {
           palette: palette,
           icon: Icons.auto_awesome,
           accent: const Color(0xFFA78BFA),
-          title: 'Сгенерируй план задач',
+          title: tr.dashboardRoadmapTitle,
           subtitle: aspiration.isEmpty
-              ? 'AI разложит твою цель на 4–10 конкретных задач, привязанных к осям пентаграммы.'
-              : 'AI разложит «$aspiration» на 4–10 задач. Поле уже заполнено — можно редактировать.',
-          ctaLabel: 'Сгенерировать',
+              ? tr.dashboardRoadmapNoGoal
+              : tr.dashboardRoadmapWithGoal(aspiration),
+          ctaLabel: tr.dashboardGenerate,
           onPressed: onOpenRoadmap,
         ),
         const SizedBox(height: 12),
@@ -612,10 +612,9 @@ class OnboardingHints extends StatelessWidget {
           palette: palette,
           icon: Icons.account_tree_outlined,
           accent: const Color(0xFF60A5FA),
-          title: 'Заглянь в базу знаний',
-          subtitle:
-              'Граф второго мозга: цели, ограничения, рефлексии и заметки. Тапни ветку — отредактируй.',
-          ctaLabel: 'Открыть граф',
+          title: tr.dashboardGraphTitle,
+          subtitle: tr.dashboardGraphHint,
+          ctaLabel: tr.dashboardOpenGraph,
           onPressed: onOpenKnowledge,
         ),
         const SizedBox(height: 12),
@@ -623,10 +622,9 @@ class OnboardingHints extends StatelessWidget {
           palette: palette,
           icon: Icons.edit_note_outlined,
           accent: const Color(0xFF34D399),
-          title: 'Запиши первую заметку',
-          subtitle:
-              'Лёгкий старт: пара мыслей, наблюдение или идея. Заметку можно потом превратить в задачу.',
-          ctaLabel: 'Создать',
+          title: tr.dashboardNoteTitle,
+          subtitle: tr.dashboardNoteHint,
+          ctaLabel: tr.dashboardCreate,
           onPressed: onCreateEntry,
         ),
         const SizedBox(height: 16),

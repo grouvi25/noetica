@@ -470,7 +470,7 @@ class _DayDetail extends ConsumerWidget {
               const SizedBox(height: 12),
             ],
             if (dueOpen.isNotEmpty) ...[
-              _Heading('⏳ Дедлайны (${dueOpen.length})', palette: palette),
+              _Heading('⏳ ${S.of(context)!.calendarDeadlines} (${dueOpen.length})', palette: palette),
               const SizedBox(height: 4),
               for (final e in dueOpen)
                 _EntryRow(
@@ -483,7 +483,7 @@ class _DayDetail extends ConsumerWidget {
               const SizedBox(height: 12),
             ],
             if (createdNotes.isNotEmpty) ...[
-              _Heading('✎ Заметки (${createdNotes.length})', palette: palette),
+              _Heading('✎ ${S.of(context)!.calendarNotes} (${createdNotes.length})', palette: palette),
               const SizedBox(height: 4),
               for (final e in createdNotes)
                 _EntryRow(

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../l10n/generated/app_localizations.dart';
 import '../../../data/models.dart';
 import '../../../providers.dart';
 import '../../../theme/app_theme.dart';
@@ -81,7 +82,7 @@ class TagsField extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'Теги',
+          S.of(context)!.editorTags,
           style: Theme.of(context)
               .textTheme
               .labelLarge
@@ -135,7 +136,7 @@ class TagsField extends StatelessWidget {
                     controller: controller,
                     style: TextStyle(color: palette.fg, fontSize: 13),
                     decoration: InputDecoration(
-                      hintText: tags.isEmpty ? 'добавить тег…' : '+',
+                      hintText: tags.isEmpty ? S.of(context)!.editorAddTag : '+',
                       hintStyle:
                           TextStyle(color: palette.muted, fontSize: 12),
                       isDense: true,
@@ -198,7 +199,7 @@ class BacklinksPanel extends ConsumerWidget {
                         size: 14, color: palette.muted),
                     const SizedBox(width: 6),
                     Text(
-                      'Сюда ссылаются (${items.length})',
+                      S.of(context)!.editorBacklinksCount(items.length),
                       style: TextStyle(
                         color: palette.muted,
                         fontSize: 11,
@@ -227,7 +228,7 @@ class BacklinksPanel extends ConsumerWidget {
                           Expanded(
                             child: Text(
                               e.title.isEmpty
-                                  ? '(без названия)'
+                                  ? S.of(context)!.editorUntitled
                                   : e.title,
                               style: TextStyle(
                                 color: palette.fg,
@@ -276,7 +277,7 @@ class SubtaskEditor extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'Подзадачи — ${prog.done}/${prog.total}',
+              S.of(context)!.editorSubtasksProgress(prog.done, prog.total),
               style: TextStyle(
                 color: palette.muted,
                 fontSize: 11,

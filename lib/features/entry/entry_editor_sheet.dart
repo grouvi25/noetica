@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../l10n/generated/app_localizations.dart';
 import '../../data/models.dart';
 import '../../providers.dart';
 import '../../services/analytics_service.dart';
@@ -315,7 +316,7 @@ class _EntryEditorFormState extends ConsumerState<_EntryEditorForm> {
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Не удалось сохранить запись: $e')),
+          SnackBar(content: Text(S.of(context)!.editorSaveError('$e'))),
         );
       }
     } finally {
@@ -337,9 +338,9 @@ class _EntryEditorFormState extends ConsumerState<_EntryEditorForm> {
       ..hideCurrentSnackBar()
       ..showSnackBar(
         SnackBar(
-          content: Text('«${existing.title}» удалена'),
+          content: Text(S.of(context)!.editorDeletedMsg(existing.title)),
           action: SnackBarAction(
-            label: 'Отменить',
+            label: S.of(context)!.actionUndo,
             onPressed: () async {
               await repo.restoreEntry(existing.id);
             },
@@ -390,7 +391,7 @@ class _EntryEditorFormState extends ConsumerState<_EntryEditorForm> {
           : theme.textTheme.titleMedium,
       cursorColor: palette.fg,
       decoration: InputDecoration(
-        hintText: isTask ? 'Что нужно сделать?' : 'Заголовок',
+        hintText: isTask ? S.of(context)!.editorHintTask : S.of(context)!.editorTitle,
         // Document mode: borderless, no fill — the title reads like a
         // headline at the top of a Word page, not like another input.
         filled: large ? false : null,
@@ -449,7 +450,7 @@ class _EntryEditorFormState extends ConsumerState<_EntryEditorForm> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'Оси',
+          S.of(context)!.editorAxes,
           style: Theme.of(context)
               .textTheme
               .labelLarge
@@ -464,7 +465,7 @@ class _EntryEditorFormState extends ConsumerState<_EntryEditorForm> {
           data: (axes) {
             if (axes.isEmpty) {
               return Text(
-                'Сначала добавь оси в онбординге.',
+                S.of(context)!.editorAddAxesHint,
                 style: TextStyle(color: palette.muted),
               );
             }
@@ -517,13 +518,13 @@ class _EntryEditorFormState extends ConsumerState<_EntryEditorForm> {
           Row(
             children: [
               Text(
-                widget.existing == null ? 'Новая запись' : 'Запись',
+                widget.existing == null ? S.of(context)!.editorNewEntry : S.of(context)!.editorEntry,
                 style: Theme.of(context).textTheme.titleLarge,
               ),
               const Spacer(),
               IconButton(
                 icon: Icon(Icons.open_in_full, color: palette.fg, size: 20),
-                tooltip: 'Развернуть',
+                tooltip: S.of(context)!.editorExpand,
                 onPressed: _expand,
               ),
               if (widget.existing != null)
@@ -558,7 +559,7 @@ class _EntryEditorFormState extends ConsumerState<_EntryEditorForm> {
             width: double.infinity,
             child: FilledButton(
               onPressed: _saving ? null : _save,
-              child: Text(_saving ? '...' : 'Сохранить'),
+              child: Text(_saving ? '...' : S.of(context)!.actionSave),
             ),
           ),
         ],
@@ -603,14 +604,14 @@ class _EntryEditorFormState extends ConsumerState<_EntryEditorForm> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          'Сделать задачей',
+                          S.of(context)!.editorMakeTask,
                           style: Theme.of(context).textTheme.bodyLarge,
                         ),
                         const SizedBox(height: 2),
                         Text(
                           isTask
-                              ? 'Дедлайн и XP при выполнении'
-                              : 'По умолчанию — заметка',
+                              ? S.of(context)!.editorTaskModeHint
+                              : S.of(context)!.editorNoteModeHint,
                           style: Theme.of(context)
                               .textTheme
                               .bodySmall
@@ -656,7 +657,7 @@ class _EntryEditorFormState extends ConsumerState<_EntryEditorForm> {
                                     size: 16),
                                 label: Text(
                                   _due == null
-                                      ? 'Без дедлайна'
+                                      ? S.of(context)!.editorNoDeadline
                                       : formatTimestamp(_due!),
                                   overflow: TextOverflow.ellipsis,
                                 ),
@@ -676,7 +677,7 @@ class _EntryEditorFormState extends ConsumerState<_EntryEditorForm> {
                         Row(
                           children: [
                             Text(
-                              'XP при выполнении',
+                              S.of(context)!.editorXpOnComplete,
                               style: Theme.of(context)
                                   .textTheme
                                   .labelLarge
@@ -732,11 +733,11 @@ class _EntryEditorFormState extends ConsumerState<_EntryEditorForm> {
         scrolledUnderElevation: 0,
         leading: IconButton(
           icon: Icon(Icons.close, color: palette.fg),
-          tooltip: 'Закрыть',
+          tooltip: S.of(context)!.editorClose,
           onPressed: () => Navigator.of(context).pop(),
         ),
         title: Text(
-          widget.existing == null ? 'Новая запись' : 'Запись',
+          widget.existing == null ? S.of(context)!.editorNewEntry : S.of(context)!.editorEntry,
           style: Theme.of(context)
               .textTheme
               .titleMedium
@@ -747,21 +748,21 @@ class _EntryEditorFormState extends ConsumerState<_EntryEditorForm> {
             Builder(
               builder: (ctx) => IconButton(
                 icon: Icon(Icons.tune, color: palette.fg),
-                tooltip: 'Параметры',
+                tooltip: S.of(context)!.editorParams,
                 onPressed: () => Scaffold.of(ctx).openEndDrawer(),
               ),
             ),
           if (widget.existing != null)
             IconButton(
               icon: Icon(Icons.delete_outline, color: palette.fg),
-              tooltip: 'Удалить',
+              tooltip: S.of(context)!.actionDelete,
               onPressed: _delete,
             ),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
             child: FilledButton(
               onPressed: _saving ? null : _save,
-              child: Text(_saving ? '...' : 'Сохранить'),
+              child: Text(_saving ? '...' : S.of(context)!.actionSave),
             ),
           ),
         ],
@@ -854,7 +855,7 @@ class _EntryEditorFormState extends ConsumerState<_EntryEditorForm> {
             child: Row(
               children: [
                 Text(
-                  'Параметры',
+                  S.of(context)!.editorParams,
                   style: Theme.of(context).textTheme.titleMedium,
                 ),
                 const Spacer(),
