@@ -45,6 +45,9 @@ class SEn extends S {
   String get navRoadmap => 'AI-Plan';
 
   @override
+  String get navCoach => 'AI Coach';
+
+  @override
   String get sectionNow => 'NOW';
 
   @override
@@ -73,6 +76,24 @@ class SEn extends S {
 
   @override
   String get sectionHeatmap => 'ACTIVITY';
+
+  @override
+  String get sectionTree => 'TREE';
+
+  @override
+  String get sectionRecentlyClosed => 'RECENTLY CLOSED';
+
+  @override
+  String get linkCalendar => 'calendar →';
+
+  @override
+  String get linkAll => 'all →';
+
+  @override
+  String get linkTasks => 'tasks →';
+
+  @override
+  String get freeDay => 'free day';
 
   @override
   String get filterAll => 'All';

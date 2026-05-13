@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../l10n/generated/app_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../data/models.dart';
@@ -84,7 +85,7 @@ class _SelfScreenState extends ConsumerState<SelfScreen> {
                 child: BrandGlyph(size: 24),
               ),
         leadingWidth: canPop ? null : 48,
-        title: Text(hasName ? profile.name : 'Я'),
+        title: Text(hasName ? profile.name : S.of(context)!.tabSelf),
         actions: [
           IconButton(
             tooltip: 'Ветви',

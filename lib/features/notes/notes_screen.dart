@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../data/models.dart';
+import '../../l10n/generated/app_localizations.dart';
 import '../../providers.dart';
 import '../../theme/app_theme.dart';
 import '../../utils/body_utils.dart';
@@ -60,7 +61,7 @@ class _NotesScreenState extends ConsumerState<NotesScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Журнал'),
+        title: Text(S.of(context)!.notesTitle),
       ),
       body: Column(
         children: [

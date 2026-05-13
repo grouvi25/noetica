@@ -4,6 +4,7 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../l10n/generated/app_localizations.dart';
 import '../../services/analytics_service.dart';
 import '../../services/pomodoro_service.dart';
 import '../../theme/app_theme.dart';
@@ -162,6 +163,7 @@ class _HomeShellState extends ConsumerState<HomeShell> {
 
   void _showMoreSheet() {
     final palette = context.palette;
+    final tr = S.of(context)!;
     showModalBottomSheet<void>(
       context: context,
       backgroundColor: palette.surface,
@@ -194,7 +196,7 @@ class _HomeShellState extends ConsumerState<HomeShell> {
                   children: [
                     _MoreGridItem(
                       icon: Icons.psychology_outlined,
-                      label: 'AI Коуч',
+                      label: tr.navCoach,
                       palette: palette,
                       onTap: () {
                         Navigator.pop(ctx);
@@ -207,7 +209,7 @@ class _HomeShellState extends ConsumerState<HomeShell> {
                     ),
                     _MoreGridItem(
                       icon: Icons.bookmark_border_outlined,
-                      label: 'Журнал',
+                      label: tr.navJournal,
                       palette: palette,
                       onTap: () {
                         Navigator.pop(ctx);
@@ -216,7 +218,7 @@ class _HomeShellState extends ConsumerState<HomeShell> {
                     ),
                     _MoreGridItem(
                       icon: Icons.calendar_today_outlined,
-                      label: 'Календарь',
+                      label: tr.navCalendar,
                       palette: palette,
                       onTap: () {
                         Navigator.pop(ctx);
@@ -225,7 +227,7 @@ class _HomeShellState extends ConsumerState<HomeShell> {
                     ),
                     _MoreGridItem(
                       icon: Icons.account_tree_outlined,
-                      label: 'Граф',
+                      label: tr.navKnowledge,
                       palette: palette,
                       onTap: () {
                         Navigator.pop(ctx);
@@ -238,7 +240,7 @@ class _HomeShellState extends ConsumerState<HomeShell> {
                     ),
                     _MoreGridItem(
                       icon: Icons.auto_awesome_outlined,
-                      label: 'Ассистент',
+                      label: tr.navAssistant,
                       palette: palette,
                       onTap: () {
                         Navigator.pop(ctx);
@@ -251,7 +253,7 @@ class _HomeShellState extends ConsumerState<HomeShell> {
                     ),
                     _MoreGridItem(
                       icon: Icons.rocket_launch_outlined,
-                      label: 'AI-План',
+                      label: tr.navRoadmap,
                       palette: palette,
                       onTap: () {
                         Navigator.pop(ctx);
@@ -264,7 +266,7 @@ class _HomeShellState extends ConsumerState<HomeShell> {
                     ),
                     _MoreGridItem(
                       icon: Icons.timer_outlined,
-                      label: 'Pomodoro',
+                      label: tr.pomodoroTitle,
                       palette: palette,
                       onTap: () {
                         Navigator.pop(ctx);
@@ -273,7 +275,7 @@ class _HomeShellState extends ConsumerState<HomeShell> {
                     ),
                     _MoreGridItem(
                       icon: Icons.settings_outlined,
-                      label: 'Настройки',
+                      label: tr.navSettings,
                       palette: palette,
                       onTap: () {
                         Navigator.pop(ctx);
@@ -343,34 +345,36 @@ class _HomeShellState extends ConsumerState<HomeShell> {
     }
   }
 
-  static const _destinations = <_Destination>[
+  static List<_Destination> _destinations(S tr) => <_Destination>[
     _Destination(
       icon: Icons.dashboard_outlined,
       selectedIcon: Icons.dashboard,
-      label: 'Сейчас',
+      label: tr.tabDashboard,
     ),
     _Destination(
       icon: Icons.auto_graph_outlined,
       selectedIcon: Icons.auto_graph,
-      label: 'Я',
+      label: tr.tabSelf,
     ),
     _Destination(
       icon: Icons.checklist_outlined,
       selectedIcon: Icons.checklist,
-      label: 'Задачи',
+      label: tr.tabTasks,
     ),
     _Destination(
       icon: Icons.grid_view_outlined,
       selectedIcon: Icons.grid_view,
-      label: 'Ещё',
+      label: tr.tabMore,
     ),
   ];
 
   @override
   Widget build(BuildContext context) {
     final palette = context.palette;
+    final tr = S.of(context)!;
     final width = MediaQuery.of(context).size.width;
     final useRail = width >= _kRailMin;
+    final destinations = _destinations(tr);
 
     final body = IndexedStack(index: _index, children: _pages);
 
@@ -423,7 +427,7 @@ class _HomeShellState extends ConsumerState<HomeShell> {
                       child: _FloatingTabBar(
                         palette: palette,
                         selectedIndex: mobileSelected,
-                        destinations: _destinations,
+                        destinations: destinations,
                         onDestinationSelected: _onMobileTabTap,
                       ),
                     ),
@@ -447,7 +451,7 @@ class _HomeShellState extends ConsumerState<HomeShell> {
         children: [
           _DesktopSidebar(
             extended: extended,
-            destinations: _destinations,
+            destinations: destinations,
             selectedIndex: _index,
             onDestinationSelected: _switchTab,
             onAdd: () => showEntryEditor(context, ref),
@@ -526,6 +530,7 @@ class _DesktopSidebar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final tr = S.of(context)!;
     final width = extended ? 220.0 : 76.0;
     return DecoratedBox(
       decoration: BoxDecoration(
@@ -590,7 +595,7 @@ class _DesktopSidebar extends StatelessWidget {
               _SidebarTile(
                 icon: Icons.calendar_month_outlined,
                 selectedIcon: Icons.calendar_month,
-                label: 'Календарь',
+                label: tr.navCalendar,
                 selected: calendarSelected,
                 extended: extended,
                 palette: palette,
@@ -599,7 +604,7 @@ class _DesktopSidebar extends StatelessWidget {
               _SidebarTile(
                 icon: Icons.bookmark_border_outlined,
                 selectedIcon: Icons.bookmark,
-                label: 'Журнал',
+                label: tr.navJournal,
                 selected: journalSelected,
                 extended: extended,
                 palette: palette,
@@ -608,7 +613,7 @@ class _DesktopSidebar extends StatelessWidget {
               _SidebarTile(
                 icon: Icons.account_tree_outlined,
                 selectedIcon: Icons.account_tree,
-                label: 'База знаний',
+                label: tr.navKnowledge,
                 selected: knowledgeSelected,
                 extended: extended,
                 palette: palette,
@@ -617,7 +622,7 @@ class _DesktopSidebar extends StatelessWidget {
               _SidebarTile(
                 icon: Icons.auto_awesome_outlined,
                 selectedIcon: Icons.auto_awesome,
-                label: 'Ассистент',
+                label: tr.navAssistant,
                 selected: toolsSelected,
                 extended: extended,
                 palette: palette,
@@ -633,7 +638,7 @@ class _DesktopSidebar extends StatelessWidget {
                     ? FilledButton.icon(
                         onPressed: onAdd,
                         icon: const Icon(Icons.add, size: 18),
-                        label: const Text('Новая запись'),
+                        label: Text(tr.taskNew),
                       )
                     : Center(
                         child: FloatingActionButton.small(
@@ -653,7 +658,7 @@ class _DesktopSidebar extends StatelessWidget {
               _SidebarTile(
                 icon: Icons.timer_outlined,
                 selectedIcon: Icons.timer,
-                label: 'Pomodoro',
+                label: tr.pomodoroTitle,
                 selected: false,
                 extended: extended,
                 palette: palette,
@@ -662,7 +667,7 @@ class _DesktopSidebar extends StatelessWidget {
               _SidebarTile(
                 icon: Icons.settings_outlined,
                 selectedIcon: Icons.settings,
-                label: 'Настройки',
+                label: tr.navSettings,
                 selected: settingsSelected,
                 extended: extended,
                 palette: palette,

@@ -45,6 +45,9 @@ class SRu extends S {
   String get navRoadmap => 'AI-План';
 
   @override
+  String get navCoach => 'AI Коуч';
+
+  @override
   String get sectionNow => 'СЕЙЧАС';
 
   @override
@@ -73,6 +76,24 @@ class SRu extends S {
 
   @override
   String get sectionHeatmap => 'АКТИВНОСТЬ';
+
+  @override
+  String get sectionTree => 'ДРЕВО';
+
+  @override
+  String get sectionRecentlyClosed => 'НЕДАВНО ЗАКРЫТО';
+
+  @override
+  String get linkCalendar => 'календарь →';
+
+  @override
+  String get linkAll => 'все →';
+
+  @override
+  String get linkTasks => 'задачи →';
+
+  @override
+  String get freeDay => 'свободный день';
 
   @override
   String get filterAll => 'Все';

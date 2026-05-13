@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../l10n/generated/app_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../data/models.dart';
@@ -14,11 +15,11 @@ import 'widgets/task_tile.dart';
 enum _StatusFilter { all, open, overdue, done }
 
 extension on _StatusFilter {
-  String get label => switch (this) {
-        _StatusFilter.all => 'Все',
-        _StatusFilter.open => 'Открытые',
-        _StatusFilter.overdue => 'Просрочены',
-        _StatusFilter.done => 'Готово',
+  String localLabel(S tr) => switch (this) {
+        _StatusFilter.all => tr.filterAll,
+        _StatusFilter.open => tr.filterOpen,
+        _StatusFilter.overdue => tr.filterOverdue,
+        _StatusFilter.done => tr.filterDone,
       };
 
   bool matches(Entry e) {
@@ -61,14 +62,14 @@ enum _DateBucket {
 }
 
 extension on _DateBucket {
-  String get label => switch (this) {
-        _DateBucket.overdue => 'Просрочено',
-        _DateBucket.today => 'Сегодня',
-        _DateBucket.tomorrow => 'Завтра',
-        _DateBucket.thisWeek => 'На этой неделе',
-        _DateBucket.later => 'Позже',
-        _DateBucket.noDate => 'Без даты',
-        _DateBucket.done => 'Готово',
+  String localLabel(S tr) => switch (this) {
+        _DateBucket.overdue => tr.sectionOverdue,
+        _DateBucket.today => tr.sectionToday,
+        _DateBucket.tomorrow => tr.sectionTomorrow,
+        _DateBucket.thisWeek => tr.sectionThisWeek,
+        _DateBucket.later => tr.sectionLater,
+        _DateBucket.noDate => tr.filterAll,
+        _DateBucket.done => tr.filterDone,
       };
 
   IconData get icon => switch (this) {
@@ -105,6 +106,7 @@ class _TasksScreenState extends ConsumerState<TasksScreen> {
   @override
   Widget build(BuildContext context) {
     final palette = context.palette;
+    final tr = S.of(context)!;
     final entriesAsync = ref.watch(entriesProvider);
     final axesAsync = ref.watch(axesProvider);
     final isMobile = MediaQuery.of(context).size.width < 900;
@@ -116,7 +118,7 @@ class _TasksScreenState extends ConsumerState<TasksScreen> {
           child: BrandGlyph(size: 24),
         ),
         leadingWidth: 48,
-        title: const Text('Задачи'),
+        title: Text(tr.tabTasks),
         actions: [
           PopupMenuButton<_SortMode>(
             tooltip: 'Сортировка',
@@ -550,7 +552,7 @@ class _FilterBar extends StatelessWidget {
               Padding(
                 padding: const EdgeInsets.only(right: 6),
                 child: ChoiceChip(
-                  label: Text(s.label),
+                  label: Text(s.localLabel(S.of(context)!)),
                   selected: s == status,
                   onSelected: (_) => onStatus(s),
                 ),
@@ -656,7 +658,7 @@ class _BucketHeader extends StatelessWidget {
             Icon(bucket.icon, size: 16, color: fg),
             const SizedBox(width: 8),
             Text(
-              bucket.label.toUpperCase(),
+              bucket.localLabel(S.of(context)!).toUpperCase(),
               style: Theme.of(context).textTheme.labelMedium?.copyWith(
                     color: fg,
                     fontWeight: FontWeight.w700,

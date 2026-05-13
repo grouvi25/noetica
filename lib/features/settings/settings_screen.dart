@@ -8,6 +8,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../data/models.dart';
+import '../../l10n/generated/app_localizations.dart';
 import '../../providers.dart';
 import '../../services/backend_urls_service.dart';
 import '../../services/notifications.dart';
@@ -367,7 +368,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Настройки'),
+        title: Text(S.of(context)!.settingsTitle),
       ),
       body: ListView(
         padding: const EdgeInsets.symmetric(vertical: 8),

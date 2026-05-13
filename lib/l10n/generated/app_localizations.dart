@@ -167,6 +167,12 @@ abstract class S {
   /// **'AI-План'**
   String get navRoadmap;
 
+  /// No description provided for @navCoach.
+  ///
+  /// In ru, this message translates to:
+  /// **'AI Коуч'**
+  String get navCoach;
+
   /// No description provided for @sectionNow.
   ///
   /// In ru, this message translates to:
@@ -226,6 +232,42 @@ abstract class S {
   /// In ru, this message translates to:
   /// **'АКТИВНОСТЬ'**
   String get sectionHeatmap;
+
+  /// No description provided for @sectionTree.
+  ///
+  /// In ru, this message translates to:
+  /// **'ДРЕВО'**
+  String get sectionTree;
+
+  /// No description provided for @sectionRecentlyClosed.
+  ///
+  /// In ru, this message translates to:
+  /// **'НЕДАВНО ЗАКРЫТО'**
+  String get sectionRecentlyClosed;
+
+  /// No description provided for @linkCalendar.
+  ///
+  /// In ru, this message translates to:
+  /// **'календарь →'**
+  String get linkCalendar;
+
+  /// No description provided for @linkAll.
+  ///
+  /// In ru, this message translates to:
+  /// **'все →'**
+  String get linkAll;
+
+  /// No description provided for @linkTasks.
+  ///
+  /// In ru, this message translates to:
+  /// **'задачи →'**
+  String get linkTasks;
+
+  /// No description provided for @freeDay.
+  ///
+  /// In ru, this message translates to:
+  /// **'свободный день'**
+  String get freeDay;
 
   /// No description provided for @filterAll.
   ///

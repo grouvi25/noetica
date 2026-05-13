@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../data/models.dart';
+import '../../l10n/generated/app_localizations.dart';
 import '../../providers.dart';
 import '../../theme/app_theme.dart';
 import '../../utils/plural.dart';
@@ -141,6 +142,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
   @override
   Widget build(BuildContext context) {
     final palette = context.palette;
+    final tr = S.of(context)!;
     final entriesAsync = ref.watch(entriesProvider);
     final axesAsync = ref.watch(axesProvider);
     final profileAsync = ref.watch(profileProvider);
@@ -154,7 +156,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
           child: BrandGlyph(size: 24),
         ),
         leadingWidth: 48,
-        title: const Text('Сейчас'),
+        title: Text(tr.tabDashboard),
         actions: [
           IconButton(
             tooltip: 'Pomodoro',
@@ -230,7 +232,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
           ];
 
           final stats = DashboardStats.from(entries);
-          final greeting = _greeting(now, profileAsync.valueOrNull?.name);
+          final greeting = _greeting(now, profileAsync.valueOrNull?.name, tr);
 
           return ListView(
             // Reserve space for the floating capsule + FAB hovering above it.
@@ -246,11 +248,11 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
               ],
               DashGreeting(
                 title: greeting,
-                subtitle: _todaySubtitle(stats, overdue.length, dueToday.length),
+                subtitle: _todaySubtitle(stats, overdue.length, dueToday.length, tr),
                 palette: palette,
               ),
               const SizedBox(height: 18),
-              DashSectionHeader(label: 'СЕЙЧАС', palette: palette),
+              DashSectionHeader(label: tr.sectionNow, palette: palette),
               const SizedBox(height: 8),
               NowFocusCard(
                 task: focus,
@@ -260,7 +262,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
               if (todayList.isNotEmpty) ...[
                 const SizedBox(height: 22),
                 DashSectionHeader(
-                  label: 'СЕГОДНЯ',
+                  label: tr.sectionToday,
                   palette: palette,
                   trailing: '${todayList.length}',
                 ),
@@ -273,12 +275,12 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                   ),
                 if (todayList.length > 6)
                   AllTasksLink(
-                    label: 'ещё ${todayList.length - 6} задач',
+                    label: '+${todayList.length - 6}',
                     palette: palette,
                   ),
               ],
               const SizedBox(height: 22),
-              DashSectionHeader(label: 'ПУЛЬС', palette: palette),
+              DashSectionHeader(label: tr.sectionPulse, palette: palette),
               const SizedBox(height: 8),
               PulseSection(
                 stats: stats,
@@ -290,9 +292,9 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
               ),
               const SizedBox(height: 22),
               DashSectionHeader(
-                label: 'АКТИВНОСТЬ',
+                label: tr.sectionHeatmap,
                 palette: palette,
-                trailing: 'календарь →',
+                trailing: tr.linkCalendar,
                 onTrailingTap: _openCalendar,
               ),
               const SizedBox(height: 8),
@@ -311,9 +313,9 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
               if (axes.length >= 3) ...[
                 const SizedBox(height: 22),
                 DashSectionHeader(
-                  label: 'ДРЕВО',
+                  label: tr.sectionTree,
                   palette: palette,
-                  trailing: 'все →',
+                  trailing: tr.linkAll,
                   onTrailingTap: _openSelf,
                 ),
                 const SizedBox(height: 8),
@@ -327,9 +329,9 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                 // The dashboard's own "СЕГОДНЯ" block already covers tasks
                 // due today; this tail strip now shows the last few
                 // closed tasks and links to the full Tasks tab.
-                label: 'НЕДАВНО ЗАКРЫТО',
+                label: tr.sectionRecentlyClosed,
                 palette: palette,
-                trailing: 'задачи →',
+                trailing: tr.linkTasks,
                 onTrailingTap: _openTasks,
               ),
               const SizedBox(height: 4),
@@ -358,16 +360,16 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
   }
 }
 
-String _greeting(DateTime now, String? name) {
+String _greeting(DateTime now, String? name, S tr) {
   final h = now.hour;
   final base = h < 5
-      ? 'Доброй ночи'
-      : (h < 12 ? 'Доброе утро' : (h < 18 ? 'Добрый день' : 'Добрый вечер'));
+      ? tr.greetingNight
+      : (h < 12 ? tr.greetingMorning : (h < 18 ? tr.greetingDay : tr.greetingEvening));
   if (name == null || name.trim().isEmpty) return base;
   return '$base, ${name.trim().split(' ').first}';
 }
 
-String _todaySubtitle(DashboardStats stats, int overdue, int today) {
+String _todaySubtitle(DashboardStats stats, int overdue, int today, S tr) {
   final parts = <String>[];
   if (overdue > 0) {
     parts.add('$overdue ${plural(overdue, "просрочена", "просрочено", "просрочено")}');
@@ -375,9 +377,9 @@ String _todaySubtitle(DashboardStats stats, int overdue, int today) {
   if (today > 0) parts.add('$today на сегодня');
   if (parts.isEmpty) {
     if (stats.streak > 0) {
-      return 'стрик ${stats.streak} ${plural(stats.streak, "день", "дня", "дней")}';
+      return tr.daysTotalStreak(stats.streak);
     }
-    return 'свободный день';
+    return tr.freeDay;
   }
   return parts.join(' · ');
 }

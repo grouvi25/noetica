@@ -15,6 +15,7 @@
   "navSettings": "Settings",
   "navPomodoro": "Pomodoro",
   "navRoadmap": "AI-Plan",
+  "navCoach": "AI Coach",
 
   "sectionNow": "NOW",
   "sectionToday": "TODAY",
@@ -26,6 +27,12 @@
   "sectionLater": "LATER",
   "sectionDone": "DONE",
   "sectionHeatmap": "ACTIVITY",
+  "sectionTree": "TREE",
+  "sectionRecentlyClosed": "RECENTLY CLOSED",
+  "linkCalendar": "calendar \u2192",
+  "linkAll": "all \u2192",
+  "linkTasks": "tasks \u2192",
+  "freeDay": "free day",
 
   "filterAll": "All",
   "filterOpen": "Open",

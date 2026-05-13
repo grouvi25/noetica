@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../data/models.dart';
+import '../../l10n/generated/app_localizations.dart';
 import '../../providers.dart';
 import '../../theme/app_theme.dart';
 import '../entry/entry_editor_sheet.dart';
@@ -70,7 +71,7 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Календарь'),
+        title: Text(S.of(context)!.calendarTitle),
         actions: [
           IconButton(
             tooltip: 'Сегодня',

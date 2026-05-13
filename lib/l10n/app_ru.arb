@@ -15,6 +15,7 @@
   "navSettings": "Настройки",
   "navPomodoro": "Помодоро",
   "navRoadmap": "AI-План",
+  "navCoach": "AI Коуч",
 
   "sectionNow": "СЕЙЧАС",
   "sectionToday": "СЕГОДНЯ",
@@ -26,6 +27,12 @@
   "sectionLater": "ПОЗЖЕ",
   "sectionDone": "ГОТОВО",
   "sectionHeatmap": "АКТИВНОСТЬ",
+  "sectionTree": "ДРЕВО",
+  "sectionRecentlyClosed": "НЕДАВНО ЗАКРЫТО",
+  "linkCalendar": "календарь \u2192",
+  "linkAll": "все \u2192",
+  "linkTasks": "задачи \u2192",
+  "freeDay": "свободный день",
 
   "filterAll": "Все",
   "filterOpen": "Открытые",
