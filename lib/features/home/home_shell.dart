@@ -9,17 +9,16 @@ import '../../services/pomodoro_service.dart';
 import '../../theme/app_theme.dart';
 import '../../widgets/brand_glyph.dart';
 import '../calendar/calendar_screen.dart';
+import '../coach/coach_screen.dart';
 import '../dashboard/dashboard_screen.dart';
 import '../entry/entry_editor_sheet.dart';
 import '../knowledge/knowledge_graph_screen.dart';
 import '../notes/notes_screen.dart';
 import '../pomodoro/pomodoro_sheet.dart';
+import '../roadmap/roadmap_screen.dart';
 import '../self/self_screen.dart';
 import '../settings/settings_screen.dart';
 import '../tasks/tasks_screen.dart';
-import '../coach/coach_screen.dart';
-import '../tools/tools_screen.dart';
-import '../roadmap/roadmap_screen.dart';
 
 /// Layout breakpoints. Below `_kRailMin`: bottom navigation bar. Between
 /// `_kRailMin` and `_kRailExtended`: compact NavigationRail (icons only).
@@ -47,6 +46,102 @@ const double kFloatingFabGap = 10;
 /// build their own ListView padding.
 const double kFloatingTabBarReserve =
     kFloatingTabBarHeight + kFloatingTabBarMargin * 2;
+
+/// Open the mobile "More" bottom sheet — surfaces the four cross-cutting
+/// utilities (AI Коуч, AI План, Pomodoro, Настройки) that don't belong
+/// to any single pillar tab. Each primary screen's AppBar wires its
+/// `more_vert` icon to this function so the navigation stays at three
+/// tabs while the secondary tools stay one tap away.
+void showHomeMoreSheet(BuildContext context) {
+  final palette = context.palette;
+  showModalBottomSheet<void>(
+    context: context,
+    backgroundColor: palette.surface,
+    shape: const RoundedRectangleBorder(
+      borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+    ),
+    builder: (ctx) {
+      return SafeArea(
+        top: false,
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 32,
+                height: 4,
+                margin: const EdgeInsets.only(bottom: 16),
+                decoration: BoxDecoration(
+                  color: palette.muted.withOpacity(0.3),
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+              GridView.count(
+                crossAxisCount: 4,
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                mainAxisSpacing: 8,
+                crossAxisSpacing: 8,
+                children: [
+                  _MoreGridItem(
+                    icon: Icons.psychology_outlined,
+                    label: 'AI Коуч',
+                    palette: palette,
+                    onTap: () {
+                      Navigator.pop(ctx);
+                      Navigator.of(context).push(
+                        MaterialPageRoute<void>(
+                          builder: (_) => const CoachScreen(),
+                        ),
+                      );
+                    },
+                  ),
+                  _MoreGridItem(
+                    icon: Icons.rocket_launch_outlined,
+                    label: 'AI План',
+                    palette: palette,
+                    onTap: () {
+                      Navigator.pop(ctx);
+                      Navigator.of(context).push(
+                        MaterialPageRoute<void>(
+                          builder: (_) => const RoadmapScreen(),
+                        ),
+                      );
+                    },
+                  ),
+                  _MoreGridItem(
+                    icon: Icons.timer_outlined,
+                    label: 'Pomodoro',
+                    palette: palette,
+                    onTap: () {
+                      Navigator.pop(ctx);
+                      PomodoroSheet.show(context);
+                    },
+                  ),
+                  _MoreGridItem(
+                    icon: Icons.settings_outlined,
+                    label: 'Настройки',
+                    palette: palette,
+                    onTap: () {
+                      Navigator.pop(ctx);
+                      Navigator.of(context).push(
+                        MaterialPageRoute<void>(
+                          builder: (_) => const SettingsScreen(),
+                        ),
+                      );
+                    },
+                  ),
+                ],
+              ),
+              const SizedBox(height: 8),
+            ],
+          ),
+        ),
+      );
+    },
+  );
+}
 
 class HomeShell extends ConsumerStatefulWidget {
   const HomeShell({super.key});
@@ -123,26 +218,16 @@ class _HomeShellState extends ConsumerState<HomeShell> {
     _alertOpen = false;
   }
 
-  // Page indices. The first three are primary tabs (visible in the
-  // mobile bottom bar). The rest are "secondary" desktop-only entries
-  // reached from the sidebar; on mobile they push onto the navigator.
-  //
-  // Mobile tab order: Dashboard → Я → Задачи. The Себя sits between
-  // dashboard and tasks because the user wants quick access to their
-  // Древо from the home screen.
+  // Three primary tabs — matches the Now / Self / Past pillars from
+  // the README vision. Everything else (Tasks, Knowledge Graph,
+  // Calendar, Coach, Roadmap, Pomodoro, Settings) is reachable from
+  // inside these screens or via the desktop sidebar's secondary list
+  // / the mobile "More" sheet — but never as a primary destination.
+  static const _dashboardIndex = 0;
   static const _selfIndex = 1;
-  static const _tasksIndex = 2;
-  static const _journalIndex = 3;
-  static const _knowledgeIndex = 4;
-  static const _calendarIndex = 5;
-  static const _toolsIndex = 6;
-  static const _settingsIndex = 7;
-  static const _moreTabIndex = 3; // "Ещё" tab in the floating bar
+  static const _journalIndex = 2;
 
-  static const _screenNames = [
-    'dashboard', 'self', 'tasks', 'journal',
-    'knowledge', 'calendar', 'tools', 'settings',
-  ];
+  static const _screenNames = ['dashboard', 'self', 'journal'];
 
   void _switchTab(int i) {
     if (i == _index) return;
@@ -153,195 +238,31 @@ class _HomeShellState extends ConsumerState<HomeShell> {
   }
 
   void _onMobileTabTap(int i) {
-    if (i == _moreTabIndex) {
-      _showMoreSheet();
-      return;
-    }
     _switchTab(i);
-  }
-
-  void _showMoreSheet() {
-    final palette = context.palette;
-    showModalBottomSheet<void>(
-      context: context,
-      backgroundColor: palette.surface,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
-      ),
-      builder: (ctx) {
-        return SafeArea(
-          top: false,
-          child: Padding(
-            padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Container(
-                  width: 32,
-                  height: 4,
-                  margin: const EdgeInsets.only(bottom: 16),
-                  decoration: BoxDecoration(
-                    color: palette.muted.withOpacity(0.3),
-                    borderRadius: BorderRadius.circular(2),
-                  ),
-                ),
-                GridView.count(
-                  crossAxisCount: 4,
-                  shrinkWrap: true,
-                  physics: const NeverScrollableScrollPhysics(),
-                  mainAxisSpacing: 8,
-                  crossAxisSpacing: 8,
-                  children: [
-                    _MoreGridItem(
-                      icon: Icons.psychology_outlined,
-                      label: 'AI Коуч',
-                      palette: palette,
-                      onTap: () {
-                        Navigator.pop(ctx);
-                        Navigator.of(context).push(
-                          MaterialPageRoute<void>(
-                            builder: (_) => const CoachScreen(),
-                          ),
-                        );
-                      },
-                    ),
-                    _MoreGridItem(
-                      icon: Icons.bookmark_border_outlined,
-                      label: 'Журнал',
-                      palette: palette,
-                      onTap: () {
-                        Navigator.pop(ctx);
-                        _openJournal();
-                      },
-                    ),
-                    _MoreGridItem(
-                      icon: Icons.calendar_today_outlined,
-                      label: 'Календарь',
-                      palette: palette,
-                      onTap: () {
-                        Navigator.pop(ctx);
-                        _openCalendar();
-                      },
-                    ),
-                    _MoreGridItem(
-                      icon: Icons.account_tree_outlined,
-                      label: 'Граф',
-                      palette: palette,
-                      onTap: () {
-                        Navigator.pop(ctx);
-                        Navigator.of(context).push(
-                          MaterialPageRoute<void>(
-                            builder: (_) => const KnowledgeGraphScreen(),
-                          ),
-                        );
-                      },
-                    ),
-                    _MoreGridItem(
-                      icon: Icons.auto_awesome_outlined,
-                      label: 'Ассистент',
-                      palette: palette,
-                      onTap: () {
-                        Navigator.pop(ctx);
-                        Navigator.of(context).push(
-                          MaterialPageRoute<void>(
-                            builder: (_) => const ToolsScreen(),
-                          ),
-                        );
-                      },
-                    ),
-                    _MoreGridItem(
-                      icon: Icons.rocket_launch_outlined,
-                      label: 'AI-План',
-                      palette: palette,
-                      onTap: () {
-                        Navigator.pop(ctx);
-                        Navigator.of(context).push(
-                          MaterialPageRoute<void>(
-                            builder: (_) => const RoadmapScreen(),
-                          ),
-                        );
-                      },
-                    ),
-                    _MoreGridItem(
-                      icon: Icons.timer_outlined,
-                      label: 'Pomodoro',
-                      palette: palette,
-                      onTap: () {
-                        Navigator.pop(ctx);
-                        PomodoroSheet.show(context);
-                      },
-                    ),
-                    _MoreGridItem(
-                      icon: Icons.settings_outlined,
-                      label: 'Настройки',
-                      palette: palette,
-                      onTap: () {
-                        Navigator.pop(ctx);
-                        Navigator.of(context).push(
-                          MaterialPageRoute<void>(
-                            builder: (_) => const SettingsScreen(),
-                          ),
-                        );
-                      },
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 8),
-              ],
-            ),
-          ),
-        );
-      },
-    );
   }
 
   // Pages must be built lazily so the dashboard can receive callbacks
   // bound to *this* state instance (`setState`).
   //
-  // `onOpenSelf` / `onOpenTasks` always switch tabs — they exist in
-  // both desktop sidebar and mobile bottom-nav, so a tab switch is the
-  // correct behaviour everywhere (nav stays visible).
-  //
-  // `onOpenJournal` / `onOpenCalendar` switch the desktop tab when the
-  // sidebar is present; on mobile (where the bottom-nav has no journal
-  // or calendar entry) they push a route with a real back button.
+  // Tasks / Calendar / Knowledge are no longer primary tabs — when
+  // the dashboard surfaces a link to them, we push them as a normal
+  // route (proper back button, sidebar stays visible).
   late final List<Widget> _pages = [
     DashboardScreen(
       onOpenSelf: () => _switchTab(_selfIndex),
-      onOpenTasks: () => _switchTab(_tasksIndex),
+      onOpenTasks: () => Navigator.of(context).push(
+        MaterialPageRoute<void>(builder: (_) => const TasksScreen()),
+      ),
       onOpenJournal: _openJournal,
-      onOpenCalendar: _openCalendar,
+      onOpenCalendar: () => Navigator.of(context).push(
+        MaterialPageRoute<void>(builder: (_) => const CalendarScreen()),
+      ),
     ),
     const SelfScreen(),
-    const TasksScreen(),
     const NotesScreen(),
-    const KnowledgeGraphScreen(),
-    const CalendarScreen(),
-    const ToolsScreen(),
-    const SettingsScreen(),
   ];
 
-  void _openJournal() {
-    final wide = MediaQuery.of(context).size.width >= _kRailMin;
-    if (wide) {
-      _switchTab(_journalIndex);
-    } else {
-      Navigator.of(context).push(
-        MaterialPageRoute<void>(builder: (_) => const NotesScreen()),
-      );
-    }
-  }
-
-  void _openCalendar() {
-    final wide = MediaQuery.of(context).size.width >= _kRailMin;
-    if (wide) {
-      _switchTab(_calendarIndex);
-    } else {
-      Navigator.of(context).push(
-        MaterialPageRoute<void>(builder: (_) => const CalendarScreen()),
-      );
-    }
-  }
+  void _openJournal() => _switchTab(_journalIndex);
 
   static const _destinations = <_Destination>[
     _Destination(
@@ -355,14 +276,9 @@ class _HomeShellState extends ConsumerState<HomeShell> {
       label: 'Я',
     ),
     _Destination(
-      icon: Icons.checklist_outlined,
-      selectedIcon: Icons.checklist,
-      label: 'Задачи',
-    ),
-    _Destination(
-      icon: Icons.grid_view_outlined,
-      selectedIcon: Icons.grid_view,
-      label: 'Ещё',
+      icon: Icons.bookmark_border_outlined,
+      selectedIcon: Icons.bookmark,
+      label: 'Лента',
     ),
   ];
 
@@ -375,23 +291,11 @@ class _HomeShellState extends ConsumerState<HomeShell> {
     final body = IndexedStack(index: _index, children: _pages);
 
     if (!useRail) {
-      // On mobile the bottom bar shows only the first 3 destinations;
-      // Journal stays accessible via the AppBar bookmark icon. We clamp
-      // the bar's selectedIndex so it doesn't break when index = 3 (would
-      // happen if user navigated to journal then resized to mobile).
-      // Clamp to the first 3 real tabs; "Ещё" (index 3) is a menu trigger,
-      // not a real page — never show it as selected.
-      final mobileSelected = _index < _moreTabIndex ? _index : 0;
+      // Mobile: 3 bottom tabs map 1:1 to the IndexedStack — no
+      // clamping or "More" tab needed. Secondary utilities live
+      // behind the AppBar's per-screen "more" icon (which opens
+      // `_showMoreSheet`) — handled by each primary screen.
       final bottomSafe = MediaQuery.of(context).padding.bottom;
-      // Telegram-style truly-floating capsule: drop the bottomNavigationBar
-      // slot (which forced Scaffold to reserve a strip and made the bar
-      // sit *inside* a non-floating box) and instead overlay it via a
-      // Stack at the screen level. The body fills the entire screen,
-      // but we inject MediaQuery.padding.bottom += reserve so SafeArea
-      // and other padding-aware widgets in pages know to leave room
-      // under the capsule. The FAB is also Stack-positioned so it
-      // sits a comfortable margin *above* the capsule and never lands
-      // on top of page content like «Сгенерировать план».
       final body3 = MediaQuery(
         data: MediaQuery.of(context).copyWith(
           padding: MediaQuery.of(context).padding.copyWith(
@@ -422,7 +326,7 @@ class _HomeShellState extends ConsumerState<HomeShell> {
                     Expanded(
                       child: _FloatingTabBar(
                         palette: palette,
-                        selectedIndex: mobileSelected,
+                        selectedIndex: _index,
                         destinations: _destinations,
                         onDestinationSelected: _onMobileTabTap,
                       ),
@@ -451,17 +355,25 @@ class _HomeShellState extends ConsumerState<HomeShell> {
             selectedIndex: _index,
             onDestinationSelected: _switchTab,
             onAdd: () => showEntryEditor(context, ref),
-            journalSelected: _index == _journalIndex,
-            onJournal: () => _switchTab(_journalIndex),
-            knowledgeSelected: _index == _knowledgeIndex,
-            calendarSelected: _index == _calendarIndex,
-            onCalendar: () => _switchTab(_calendarIndex),
-            toolsSelected: _index == _toolsIndex,
-            onTools: () => _switchTab(_toolsIndex),
-            onKnowledge: () => _switchTab(_knowledgeIndex),
-            settingsSelected: _index == _settingsIndex,
-            onSettings: () => _switchTab(_settingsIndex),
+            onTasks: () => Navigator.of(context).push(
+              MaterialPageRoute<void>(builder: (_) => const TasksScreen()),
+            ),
+            onKnowledge: () => Navigator.of(context).push(
+              MaterialPageRoute<void>(builder: (_) => const KnowledgeGraphScreen()),
+            ),
+            onCalendar: () => Navigator.of(context).push(
+              MaterialPageRoute<void>(builder: (_) => const CalendarScreen()),
+            ),
+            onCoach: () => Navigator.of(context).push(
+              MaterialPageRoute<void>(builder: (_) => const CoachScreen()),
+            ),
+            onRoadmap: () => Navigator.of(context).push(
+              MaterialPageRoute<void>(builder: (_) => const RoadmapScreen()),
+            ),
             onPomodoro: () => PomodoroSheet.show(context),
+            onSettings: () => Navigator.of(context).push(
+              MaterialPageRoute<void>(builder: (_) => const SettingsScreen()),
+            ),
             palette: palette,
           ),
           Expanded(child: body),
@@ -492,17 +404,13 @@ class _DesktopSidebar extends StatelessWidget {
     required this.selectedIndex,
     required this.onDestinationSelected,
     required this.onAdd,
-    required this.journalSelected,
-    required this.onJournal,
-    required this.knowledgeSelected,
+    required this.onTasks,
     required this.onKnowledge,
-    required this.calendarSelected,
     required this.onCalendar,
-    required this.toolsSelected,
-    required this.onTools,
-    required this.settingsSelected,
-    required this.onSettings,
+    required this.onCoach,
+    required this.onRoadmap,
     required this.onPomodoro,
+    required this.onSettings,
     required this.palette,
   });
 
@@ -511,17 +419,13 @@ class _DesktopSidebar extends StatelessWidget {
   final int selectedIndex;
   final ValueChanged<int> onDestinationSelected;
   final VoidCallback onAdd;
-  final bool journalSelected;
-  final VoidCallback onJournal;
-  final bool knowledgeSelected;
+  final VoidCallback onTasks;
   final VoidCallback onKnowledge;
-  final bool calendarSelected;
   final VoidCallback onCalendar;
-  final bool toolsSelected;
-  final VoidCallback onTools;
-  final bool settingsSelected;
-  final VoidCallback onSettings;
+  final VoidCallback onCoach;
+  final VoidCallback onRoadmap;
   final VoidCallback onPomodoro;
+  final VoidCallback onSettings;
   final NoeticaPalette palette;
 
   @override
@@ -562,67 +466,17 @@ class _DesktopSidebar extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 24),
-              // Skip the "Ещё" tab (mobile-only) on desktop sidebar.
+              // Primary destinations — match mobile bottom tabs.
               for (var i = 0; i < destinations.length; i++)
-                if (i != _HomeShellState._moreTabIndex)
-                  _SidebarTile(
-                    icon: destinations[i].icon,
-                    selectedIcon: destinations[i].selectedIcon,
-                    label: destinations[i].label,
-                    selected: selectedIndex == i &&
-                        !journalSelected &&
-                        !knowledgeSelected &&
-                        !calendarSelected &&
-                        !toolsSelected &&
-                        !settingsSelected,
-                    extended: extended,
-                    palette: palette,
-                    onTap: () => onDestinationSelected(i),
-                  ),
-              const Spacer(),
-              Padding(
-                padding: EdgeInsets.symmetric(
-                  horizontal: extended ? 16 : 0,
-                  vertical: 4,
+                _SidebarTile(
+                  icon: destinations[i].icon,
+                  selectedIcon: destinations[i].selectedIcon,
+                  label: destinations[i].label,
+                  selected: selectedIndex == i,
+                  extended: extended,
+                  palette: palette,
+                  onTap: () => onDestinationSelected(i),
                 ),
-                child: Divider(color: palette.line, height: 1),
-              ),
-              _SidebarTile(
-                icon: Icons.calendar_month_outlined,
-                selectedIcon: Icons.calendar_month,
-                label: 'Календарь',
-                selected: calendarSelected,
-                extended: extended,
-                palette: palette,
-                onTap: onCalendar,
-              ),
-              _SidebarTile(
-                icon: Icons.bookmark_border_outlined,
-                selectedIcon: Icons.bookmark,
-                label: 'Журнал',
-                selected: journalSelected,
-                extended: extended,
-                palette: palette,
-                onTap: onJournal,
-              ),
-              _SidebarTile(
-                icon: Icons.account_tree_outlined,
-                selectedIcon: Icons.account_tree,
-                label: 'База знаний',
-                selected: knowledgeSelected,
-                extended: extended,
-                palette: palette,
-                onTap: onKnowledge,
-              ),
-              _SidebarTile(
-                icon: Icons.auto_awesome_outlined,
-                selectedIcon: Icons.auto_awesome,
-                label: 'Ассистент',
-                selected: toolsSelected,
-                extended: extended,
-                palette: palette,
-                onTap: onTools,
-              ),
               const SizedBox(height: 12),
               Padding(
                 padding: EdgeInsets.symmetric(
@@ -650,6 +504,54 @@ class _DesktopSidebar extends StatelessWidget {
                 ),
                 child: Divider(color: palette.line, height: 1),
               ),
+              // Secondary actions — stateless launchers. Don't render
+              // as "selected" since they push routes rather than swap
+              // a primary tab.
+              _SidebarTile(
+                icon: Icons.checklist_outlined,
+                selectedIcon: Icons.checklist,
+                label: 'Задачи',
+                selected: false,
+                extended: extended,
+                palette: palette,
+                onTap: onTasks,
+              ),
+              _SidebarTile(
+                icon: Icons.account_tree_outlined,
+                selectedIcon: Icons.account_tree,
+                label: 'Граф знаний',
+                selected: false,
+                extended: extended,
+                palette: palette,
+                onTap: onKnowledge,
+              ),
+              _SidebarTile(
+                icon: Icons.calendar_month_outlined,
+                selectedIcon: Icons.calendar_month,
+                label: 'Календарь',
+                selected: false,
+                extended: extended,
+                palette: palette,
+                onTap: onCalendar,
+              ),
+              _SidebarTile(
+                icon: Icons.psychology_outlined,
+                selectedIcon: Icons.psychology,
+                label: 'AI Коуч',
+                selected: false,
+                extended: extended,
+                palette: palette,
+                onTap: onCoach,
+              ),
+              _SidebarTile(
+                icon: Icons.rocket_launch_outlined,
+                selectedIcon: Icons.rocket_launch,
+                label: 'AI План',
+                selected: false,
+                extended: extended,
+                palette: palette,
+                onTap: onRoadmap,
+              ),
               _SidebarTile(
                 icon: Icons.timer_outlined,
                 selectedIcon: Icons.timer,
@@ -663,7 +565,7 @@ class _DesktopSidebar extends StatelessWidget {
                 icon: Icons.settings_outlined,
                 selectedIcon: Icons.settings,
                 label: 'Настройки',
-                selected: settingsSelected,
+                selected: false,
                 extended: extended,
                 palette: palette,
                 onTap: onSettings,

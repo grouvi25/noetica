@@ -67,21 +67,97 @@ int _spanForLevel(int level) {
 /// branch) without resetting anything, which is what makes filling
 /// the pentagon to 100 % still meaningful — you're now working toward
 /// the next эпоха on each axis.
+///
+/// **Deprecated in v3** — epochs are now derived from axis level
+/// directly (one эпоха per 5 levels), not from a parallel XP counter.
+/// Use [epochForLevel] / [axisEpochName] instead. Kept for backward
+/// compatibility while call sites migrate.
+@Deprecated('Use epochForLevel(axisLevel) instead — single source of truth.')
 const int kXpPerEpoch = 500;
 
 /// Compute an axis' эпоха from its cumulative task XP. Starts at 1 so
 /// a brand-new axis reads "эпоха 1" (not 0).
+///
+/// **Deprecated in v3** — see [kXpPerEpoch] note. Use [epochForLevel].
+@Deprecated('Use epochForLevel(axisLevel) instead — single source of truth.')
 int epochFromXp(int axisTotalXp) {
   if (axisTotalXp <= 0) return 1;
   return 1 + (axisTotalXp ~/ kXpPerEpoch);
 }
 
 /// XP still required to push the axis into its next эпоха.
+///
+/// **Deprecated in v3** — эпоха is now tied to axis level, so the
+/// "до следующей эпохи" stat is replaced by "до следующего уровня".
+@Deprecated('Use xpToNextLevel(LevelStats) instead — эпоха is now level-derived.')
 int xpToNextEpoch(int axisTotalXp) {
   final e = epochFromXp(axisTotalXp);
   final cap = e * kXpPerEpoch;
   final remaining = cap - axisTotalXp;
   return remaining < 0 ? 0 : remaining;
+}
+
+// === v3 progression model ===
+//
+// One source of truth: lifetime XP → axis level (via [levelStatsFor]).
+// Эпоха is a *visual milestone* on top of axis level: every 5 levels
+// you cross into a new epoch with a new name and visual treatment.
+// This collapses the previous twin counters (level + standalone epoch)
+// into one continuous track that's easier for the user to read.
+
+/// How many axis levels are in one эпоха. 5 means: Lv 1-5 = Э1,
+/// Lv 6-10 = Э2, etc.
+const int kLevelsPerEpoch = 5;
+
+/// Compute эпоха from axis level. Starts at 1 (Lv 1-5 = Э1).
+int epochForLevel(int axisLevel) {
+  if (axisLevel <= 0) return 1;
+  return 1 + ((axisLevel - 1) ~/ kLevelsPerEpoch);
+}
+
+/// XP still required to push the axis into its next level. Drives the
+/// progress bar shown on the axis detail sheet.
+int xpToNextLevel(LevelStats ls) {
+  final remaining = ls.xpAtNextLevel - ls.totalXp;
+  return remaining < 0 ? 0 : remaining;
+}
+
+/// Звание ("rank name") for a global user level. The user climbs through
+/// these tiers as they accumulate lifetime XP across all axes — a
+/// cosmetic reward that makes "Lv 7" mean something more than a number.
+String globalRankName(int level) {
+  if (level <= 0) return 'Новичок';
+  if (level < 5) return 'Новичок';
+  if (level < 10) return 'Странник';
+  if (level < 15) return 'Искатель';
+  if (level < 20) return 'Практик';
+  if (level < 30) return 'Мастер';
+  if (level < 50) return 'Архитектор';
+  return 'Хранитель';
+}
+
+/// Звание per-axis-epoch — the symbolic name of the эпоха you're
+/// currently in on a single axis. Same idea as [globalRankName] but
+/// per-axis, themed around growth ("Зерно → Росток → … → Лес").
+String axisEpochName(int epoch) {
+  switch (epoch) {
+    case 1:
+      return 'Зерно';
+    case 2:
+      return 'Росток';
+    case 3:
+      return 'Побег';
+    case 4:
+      return 'Ветвь';
+    case 5:
+      return 'Крона';
+    case 6:
+      return 'Древо';
+    case 7:
+      return 'Роща';
+    default:
+      return 'Лес';
+  }
 }
 
 LevelStats levelStatsFor(int totalXp) {

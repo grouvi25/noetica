@@ -52,27 +52,59 @@ void main() {
     expect(levelStatsFor(-50).totalXp, 0);
   });
 
-  group('эпохи', () {
-    test('epoch starts at 1 for a freshly-created axis', () {
-      expect(epochFromXp(0), 1);
-      expect(epochFromXp(-10), 1);
+  group('эпохи (v3 — derived from axis level)', () {
+    test('Lv 1-5 → Э1, Lv 6-10 → Э2, Lv 11-15 → Э3', () {
+      expect(epochForLevel(1), 1);
+      expect(epochForLevel(5), 1);
+      expect(epochForLevel(6), 2);
+      expect(epochForLevel(10), 2);
+      expect(epochForLevel(11), 3);
+      expect(epochForLevel(15), 3);
+      expect(epochForLevel(16), 4);
     });
 
-    test('advances once per kXpPerEpoch accumulated on an axis', () {
-      expect(epochFromXp(kXpPerEpoch - 1), 1);
-      expect(epochFromXp(kXpPerEpoch), 2);
-      expect(epochFromXp(kXpPerEpoch * 2 - 1), 2);
-      expect(epochFromXp(kXpPerEpoch * 2), 3);
+    test('clamps non-positive level to Э1', () {
+      expect(epochForLevel(0), 1);
+      expect(epochForLevel(-3), 1);
     });
 
-    test('xpToNextEpoch reports countdown to the next threshold', () {
-      // Right at the start of эпоха 2 → full kXpPerEpoch to reach эпоха 3.
-      expect(xpToNextEpoch(kXpPerEpoch), kXpPerEpoch);
-      // Halfway through эпоха 1 → half of kXpPerEpoch left.
-      expect(
-        xpToNextEpoch(kXpPerEpoch ~/ 2),
-        kXpPerEpoch - kXpPerEpoch ~/ 2,
-      );
+    test('axisEpochName returns growth-themed labels', () {
+      expect(axisEpochName(1), 'Зерно');
+      expect(axisEpochName(2), 'Росток');
+      expect(axisEpochName(3), 'Побег');
+      expect(axisEpochName(4), 'Ветвь');
+      expect(axisEpochName(5), 'Крона');
+      expect(axisEpochName(6), 'Древо');
+      expect(axisEpochName(7), 'Роща');
+      // Anything beyond the named set falls back to "Лес".
+      expect(axisEpochName(99), 'Лес');
+    });
+  });
+
+  group('глобальные звания', () {
+    test('rank tiers grow with level', () {
+      expect(globalRankName(1), 'Новичок');
+      expect(globalRankName(4), 'Новичок');
+      expect(globalRankName(5), 'Странник');
+      expect(globalRankName(9), 'Странник');
+      expect(globalRankName(10), 'Искатель');
+      expect(globalRankName(14), 'Искатель');
+      expect(globalRankName(15), 'Практик');
+      expect(globalRankName(20), 'Мастер');
+      expect(globalRankName(30), 'Архитектор');
+      expect(globalRankName(50), 'Хранитель');
+      expect(globalRankName(100), 'Хранитель');
+    });
+  });
+
+  group('xpToNextLevel', () {
+    test('reports remaining XP within current level', () {
+      // 150 → Lv 2 [100..250], next is 250, so 100 remaining.
+      expect(xpToNextLevel(levelStatsFor(150)), 100);
+      // Right at level start → full span remaining.
+      expect(xpToNextLevel(levelStatsFor(100)), 150); // span L2 = 250-100
+      // Right at next-level threshold → 0 remaining (just rolled over).
+      expect(xpToNextLevel(levelStatsFor(249)), 1);
     });
   });
 }

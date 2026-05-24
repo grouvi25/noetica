@@ -10,8 +10,8 @@ import '../../services/levels.dart';
 import '../../theme/app_theme.dart';
 import '../../widgets/brand_glyph.dart';
 import '../roadmap/roadmap_screen.dart';
-import '../settings/settings_screen.dart';
 import '../home/home_shell.dart';
+import '../knowledge/knowledge_graph_screen.dart';
 import 'axes_editor_screen.dart';
 import 'axis_detail_sheet.dart';
 import 'epoch_ceremony.dart';
@@ -73,7 +73,6 @@ class _SelfScreenState extends ConsumerState<SelfScreen> {
     }
 
     final canPop = Navigator.of(context).canPop();
-    final isMobile = MediaQuery.of(context).size.width < 900;
     return Scaffold(
       appBar: AppBar(
         // When pushed (e.g. tapped from the mini-Древо on the dashboard) we
@@ -99,20 +98,22 @@ class _SelfScreenState extends ConsumerState<SelfScreen> {
               );
             },
           ),
-          // On desktop, Settings is a sidebar tab — no need to duplicate
-          // it in the AppBar. On mobile it's the primary way in.
-          if (isMobile)
-            IconButton(
-              tooltip: 'Настройки',
-              icon: const Icon(Icons.settings_outlined),
-              onPressed: () {
-                Navigator.of(context).push(
-                  MaterialPageRoute(
-                    builder: (_) => const SettingsScreen(),
-                  ),
-                );
-              },
-            ),
+          IconButton(
+            tooltip: 'Граф знаний',
+            icon: const Icon(Icons.account_tree_outlined),
+            onPressed: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (_) => const KnowledgeGraphScreen(),
+                ),
+              );
+            },
+          ),
+          IconButton(
+            tooltip: 'Ещё',
+            icon: const Icon(Icons.more_vert),
+            onPressed: () => showHomeMoreSheet(context),
+          ),
         ],
       ),
       body: scoresAsync.when(
@@ -628,10 +629,32 @@ class _ProfileHeader extends StatelessWidget {
                 valueColor: AlwaysStoppedAnimation<Color>(palette.fg),
               ),
             ),
-            const SizedBox(height: 6),
-            Text(
-              'до L${l.level + 1}: ${l.xpForLevel - l.xpIntoLevel} xp',
-              style: TextStyle(color: palette.muted, fontSize: 12),
+            const SizedBox(height: 8),
+            Row(
+              children: [
+                Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                  decoration: BoxDecoration(
+                    border: Border.all(color: palette.line),
+                    borderRadius: BorderRadius.circular(4),
+                  ),
+                  child: Text(
+                    globalRankName(l.level).toUpperCase(),
+                    style: TextStyle(
+                      color: palette.fg,
+                      fontSize: 10,
+                      letterSpacing: 1.6,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ),
+                const Spacer(),
+                Text(
+                  'до L${l.level + 1}: ${l.xpForLevel - l.xpIntoLevel} xp',
+                  style: TextStyle(color: palette.muted, fontSize: 12),
+                ),
+              ],
             ),
           ],
           if (aspiration.isNotEmpty) ...[
@@ -870,7 +893,7 @@ class _AxisTile extends StatelessWidget {
                                 borderRadius: BorderRadius.circular(4),
                               ),
                               child: Text(
-                                'Э${epochFromXp(ls.totalXp)}',
+                                'Э${epochForLevel(ls.level)}',
                                 style: TextStyle(
                                   color: palette.bg,
                                   fontSize: 10,

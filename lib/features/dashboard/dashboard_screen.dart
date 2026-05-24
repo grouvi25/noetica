@@ -164,6 +164,11 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
             icon: const Icon(Icons.timer_outlined),
             onPressed: () => PomodoroSheet.show(context),
           ),
+          IconButton(
+            tooltip: 'Ещё',
+            icon: const Icon(Icons.more_vert),
+            onPressed: () => showHomeMoreSheet(context),
+          ),
           const SizedBox(width: 4),
         ],
       ),

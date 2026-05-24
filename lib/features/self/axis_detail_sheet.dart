@@ -110,7 +110,7 @@ class _AxisDetailSheet extends ConsumerWidget {
                       borderRadius: BorderRadius.circular(6),
                     ),
                     child: Text(
-                      'Э${epochFromXp(ls.totalXp)}',
+                      'Э${epochForLevel(ls.level)} · ${axisEpochName(epochForLevel(ls.level))}',
                       style: TextStyle(
                         color: palette.bg,
                         fontWeight: FontWeight.w700,
@@ -139,8 +139,8 @@ class _AxisDetailSheet extends ConsumerWidget {
                 const SizedBox(width: 24),
                 if (ls != null)
                   _Stat(
-                    label: 'ДО Э${epochFromXp(ls.totalXp) + 1}',
-                    value: '${xpToNextEpoch(ls.totalXp)}',
+                    label: 'ДО L${ls.level + 1}',
+                    value: '${xpToNextLevel(ls)}',
                     palette: palette,
                   ),
               ],
@@ -148,22 +148,22 @@ class _AxisDetailSheet extends ConsumerWidget {
             if (ls != null) ...[
               const SizedBox(height: 6),
               Text(
-                'Уровень L${ls.level} — от всех закрытых задач. '
-                'Эпоха Э${epochFromXp(ls.totalXp)} — от XP именно этой оси, '
-                'растёт и после того как древо заполнено на 100 %.',
+                'Уровень L${ls.level} растёт от всех закрытых задач этой оси и '
+                'никогда не падает. Каждые 5 уровней — новая эпоха '
+                '(сейчас Э${epochForLevel(ls.level)} · ${axisEpochName(epochForLevel(ls.level))}), '
+                'это веха-награда: меняется визуал ветки.',
                 style: TextStyle(color: palette.muted, fontSize: 11),
               ),
             ],
             if (ls != null) ...[
               const SizedBox(height: 12),
-              // Progress bar now tracks the same metric as the adjacent
-              // "ДО Э…" stat — эпоха progress — so the numbers can't
-              // drift against the bar. 0..1 of the current эпоха.
+              // Progress bar tracks axis level progress (0..1 of the
+              // current level span) — the same metric as the adjacent
+              // "ДО L…" stat, so numbers can't drift against the bar.
               ClipRRect(
                 borderRadius: BorderRadius.circular(2),
                 child: LinearProgressIndicator(
-                  value: ((ls.totalXp % kXpPerEpoch) / kXpPerEpoch)
-                      .clamp(0.0, 1.0),
+                  value: ls.progress.clamp(0.0, 1.0),
                   minHeight: 4,
                   backgroundColor: palette.line,
                   valueColor: AlwaysStoppedAnimation<Color>(palette.fg),

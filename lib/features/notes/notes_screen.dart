@@ -5,7 +5,9 @@ import '../../data/models.dart';
 import '../../providers.dart';
 import '../../theme/app_theme.dart';
 import '../../utils/body_utils.dart';
+import '../calendar/calendar_screen.dart';
 import '../entry/entry_card.dart';
+import '../home/home_shell.dart';
 
 /// "Заметки" tab — fast capture + searchable list.
 /// Filters entries by kind == note, ordered reverse chronological.
@@ -60,7 +62,25 @@ class _NotesScreenState extends ConsumerState<NotesScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Журнал'),
+        title: const Text('Лента'),
+        actions: [
+          IconButton(
+            tooltip: 'Календарь',
+            icon: const Icon(Icons.calendar_month_outlined),
+            onPressed: () {
+              Navigator.of(context).push(
+                MaterialPageRoute<void>(
+                  builder: (_) => const CalendarScreen(),
+                ),
+              );
+            },
+          ),
+          IconButton(
+            tooltip: 'Ещё',
+            icon: const Icon(Icons.more_vert),
+            onPressed: () => showHomeMoreSheet(context),
+          ),
+        ],
       ),
       body: Column(
         children: [
