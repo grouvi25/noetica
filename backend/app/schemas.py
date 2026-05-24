@@ -169,6 +169,7 @@ class MenuRequest(BaseModel):
     servings: int = Field(default=2, ge=1, le=8)
     restrictions: str = Field(default="", max_length=400)
     extra_notes: str = Field(default="", max_length=600)
+    duration_days: int = Field(default=1, ge=1, le=7)
 
 
 class MenuPlan(BaseModel):

@@ -240,6 +240,7 @@ class ToolsApi {
     required int servings,
     String restrictions = '',
     String extraNotes = '',
+    int durationDays = 7,
   }) async {
     final uri = Uri.parse('$_baseUrl/tools/menu/generate');
     final payload = <String, Object?>{
@@ -247,6 +248,7 @@ class ToolsApi {
       'servings': servings,
       'restrictions': restrictions,
       'extra_notes': extraNotes,
+      'duration_days': durationDays,
     };
     final json = await _post(uri, payload, _generateTimeout);
     return MenuPlan.fromJson(json);

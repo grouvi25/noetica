@@ -25,6 +25,7 @@ import '../settings/settings_screen.dart';
 import '../tasks/tasks_screen.dart';
 import 'widgets/activity_heatmap.dart';
 import 'widgets/dashboard_stats.dart';
+import 'widgets/daily_meal_card.dart';
 import 'widgets/mini_tree_card.dart';
 import 'widgets/pulse_section.dart';
 
@@ -285,6 +286,10 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                     palette: palette,
                   ),
               ],
+              const SizedBox(height: 22),
+              _SectionHeader(label: 'МЕНЮ', palette: palette),
+              const SizedBox(height: 8),
+              DailyMealCard(palette: palette),
               const SizedBox(height: 22),
               _SectionHeader(label: 'ПУЛЬС', palette: palette),
               const SizedBox(height: 8),
