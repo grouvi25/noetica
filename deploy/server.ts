@@ -84,10 +84,6 @@ serve({
       "Cross-Origin-Opener-Policy": "same-origin",
       "Cross-Origin-Embedder-Policy": "require-corp",
     });
-    if (url.pathname.endsWith("/flutter_bootstrap.js") || url.pathname === "/flutter_bootstrap.js") {
-      const text = await Bun.file(target).text();
-      return new Response(text.replaceAll('mainJsPath":"main.dart.js', 'mainJsPath":"main.dart.zo.js'), { headers });
-    }
     return new Response(Bun.file(target), { headers });
   },
 });
