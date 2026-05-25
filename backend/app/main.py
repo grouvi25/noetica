@@ -29,6 +29,7 @@ from .llm import LlmClient, LlmConfigError, LlmUpstreamError
 from .schemas import (
     AxesRequest,
     AxesResponse,
+    AxisDraft,
     CoachRequest,
     CoachResponse,
     HabitsPlan,
@@ -231,9 +232,29 @@ async def generate_axes(
         )
     except LlmUpstreamError as exc:
         logger.warning("LLM upstream error: status=%s", exc.status)
-        raise HTTPException(
-            status_code=502, detail="LLM upstream error.",
-        ) from exc
+        # Return fallback axes instead of failing
+        axes = [
+            AxisDraft(
+                name="Тело",
+                symbol="◐",
+                description="Физическое здоровье, спорт, питание, режим дня",
+                color="#FF6B6B",
+            ),
+            AxisDraft(
+                name="Ум",
+                symbol="◑",
+                description="Интеллектуальное развитие, обучение, навыки",
+                color="#4ECDC4",
+            ),
+            AxisDraft(
+                name="Душа",
+                symbol="◒",
+                description="Эмоциональное благополучие, отношения, творчество",
+                color="#45B7D1",
+            ),
+        ]
+        logger.info("Returning fallback axes due to LLM error")
+        return AxesResponse(model="fallback", axes=axes)
 
     if len(axes) < 3:
         raise HTTPException(
