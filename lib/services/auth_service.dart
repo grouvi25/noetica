@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:math';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:google_sign_in/google_sign_in.dart';
@@ -58,9 +59,8 @@ class AuthException implements Exception {
   String toString() => 'AuthException: $message';
 }
 
-/// Persists the JWT and the cached user profile, runs the platform-appropriate
-/// Google Sign-In flow, and exposes a single source of truth for "is the user
-/// signed in".
+/// Persists the JWT and the cached user profile, creates registration-free
+/// web sessions, keeps the native Google flow, and exposes the current session.
 class AuthService {
   AuthService({
     String? backendBaseUrl,
@@ -75,6 +75,7 @@ class AuthService {
 
   static const _kTokenKey = 'noetica.auth.jwt.v1';
   static const _kUserKey = 'noetica.auth.user.v1';
+  static const _kAnonymousClientIdKey = 'noetica.auth.anon_client_id.v1';
 
   /// DEV-ONLY: when set to "true" via --dart-define=DEV_SKIP_AUTH=true,
   /// `restore()` and `signInWithGoogle()` return a synthetic local session
@@ -110,7 +111,7 @@ class AuthService {
   final _stateController = StreamController<AuthSession?>.broadcast();
   AuthSession? _current;
 
-  /// Emits the current session every time it changes (sign-in / sign-out / cold start).
+  /// Emits the current session every time it changes.
   Stream<AuthSession?> get sessionStream => _stateController.stream;
   AuthSession? get current => _current;
 
@@ -119,6 +120,9 @@ class AuthService {
       _current = _devStubSession();
       _stateController.add(_current);
       return _current;
+    }
+    if (kIsWeb) {
+      return _restoreOrCreateAnonymousSession();
     }
     final token = await _storage.read(key: _kTokenKey);
     final userJson = await _storage.read(key: _kUserKey);
@@ -140,13 +144,17 @@ class AuthService {
     }
   }
 
-  /// Run the platform-appropriate Google Sign-In flow, exchange the resulting
-  /// ID token for a Noetica JWT, and persist both.
+  /// Run the platform-appropriate sign-in flow. On web this is intentionally
+  /// registration-free: we create a stable anonymous backend session for this
+  /// browser profile and keep data isolated by that generated id.
   Future<AuthSession> signInWithGoogle() async {
     if (_skipAuth) {
       _current = _devStubSession();
       _stateController.add(_current);
       return _current!;
+    }
+    if (kIsWeb) {
+      return _restoreOrCreateAnonymousSession();
     }
     final idToken = await _obtainGoogleIdToken();
     final response = await _http
@@ -166,11 +174,7 @@ class AuthService {
       accessToken: body['access_token'] as String,
       user: AuthUser.fromJson(body['user'] as Map<String, dynamic>),
     );
-    await _storage.write(key: _kTokenKey, value: session.accessToken);
-    await _storage.write(
-      key: _kUserKey,
-      value: jsonEncode(session.user.toJson()),
-    );
+    await _persistSession(session);
     _current = session;
     _stateController.add(session);
     return session;
@@ -196,16 +200,14 @@ class AuthService {
   /// Called by API clients when the backend returns 401 on an
   /// authenticated call. The cached JWT is almost certainly stale
   /// (e.g. we switched backends or the server rotated JWT_SECRET), so
-  /// we drop it and let `AuthGate` kick the user back to the sign-in
-  /// screen. Keeping a stale token in storage means every LLM / sync
-  /// request silently fails forever — which looks exactly like "Gemini
-  /// doesn't work".
+  /// we drop it and let the app create a fresh session. Keeping a stale
+  /// token in storage means every LLM / sync request silently fails forever.
   Future<void> handleUnauthorized() async {
     if (_current == null) return;
     // DEV-ONLY: when DEV_SKIP_AUTH=true the "session" is a synthetic
     // local stub used to preview UI without a backend. Treating a 401
     // from a real network call as a sign-out kicks the dev user back
-    // to the sign-in screen mid-onboarding, which makes it impossible
+    // to startup mid-onboarding, which makes it impossible
     // to drive the app locally for visual QA. Keep the stub alive.
     if (_skipAuth) return;
     await signOut();
@@ -288,6 +290,69 @@ class AuthService {
   void dispose() {
     _stateController.close();
     _http.close();
+  }
+
+  Future<AuthSession> _restoreOrCreateAnonymousSession() async {
+    final token = await _storage.read(key: _kTokenKey);
+    final userJson = await _storage.read(key: _kUserKey);
+    if (token != null && token.isNotEmpty && userJson != null) {
+      try {
+        final user = AuthUser.fromJson(
+          jsonDecode(userJson) as Map<String, dynamic>,
+        );
+        final session = AuthSession(accessToken: token, user: user);
+        _current = session;
+        _stateController.add(session);
+        return session;
+      } catch (_) {
+        await _storage.delete(key: _kTokenKey);
+        await _storage.delete(key: _kUserKey);
+      }
+    }
+    final clientId = await _anonymousClientId();
+    final response = await _http
+        .post(
+          Uri.parse('$_baseUrl/auth/anonymous'),
+          headers: const {'Content-Type': 'application/json'},
+          body: jsonEncode({'client_id': clientId}),
+        )
+        .timeout(const Duration(seconds: 30));
+    if (response.statusCode != 200) {
+      throw AuthException(
+        'Backend rejected anonymous session (${response.statusCode}): ${response.body}',
+      );
+    }
+    final body = jsonDecode(response.body) as Map<String, dynamic>;
+    final session = AuthSession(
+      accessToken: body['access_token'] as String,
+      user: AuthUser.fromJson(body['user'] as Map<String, dynamic>),
+    );
+    await _persistSession(session);
+    _current = session;
+    _stateController.add(session);
+    return session;
+  }
+
+  Future<void> _persistSession(AuthSession session) async {
+    await _storage.write(key: _kTokenKey, value: session.accessToken);
+    await _storage.write(
+      key: _kUserKey,
+      value: jsonEncode(session.user.toJson()),
+    );
+  }
+
+  Future<String> _anonymousClientId() async {
+    final existing = await _storage.read(key: _kAnonymousClientIdKey);
+    if (existing != null && existing.isNotEmpty) return existing;
+    final id = _randomId();
+    await _storage.write(key: _kAnonymousClientIdKey, value: id);
+    return id;
+  }
+
+  String _randomId() {
+    final random = Random.secure();
+    final bytes = List<int>.generate(32, (_) => random.nextInt(256));
+    return base64UrlEncode(bytes).replaceAll('=', '');
   }
 
   AuthSession _devStubSession() => const AuthSession(

@@ -1,32 +1,37 @@
 # Noetica backend
 
-FastAPI service that turns a personal growth goal into a batch of trackable
-tasks via Groq (OpenAI-compatible endpoint, Llama 3.3 70B).
+FastAPI service for registration-free web sessions, cloud sync, and AI-powered
+roadmap/tools generation via the user's OmniRoute OpenAI-compatible gateway.
 
 ## Endpoints
 
 - `GET /healthz` — liveness probe.
 - `GET /healthz/llm` — reports LLM provider/model/status.
+- `POST /auth/anonymous` — registration-free web session keyed by a stable browser id.
+- `POST /auth/google` — legacy native Google sign-in.
+- `POST /sync/pull`, `POST /sync/push` — per-user cloud sync.
 - `POST /roadmap/generate` — goal + profile + axes → `{tasks, summary, model}`.
 
 ## Environment
 
 | Variable | Required | Default | Description |
 | --- | --- | --- | --- |
-| `GROQ_API_KEY` | yes | — | Groq API key (https://console.groq.com/keys). |
-| `LLM_BASE_URL` | no | `https://api.groq.com/openai/v1` | Override to use a different OpenAI-compatible gateway. |
-| `LLM_MODEL` | no | `llama-3.3-70b-versatile` | Any model id supported by the gateway. |
-| `CORS_ORIGINS` | no | `http://localhost:8080` | Comma-separated list. |
-| `PORT` | no | `8080` | HTTP port (Fly.io sets this). |
+| `OMNIROUTE_API_KEY` | yes | — | OmniRoute API key. Kept server-side only. |
+| `LLM_BASE_URL` | no | `https://freelance-gid.online/v1` | OpenAI-compatible gateway base URL. |
+| `LLM_MODEL` | no | `zo/zo:anthropic/claude-opus-4-7` | Model id supported by OmniRoute. |
+| `JWT_SECRET` | prod | auto-generated in `/data` | Signs Noetica session JWTs. |
+| `DEV_SKIP_AUTH` | no | `false` | Dev-only bypass for local backend previews. |
+| `CORS_ORIGINS` | no | `*` | Comma-separated list. |
+| `PORT` | no | `8080` | HTTP port. |
 
-Copy `.env.example` to `.env` for local dev.
+All LLM calls use `stream: true` to avoid Cloudflare timeouts.
 
 ## Local dev
 
 ```bash
 cd backend
 uv pip install -e .  # or: pip install -e .
-export GROQ_API_KEY=...
+export OMNIROUTE_API_KEY=...
 uvicorn app.main:app --reload --port 8080
 ```
 
@@ -34,6 +39,6 @@ uvicorn app.main:app --reload --port 8080
 
 ```bash
 cd backend
-fly launch --now --name noetica-backend --region fra
-fly secrets set GROQ_API_KEY=...
+fly deploy
+fly secrets set OMNIROUTE_API_KEY=...
 ```

@@ -291,10 +291,13 @@ class ToolsApi {
     Map<String, Object?> payload,
     Duration timeout,
   ) async {
-    final token = _auth?.current?.accessToken;
+    var token = _auth?.current?.accessToken;
+    if (token == null || token.isEmpty) {
+      token = (await _auth?.restore())?.accessToken;
+    }
     if (!kDevSkipAuth && (token == null || token.isEmpty)) {
       throw ToolsApiException(
-        'Не выполнен вход в Google. Перезайдите и попробуйте снова.',
+        'Не удалось создать сессию. Обновите страницу и попробуйте снова.',
         status: 401,
       );
     }
@@ -325,7 +328,7 @@ class ToolsApi {
       if (response.statusCode == 401) {
         unawaited(_auth?.handleUnauthorized() ?? Future.value());
         throw ToolsApiException(
-          'Сессия истекла. Зайдите через Google ещё раз.',
+          'Сессия истекла. Обновите страницу и попробуйте снова.',
           status: 401,
         );
       }

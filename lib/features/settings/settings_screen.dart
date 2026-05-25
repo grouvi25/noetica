@@ -329,10 +329,10 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     final ok = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Выйти из аккаунта?'),
+        title: const Text('Сбросить текущую сессию?'),
         content: const Text(
-          'Локальные данные останутся на устройстве. Чтобы они снова '
-          'синхронизировались, войдите тем же Google-аккаунтом.',
+          'Локальные данные останутся на устройстве. При следующем запуске '
+          'веб-версия создаст новую приватную сессию для этого браузера.',
         ),
         actions: [
           TextButton(
@@ -341,7 +341,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           ),
           FilledButton(
             onPressed: () => Navigator.of(ctx).pop(true),
-            child: const Text('Выйти'),
+            child: const Text('Сбросить'),
           ),
         ],
       ),
@@ -378,14 +378,16 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               leading: const Icon(Icons.account_circle_outlined),
               title: Text(session.user.name.isNotEmpty
                   ? session.user.name
-                  : session.user.email),
+                  : 'Личная сессия'),
               subtitle: Text(
-                session.user.email,
+                session.user.email.isNotEmpty
+                    ? session.user.email
+                    : 'Регистрация не требуется',
                 style: TextStyle(color: palette.muted),
               ),
               trailing: TextButton(
                 onPressed: _signOut,
-                child: const Text('Выйти'),
+                child: const Text('Сбросить'),
               ),
             ),
             // Manual "force sync now" trigger — useful when the user
@@ -406,7 +408,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           else
             ListTile(
               leading: const Icon(Icons.account_circle_outlined),
-              title: const Text('Не выполнен вход'),
+              title: const Text('Сессия ещё не готова'),
               subtitle: Text(
                 'Перезапустите приложение, чтобы войти.',
                 style: TextStyle(color: palette.muted),

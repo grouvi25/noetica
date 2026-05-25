@@ -1,15 +1,19 @@
-"""Google Sign-In + our own JWT session tokens.
+"""Google Sign-In, anonymous web sessions, and our own JWT session tokens.
 
-Flow:
+Google flow:
 1. Flutter calls `GoogleSignIn.signIn()`, gets a Google ID token.
 2. Flutter POSTs that token to `/auth/google`.
-3. We verify the token against Google's certs (audience = our Web Client ID),
-   upsert the user by `sub`, mint our own JWT, return it.
-4. Every other endpoint reads `Authorization: Bearer <jwt>`, decodes it,
-   loads the user.
+3. We verify the token against Google's certs, upsert the user by `sub`,
+   mint our own JWT, return it.
 
-JWTs are HS256 signed with `JWT_SECRET`; we don't bother with refresh tokens
-yet — the lifetime is 30 days, and re-auth via Google is one tap.
+Web flow:
+1. Flutter web creates a stable random client id in browser storage.
+2. Flutter POSTs that id to `/auth/anonymous`.
+3. We upsert an isolated anonymous user keyed by that client id, mint a JWT,
+   return it.
+
+Every other endpoint reads `Authorization: Bearer <jwt>`, decodes it,
+loads the user. JWTs are HS256 signed with `JWT_SECRET`.
 """
 
 from __future__ import annotations
@@ -252,7 +256,55 @@ async def upsert_user_from_google(payload: dict) -> dict:
         return dict(await cur.fetchone())
 
 
-_DEV_SKIP_AUTH = os.getenv("DEV_SKIP_AUTH", "true").lower() in ("1", "true", "yes")
+async def upsert_anonymous_user(
+    client_id: str,
+    display_name: str | None = None,
+) -> dict:
+    """Upsert a registration-free web user keyed by a stable browser id."""
+    clean_client_id = client_id.strip()
+    if not clean_client_id:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="client_id is required.",
+        )
+    google_sub = f"anonymous:{clean_client_id}"
+    name = (display_name or "Anonymous").strip()[:120] or "Anonymous"
+    now_ms = int(time.time() * 1000)
+    async with db.connect() as conn:
+        cur = await conn.execute(
+            "SELECT id FROM users WHERE google_sub = ?",
+            (google_sub,),
+        )
+        row = await cur.fetchone()
+        if row is None:
+            user_id = str(uuid.uuid4())
+            await conn.execute(
+                """
+                INSERT INTO users (id, google_sub, email, name, picture_url,
+                                   created_at, updated_at)
+                VALUES (?, ?, ?, ?, ?, ?, ?)
+                """,
+                (user_id, google_sub, "", name, "", now_ms, now_ms),
+            )
+        else:
+            user_id = row["id"]
+            await conn.execute(
+                """
+                UPDATE users
+                SET name = ?, updated_at = ?
+                WHERE id = ?
+                """,
+                (name, now_ms, user_id),
+            )
+        await conn.commit()
+        cur = await conn.execute(
+            "SELECT id, email, name, picture_url FROM users WHERE id = ?",
+            (user_id,),
+        )
+        return dict(await cur.fetchone())
+
+
+_DEV_SKIP_AUTH = os.getenv("DEV_SKIP_AUTH", "false").lower() in ("1", "true", "yes")
 
 _DEV_USER: dict = {
     "id": "dev-local-user-0000",

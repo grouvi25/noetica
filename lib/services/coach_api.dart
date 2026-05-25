@@ -122,10 +122,13 @@ class CoachApi {
   }
 
   Future<Map<String, dynamic>> _call(Map<String, dynamic> payload) async {
-    final token = _auth?.current?.accessToken;
+    var token = _auth?.current?.accessToken;
+    if (token == null || token.isEmpty) {
+      token = (await _auth?.restore())?.accessToken;
+    }
     if (!kDevSkipAuth && (token == null || token.isEmpty)) {
       throw CoachApiException(
-        'Не выполнен вход в Google. Перезайдите и попробуйте снова.',
+        'Не удалось создать сессию. Обновите страницу и попробуйте снова.',
         status: 401,
       );
     }

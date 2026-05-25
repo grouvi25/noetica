@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'data/profile.dart';
-import 'features/auth/auth_gate_screen.dart';
 import 'features/home/home_shell.dart';
 import 'features/onboarding/onboarding_screen.dart';
 import 'features/onboarding/onboarding_chat_screen.dart';
@@ -57,7 +56,7 @@ class NoeticaApp extends ConsumerWidget {
     }
     final session = sessionAsync.value;
     if (session == null) {
-      return const AuthGateScreen(key: ValueKey('auth'));
+      return const _SplashScreen(key: ValueKey('waiting-session'));
     }
 
     if (profileAsync.isLoading || onboardedAsync.isLoading) {

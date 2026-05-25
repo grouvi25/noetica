@@ -1,6 +1,46 @@
-"""Smoke tests for the auth flow."""
+"""Smoke tests for registration-free anonymous auth and legacy Google auth."""
 
 from __future__ import annotations
+
+
+def test_auth_anonymous_creates_user(app_with_db) -> None:
+    response = app_with_db.post(
+        "/auth/anonymous",
+        json={"client_id": "browser-1", "display_name": "Web User"},
+    )
+    assert response.status_code == 200, response.text
+    body = response.json()
+    assert body["token_type"] == "Bearer"
+    assert body["access_token"]
+    assert body["user"]["email"] == ""
+    assert body["user"]["name"] == "Web User"
+    assert body["user"]["id"]
+
+
+def test_auth_anonymous_idempotent(app_with_db) -> None:
+    r1 = app_with_db.post(
+        "/auth/anonymous",
+        json={"client_id": "browser-1"},
+    )
+    r2 = app_with_db.post(
+        "/auth/anonymous",
+        json={"client_id": "browser-1"},
+    )
+    assert r1.status_code == r2.status_code == 200
+    assert r1.json()["user"]["id"] == r2.json()["user"]["id"]
+
+
+def test_me_returns_anonymous_user(app_with_db) -> None:
+    auth = app_with_db.post(
+        "/auth/anonymous",
+        json={"client_id": "browser-1"},
+    ).json()
+    response = app_with_db.get(
+        "/auth/me",
+        headers={"Authorization": f"Bearer {auth['access_token']}"},
+    )
+    assert response.status_code == 200, response.text
+    assert response.json()["name"] == "Anonymous"
 
 
 def test_auth_google_creates_user(app_with_db) -> None:

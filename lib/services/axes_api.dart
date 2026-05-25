@@ -89,10 +89,13 @@ class AxesApi {
       if (variationSeed != null) 'variation_seed': variationSeed,
     };
 
-    final token = _auth?.current?.accessToken;
+    var token = _auth?.current?.accessToken;
+    if (token == null || token.isEmpty) {
+      token = (await _auth?.restore())?.accessToken;
+    }
     if (!kDevSkipAuth && (token == null || token.isEmpty)) {
       throw AxesApiException(
-        'Не выполнен вход в Google. Перезайдите и попробуйте снова.',
+        'Не удалось создать сессию. Обновите страницу и попробуйте снова.',
         status: 401,
       );
     }
@@ -123,11 +126,10 @@ class AxesApi {
       } catch (_) {}
       if (response.statusCode == 401) {
         // Token is stale (backend rotated JWT_SECRET or we switched
-        // Fly apps). Clear it so AuthGate forces a re-login instead of
-        // letting the user stare at "Gemini doesn't work".
+        // backend apps). Clear it so the next request creates a fresh session.
         unawaited(_auth?.handleUnauthorized() ?? Future.value());
         throw AxesApiException(
-          'Сессия истекла. Зайдите через Google ещё раз.',
+          'Сессия истекла. Обновите страницу и попробуйте снова.',
           status: 401,
         );
       }

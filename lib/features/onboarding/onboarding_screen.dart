@@ -205,7 +205,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
       // Settings), the user expects "Сохранить" → close the dialog and
       // bounce back. Without this, the button looked broken because
       // tapping it just left them stuck on the same form. On the
-      // first-run onboarding path we don't pop, AuthGate swaps to the
+      // first-run onboarding path we don't pop; the app shell swaps to the
       // home shell automatically once `onboarded` flips.
       final wasPushed = Navigator.of(context).canPop();
       ScaffoldMessenger.of(context).showSnackBar(
@@ -220,7 +220,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
       if (wasPushed) {
         Navigator.of(context).pop();
       } else {
-        // First-run path: AuthGate is about to swap to the home shell.
+        // First-run path: the app shell is about to swap to the home screen.
         // Before it does, give the user the opportunity to immediately
         // turn their onboarding aspiration into a real task plan, so
         // they don't land on an empty dashboard with no idea what to

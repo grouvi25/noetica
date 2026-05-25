@@ -21,6 +21,7 @@ from .auth import (
     AuthConfigError,
     CurrentUser,
     issue_jwt,
+    upsert_anonymous_user,
     upsert_user_from_google,
     verify_google_id_token,
 )
@@ -96,8 +97,10 @@ async def healthz_llm() -> dict[str, object]:
         client = LlmClient()
     except LlmConfigError as exc:
         return {"ok": False, "error": str(exc)}
-    provider = "groq"
-    if "groq" in (client.base_url or ""):
+    provider = "omniroute"
+    if "freelance-gid.online" in (client.base_url or ""):
+        provider = "omniroute"
+    elif "groq" in (client.base_url or ""):
         provider = "groq"
     elif "generativelanguage" in (client.base_url or ""):
         provider = "gemini"
@@ -113,6 +116,11 @@ async def healthz_llm() -> dict[str, object]:
 
 class GoogleAuthRequest(BaseModel):
     id_token: str
+
+
+class AnonymousAuthRequest(BaseModel):
+    client_id: str
+    display_name: str | None = None
 
 
 class AuthResponse(BaseModel):
@@ -131,6 +139,14 @@ async def auth_google(req: GoogleAuthRequest) -> AuthResponse:
     user = await upsert_user_from_google(payload)
     token = issue_jwt(user["id"])
     logger.info("auth_google ok user=%s", user["id"][:8])
+    return AuthResponse(access_token=token, user=user)
+
+
+@app.post("/auth/anonymous", response_model=AuthResponse)
+async def auth_anonymous(req: AnonymousAuthRequest) -> AuthResponse:
+    user = await upsert_anonymous_user(req.client_id, req.display_name)
+    token = issue_jwt(user["id"])
+    logger.info("auth_anonymous ok user=%s", user["id"][:8])
     return AuthResponse(access_token=token, user=user)
 
 

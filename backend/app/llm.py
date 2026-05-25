@@ -1,9 +1,7 @@
-"""Groq LLM client used for roadmap generation.
+"""OpenAI-compatible LLM client used for Noetica generation.
 
-Uses Groq's OpenAI-compatible endpoint so the request/response surface
-stays the standard chat-completions shape. Only `GROQ_API_KEY` is
-required — free tier gives 30 RPM / 14 400 RPD for
-llama-3.3-70b-versatile.
+Defaults to the user's OmniRoute gateway. Requests are always streamed so
+Cloudflare never cuts off long agent responses.
 """
 
 from __future__ import annotations
@@ -76,10 +74,10 @@ def _knowledge_lines(knowledge: KnowledgeInput | None) -> list[str]:
             lines.append(f"  - {snippet}")
     return lines
 
-# Groq — free, fast, OpenAI-compatible.
-GROQ_BASE_URL = "https://api.groq.com/openai/v1"
-GROQ_MODEL = "llama-3.3-70b-versatile"
-REQUEST_TIMEOUT = 45.0
+# OmniRoute — OpenAI-compatible gateway backed by the user's Zo accounts.
+OMNIROUTE_BASE_URL = "https://freelance-gid.online/v1"
+OMNIROUTE_MODEL = "zo/zo:anthropic/claude-opus-4-7"
+REQUEST_TIMEOUT = 180.0
 
 
 class LlmConfigError(RuntimeError):
@@ -205,16 +203,70 @@ def _user_prompt(
 
 class LlmClient:
     def __init__(self) -> None:
-        self.api_key = os.getenv("GROQ_API_KEY", "")
+        self.api_key = os.getenv("OMNIROUTE_API_KEY") or os.getenv("GROQ_API_KEY", "")
         if not self.api_key:
             raise LlmConfigError(
-                "No API key configured. Set the GROQ_API_KEY "
-                "environment variable (https://console.groq.com/keys)."
+                "No API key configured. Set OMNIROUTE_API_KEY "
+                "to use the OmniRoute gateway."
             )
         self.base_url = os.getenv(
-            "LLM_BASE_URL", GROQ_BASE_URL
+            "LLM_BASE_URL", OMNIROUTE_BASE_URL
         ).rstrip("/")
-        self.model = os.getenv("LLM_MODEL", GROQ_MODEL)
+        self.model = os.getenv("LLM_MODEL", OMNIROUTE_MODEL)
+
+    async def _chat_content(
+        self,
+        payload: dict[str, Any],
+    ) -> tuple[str, str | None]:
+        payload = dict(payload)
+        payload["stream"] = True
+        url = f"{self.base_url}/chat/completions"
+        async with httpx.AsyncClient(timeout=REQUEST_TIMEOUT) as client:
+            async with client.stream(
+                "POST",
+                url,
+                json=payload,
+                headers={
+                    "Authorization": f"Bearer {self.api_key}",
+                    "Content-Type": "application/json",
+                },
+            ) as response:
+                if response.status_code >= 400:
+                    text = await response.aread()
+                    raise LlmUpstreamError(
+                        response.status_code,
+                        f"LLM upstream error ({response.status_code}): "
+                        f"{text.decode('utf-8', 'ignore')[:500]}",
+                    )
+                chunks: list[str] = []
+                finish: str | None = None
+                async for line in response.aiter_lines():
+                    line = line.strip()
+                    if not line or not line.startswith("data:"):
+                        continue
+                    data_raw = line[5:].strip()
+                    if data_raw == "[DONE]":
+                        break
+                    try:
+                        data = json.loads(data_raw)
+                    except json.JSONDecodeError:
+                        continue
+                    try:
+                        choice = data["choices"][0]
+                    except (KeyError, IndexError, TypeError) as exc:
+                        raise LlmUpstreamError(
+                            502, f"Malformed LLM stream chunk: {exc}: {data!r}"
+                        ) from exc
+                    delta = choice.get("delta") or {}
+                    content = delta.get("content")
+                    if content:
+                        chunks.append(str(content))
+                    if choice.get("finish_reason"):
+                        finish = choice.get("finish_reason")
+                content = "".join(chunks).strip()
+                if not content:
+                    raise LlmUpstreamError(502, "Empty streamed content from LLM.")
+                return content, finish
 
     async def generate_roadmap(
         self,
@@ -225,10 +277,6 @@ class LlmClient:
         task_count: int,
         knowledge: KnowledgeInput | None = None,
     ) -> tuple[list[RoadmapTask], str]:
-        headers = {
-            "Authorization": f"Bearer {self.api_key}",
-            "Content-Type": "application/json",
-        }
         payload: dict[str, Any] = {
             "model": self.model,
             "messages": [
@@ -253,24 +301,7 @@ class LlmClient:
             "max_tokens": 3000,
         }
 
-        url = f"{self.base_url}/chat/completions"
-        async with httpx.AsyncClient(timeout=REQUEST_TIMEOUT) as client:
-            response = await client.post(url, json=payload, headers=headers)
-
-        if response.status_code >= 400:
-            raise LlmUpstreamError(
-                response.status_code,
-                f"LLM upstream error ({response.status_code}): {response.text[:500]}",
-            )
-
-        data = response.json()
-        try:
-            content = data["choices"][0]["message"]["content"]
-            finish = data["choices"][0].get("finish_reason")
-        except (KeyError, IndexError, TypeError) as exc:
-            raise LlmUpstreamError(
-                502, f"Malformed LLM response: {exc}: {data!r}"
-            ) from exc
+        content, finish = await self._chat_content(payload)
 
         if finish == "length":
             # The model ran out of tokens mid-JSON — the subsequent
@@ -304,10 +335,6 @@ class LlmClient:
         the user's free-form intents and produces names + symbols + a one-line
         description per axis. The Flutter UI lets the user edit them after.
         """
-        headers = {
-            "Authorization": f"Bearer {self.api_key}",
-            "Content-Type": "application/json",
-        }
         payload: dict[str, Any] = {
             "model": self.model,
             "messages": [
@@ -325,22 +352,7 @@ class LlmClient:
             "temperature": 0.7,
             "max_tokens": 1200,
         }
-        url = f"{self.base_url}/chat/completions"
-        async with httpx.AsyncClient(timeout=REQUEST_TIMEOUT) as client:
-            response = await client.post(url, json=payload, headers=headers)
-        if response.status_code >= 400:
-            raise LlmUpstreamError(
-                response.status_code,
-                f"LLM upstream error ({response.status_code}): {response.text[:500]}",
-            )
-        data = response.json()
-        try:
-            content = data["choices"][0]["message"]["content"]
-            finish = data["choices"][0].get("finish_reason")
-        except (KeyError, IndexError, TypeError) as exc:
-            raise LlmUpstreamError(
-                502, f"Malformed LLM response: {exc}: {data!r}"
-            ) from exc
+        content, finish = await self._chat_content(payload)
         if finish == "length":
             raise LlmUpstreamError(
                 502,
@@ -364,10 +376,6 @@ class LlmClient:
         client. The model is asked for strict JSON; we hard-fail with a
         502 if it doesn't parse so callers can surface a retry button.
         """
-        headers = {
-            "Authorization": f"Bearer {self.api_key}",
-            "Content-Type": "application/json",
-        }
         payload: dict[str, Any] = {
             "model": self.model,
             "messages": [
@@ -386,22 +394,7 @@ class LlmClient:
             # add a snack-by-default mode.
             "max_tokens": 6000,
         }
-        url = f"{self.base_url}/chat/completions"
-        async with httpx.AsyncClient(timeout=REQUEST_TIMEOUT) as client:
-            response = await client.post(url, json=payload, headers=headers)
-        if response.status_code >= 400:
-            raise LlmUpstreamError(
-                response.status_code,
-                f"LLM upstream error ({response.status_code}): {response.text[:500]}",
-            )
-        data = response.json()
-        try:
-            content = data["choices"][0]["message"]["content"]
-            finish = data["choices"][0].get("finish_reason")
-        except (KeyError, IndexError, TypeError) as exc:
-            raise LlmUpstreamError(
-                502, f"Malformed LLM response: {exc}: {data!r}"
-            ) from exc
+        content, finish = await self._chat_content(payload)
         if finish == "length":
             raise LlmUpstreamError(
                 502,
@@ -424,10 +417,6 @@ class LlmClient:
         than stage 1 so we get terse recipes that respect the template
         rather than chatty re-introductions.
         """
-        headers = {
-            "Authorization": f"Bearer {self.api_key}",
-            "Content-Type": "application/json",
-        }
         payload: dict[str, Any] = {
             "model": self.model,
             "messages": [
@@ -442,22 +431,7 @@ class LlmClient:
             "temperature": 0.5,
             "max_tokens": 900,
         }
-        url = f"{self.base_url}/chat/completions"
-        async with httpx.AsyncClient(timeout=REQUEST_TIMEOUT) as client:
-            response = await client.post(url, json=payload, headers=headers)
-        if response.status_code >= 400:
-            raise LlmUpstreamError(
-                response.status_code,
-                f"LLM upstream error ({response.status_code}): {response.text[:500]}",
-            )
-        data = response.json()
-        try:
-            content = data["choices"][0]["message"]["content"]
-            finish = data["choices"][0].get("finish_reason")
-        except (KeyError, IndexError, TypeError) as exc:
-            raise LlmUpstreamError(
-                502, f"Malformed LLM response: {exc}: {data!r}"
-            ) from exc
+        content, finish = await self._chat_content(payload)
         if finish == "length":
             raise LlmUpstreamError(
                 502,
@@ -465,8 +439,8 @@ class LlmClient:
                 "Increase max_tokens or simplify the request.",
             )
         markdown = str(content).strip()
-        # Strip accidental code-fence wrappers — Groq sometimes wraps
-        # markdown content in triple backticks despite instruction.
+        # Strip accidental code-fence wrappers in case the model ignored
+        # the instruction.
         # Mirrors the prefix-trimming logic in `_parse_json` so we don't
         # accidentally eat real recipe characters (e.g. a meal that
         # starts with "marinated…").
@@ -493,10 +467,6 @@ class LlmClient:
         malformed entries silently and lets the route decide whether
         the remaining list is acceptable.
         """
-        headers = {
-            "Authorization": f"Bearer {self.api_key}",
-            "Content-Type": "application/json",
-        }
         payload: dict[str, Any] = {
             "model": self.model,
             "messages": [
@@ -515,22 +485,7 @@ class LlmClient:
             # 3 k tokens with comfort. Bump if we ever extend the cap.
             "max_tokens": 3000,
         }
-        url = f"{self.base_url}/chat/completions"
-        async with httpx.AsyncClient(timeout=REQUEST_TIMEOUT) as client:
-            response = await client.post(url, json=payload, headers=headers)
-        if response.status_code >= 400:
-            raise LlmUpstreamError(
-                response.status_code,
-                f"LLM upstream error ({response.status_code}): {response.text[:500]}",
-            )
-        data = response.json()
-        try:
-            content = data["choices"][0]["message"]["content"]
-            finish = data["choices"][0].get("finish_reason")
-        except (KeyError, IndexError, TypeError) as exc:
-            raise LlmUpstreamError(
-                502, f"Malformed LLM response: {exc}: {data!r}"
-            ) from exc
+        content, finish = await self._chat_content(payload)
         if finish == "length":
             raise LlmUpstreamError(
                 502,
@@ -578,10 +533,6 @@ class LlmClient:
                 streak=streak,
             )
 
-        headers = {
-            "Authorization": f"Bearer {self.api_key}",
-            "Content-Type": "application/json",
-        }
         payload: dict[str, Any] = {
             "model": self.model,
             "messages": [
@@ -592,22 +543,7 @@ class LlmClient:
             "temperature": 0.7,
             "max_tokens": 800,
         }
-        url = f"{self.base_url}/chat/completions"
-        async with httpx.AsyncClient(timeout=REQUEST_TIMEOUT) as client:
-            response = await client.post(url, json=payload, headers=headers)
-        if response.status_code >= 400:
-            raise LlmUpstreamError(
-                response.status_code,
-                f"LLM upstream error ({response.status_code}): "
-                f"{response.text[:500]}",
-            )
-        data = response.json()
-        try:
-            content = data["choices"][0]["message"]["content"]
-        except (KeyError, IndexError, TypeError) as exc:
-            raise LlmUpstreamError(
-                502, f"Malformed LLM response: {exc}"
-            ) from exc
+        content, _finish = await self._chat_content(payload)
 
         parsed = _parse_json(content)
         parsed["model"] = self.model

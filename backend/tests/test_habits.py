@@ -1,6 +1,6 @@
 """Smoke tests for /tools/habits/generate.
 
-Mirrors `test_menu.py` — we don't hit the real Groq API, we
+Mirrors `test_menu.py` — we don't hit the real LLM provider, we
 monkey-patch `LlmClient.generate_habits_plan` to return canned
 responses, then verify FastAPI plumbing (auth, validation, response
 shape) and the JSON normaliser at the boundary.

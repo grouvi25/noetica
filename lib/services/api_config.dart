@@ -7,9 +7,8 @@ const String kDefaultBackendUrl = String.fromEnvironment(
   defaultValue: 'https://noetica-backend-glglzvme.fly.dev',
 );
 
-/// When true, API calls skip the token requirement and send requests
-/// without Authorization header. The backend must also have
-/// DEV_SKIP_AUTH=true to accept unauthenticated requests.
+/// Dev-only bypass for offline/local previews. Production web uses
+/// registration-free anonymous sessions instead of this flag.
 const bool kDevSkipAuth = String.fromEnvironment(
   'DEV_SKIP_AUTH',
   defaultValue: 'false',

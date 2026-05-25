@@ -1,6 +1,6 @@
 """Smoke tests for /tools/menu endpoints.
 
-We don't hit the real Groq API — we monkey-patch the LLM client's
+We don't hit the real LLM provider — we monkey-patch the LLM client's
 `generate_menu_plan` / `generate_meal_recipe` methods to return canned
 responses, then verify FastAPI plumbing (auth, validation, response
 shape) and the JSON normaliser at the boundary.
@@ -185,7 +185,7 @@ async def test_recipe_strips_code_fence_without_corrupting_content(
     "marinated" would have been silently mangled into "inated". We must
     strip the literal prefix instead.
     """
-    monkeypatch.setenv("GROQ_API_KEY", "gsk_fake")
+    monkeypatch.setenv("OMNIROUTE_API_KEY", "sk_fake")
 
     fence_wrapped = (
         "```markdown\n"
@@ -194,16 +194,30 @@ async def test_recipe_strips_code_fence_without_corrupting_content(
         "\n```"
     )
 
-    class _FakeResponse:
+    class _FakeStreamResponse:
         status_code = 200
-        text = ""
 
-        def json(self) -> dict[str, Any]:
-            return {
+        async def __aenter__(self) -> "_FakeStreamResponse":
+            return self
+
+        async def __aexit__(self, *exc_info: Any) -> None:
+            return None
+
+        async def aread(self) -> bytes:
+            return b""
+
+        async def aiter_lines(self):
+            import json
+            payload = json.dumps({
                 "choices": [
-                    {"message": {"content": fence_wrapped}, "finish_reason": "stop"}
+                    {
+                        "delta": {"content": fence_wrapped},
+                        "finish_reason": "stop",
+                    }
                 ]
-            }
+            })
+            yield f"data: {payload}"
+            yield "data: [DONE]"
 
     class _FakeAsyncClient:
         def __init__(self, *_args: Any, **_kwargs: Any) -> None:
@@ -215,8 +229,8 @@ async def test_recipe_strips_code_fence_without_corrupting_content(
         async def __aexit__(self, *exc_info: Any) -> None:
             return None
 
-        async def post(self, *_args: Any, **_kwargs: Any) -> _FakeResponse:
-            return _FakeResponse()
+        def stream(self, *_args: Any, **_kwargs: Any) -> _FakeStreamResponse:
+            return _FakeStreamResponse()
 
     monkeypatch.setattr(llm.httpx, "AsyncClient", _FakeAsyncClient)
 

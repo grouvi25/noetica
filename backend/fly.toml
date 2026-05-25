@@ -10,6 +10,9 @@ primary_region = "fra"
 
 [env]
   NOETICA_DB_PATH = "/data/noetica.db"
+  DEV_SKIP_AUTH = "false"
+  LLM_BASE_URL = "https://freelance-gid.online/v1"
+  LLM_MODEL = "zo/zo:anthropic/claude-opus-4-7"
 
 [[mounts]]
   source = "noetica_data"

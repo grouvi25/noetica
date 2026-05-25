@@ -969,13 +969,9 @@ class NoeticaRepository {
     }
   }
 
-  /// Hard-delete every row in every table. Called by SyncService when the
-  /// signed-in Google account changes — we drop the previous user's local
-  /// cache wholesale so the new account isn't bleeding through it.
-  ///
-  /// Crucially this skips the `_markDirty()` machinery: we don't want to
-  /// publish tombstones for the previous user's rows on the *new* user's
-  /// timeline. Streams are still re-emitted so the UI redraws empty.
+  /// Wipe every synced local table. Used when the backend user changes —
+  /// we drop the previous user's local cache so data cannot bleed between
+  /// isolated sessions/users.
   Future<void> wipeLocalData() async {
     await _db.raw.transaction((txn) async {
       // Order respects the FK references (entry_axes, task_reflections,

@@ -132,10 +132,13 @@ class RoadmapApi {
       'task_count': taskCount,
     };
 
-    final token = _auth?.current?.accessToken;
+    var token = _auth?.current?.accessToken;
+    if (token == null || token.isEmpty) {
+      token = (await _auth?.restore())?.accessToken;
+    }
     if (!kDevSkipAuth && (token == null || token.isEmpty)) {
       throw RoadmapApiException(
-        'Не выполнен вход в Google. Перезайдите и попробуйте снова.',
+        'Не удалось создать сессию. Обновите страницу и попробуйте снова.',
         status: 401,
       );
     }
@@ -165,12 +168,11 @@ class RoadmapApi {
         }
       } catch (_) {}
       if (response.statusCode == 401) {
-        // Clear stale JWT so AuthGate kicks the user back to sign-in,
-        // mirroring axes_api.dart. Happens when JWT_SECRET rotates or
-        // we switch Fly apps.
+        // Clear stale JWT so the app can create a fresh registration-free
+        // web session or native session on the next request.
         unawaited(_auth?.handleUnauthorized() ?? Future.value());
         throw RoadmapApiException(
-          'Сессия истекла. Зайдите через Google ещё раз.',
+          'Сессия истекла. Обновите страницу и попробуйте снова.',
           status: 401,
         );
       }

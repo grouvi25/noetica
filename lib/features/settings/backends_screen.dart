@@ -40,8 +40,8 @@ class BackendsScreen extends ConsumerWidget {
             Padding(
               padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
               child: Text(
-                'Активный бэкенд используется для AI, синхронизации и '
-                'входа. Можно держать несколько (например, прод и личный '
+                'Настройте адрес бэкенда для AI и синхронизации без регистрации. '
+                'Можно держать несколько (например, прод и личный '
                 'сервер) и переключаться без перезапуска.',
                 style: TextStyle(color: palette.muted, height: 1.4),
               ),

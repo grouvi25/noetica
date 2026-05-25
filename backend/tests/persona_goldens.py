@@ -8,10 +8,10 @@ axis distinctiveness, axis↔goal fit, task difficulty calibration, and
 per-axis coverage.
 
 Usage:
-    GROQ_API_KEY=... python -m tests.persona_goldens
+    OMNIROUTE_API_KEY=... python -m tests.persona_goldens
 
 Requires the `backend` venv with httpx + pydantic installed and a valid
-GROQ_API_KEY in the environment.
+OMNIROUTE_API_KEY in the environment.
 """
 
 from __future__ import annotations

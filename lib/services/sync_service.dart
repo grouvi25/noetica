@@ -17,10 +17,10 @@ import 'notifications.dart';
 /// Noetica backend. Last-Writer-Wins by `updated_at`.
 ///
 /// Public API:
-/// - `bind(authStream)` — listens to sign-in/sign-out and wires push/pull.
+/// - `bind(authStream)` — listens to session changes and wires push/pull.
 /// - `pull()` — fetch + merge remote changes since `last_pull_ms`.
 /// - `pushPending()` — send local changes since `last_push_ms`.
-/// - `bootstrap()` — full pull then push, called once after sign-in.
+/// - `bootstrap()` — full pull then push, called once after a session appears.
 ///
 /// All HTTP errors are swallowed and logged via debugPrint — sync is
 /// best-effort, never blocks the UI, and resumes automatically next time the
@@ -66,7 +66,7 @@ class SyncService {
   bool _busy = false;
   String? _boundUserId;
 
-  /// Subscribes to auth changes; on sign-in, kicks off bootstrap; on
+  /// Subscribes to session changes; on session start, kicks off bootstrap; on
   /// sign-out, stops listening.
   void start() {
     _authSub ??= _auth.sessionStream.listen(_onSessionChange);
@@ -92,11 +92,11 @@ class SyncService {
     final prefs = await SharedPreferences.getInstance();
     final previousBound = prefs.getString(_kBoundUserKey);
     if (previousBound != null && previousBound != session.user.id) {
-      // Different Google account opened on this device. Wipe the previous
+      // Different backend user opened on this device. Wipe the previous
       // user's local cache wholesale (DB + profile + personal knowledge +
       // onboarding flag + sync timestamps) so nothing bleeds across the
       // boundary. After the wipe we rebootstrap, which pulls everything
-      // belonging to the new account from the cloud.
+      // belonging to the new user from the cloud.
       await _wipeLocalForAccountSwitch(prefs);
     }
     await prefs.setString(_kBoundUserKey, session.user.id);
@@ -418,7 +418,7 @@ class SyncService {
     _http.close();
   }
 
-  /// Currently bound user id, or null if not signed in. Useful for tests.
+  /// Currently bound user id, or null if no session is active. Useful for tests.
   @visibleForTesting
   String? get boundUserId => _boundUserId;
 }
