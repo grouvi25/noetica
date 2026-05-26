@@ -34,6 +34,9 @@ from .schemas import (
     CoachResponse,
     HabitsPlan,
     HabitsRequest,
+    KnowledgeIndexedNode,
+    KnowledgeReindexRequest,
+    KnowledgeReindexResponse,
     MenuPlan,
     MenuRecipeRequest,
     MenuRecipeResponse,
@@ -458,6 +461,146 @@ async def generate_coach(
         resp.model,
     )
     return resp
+
+
+# ---------- /knowledge/reindex (Obsidian-style librarian) ----------
+
+
+@app.post("/knowledge/reindex", response_model=KnowledgeReindexResponse)
+async def reindex_knowledge(
+    request: KnowledgeReindexRequest,
+    user: CurrentUser,
+) -> KnowledgeReindexResponse:
+    note_ids = {n.id for n in request.notes if n.id}
+    if not note_ids:
+        return KnowledgeReindexResponse(model="empty", folders=[], nodes=[])
+
+    try:
+        client = LlmClient()
+    except LlmConfigError as exc:
+        logger.error("LLM config error: %s", exc)
+        raise HTTPException(status_code=503, detail=str(exc)) from exc
+
+    notes_payload = [
+        {
+            "id": n.id,
+            "title": n.title,
+            "body": n.body,
+            "tags": n.tags,
+        }
+        for n in request.notes
+    ]
+
+    try:
+        raw = await client.generate_knowledge_index(
+            notes_payload,
+            max_folders=request.max_folders,
+        )
+    except LlmUpstreamError as exc:
+        logger.warning("LLM upstream error in knowledge reindex: status=%s", exc.status)
+        # Deterministic fallback so the UI keeps working.
+        return KnowledgeReindexResponse(
+            model="fallback",
+            folders=["Untagged"],
+            nodes=[
+                KnowledgeIndexedNode(
+                    id=n.id,
+                    folder="Untagged",
+                    summary=(n.title or n.body[:120]),
+                    tags=n.tags,
+                    related_ids=[],
+                )
+                for n in request.notes
+            ],
+        )
+
+    # Normalise the LLM JSON. The model is told to keep the schema but
+    # we still defensively clean every field.
+    raw_folders = raw.get("folders") or []
+    folder_names: list[str] = []
+    seen_folders: set[str] = set()
+    for f in raw_folders:
+        if isinstance(f, dict):
+            name = str(f.get("name", "")).strip()
+        else:
+            name = str(f).strip()
+        if not name or name.lower() in seen_folders:
+            continue
+        seen_folders.add(name.lower())
+        folder_names.append(name[:32])
+    if not folder_names:
+        folder_names = ["Misc"]
+
+    raw_nodes = raw.get("nodes") or []
+    nodes: list[KnowledgeIndexedNode] = []
+    seen_ids: set[str] = set()
+    folder_set_lower = {n.lower(): n for n in folder_names}
+    for n in raw_nodes:
+        if not isinstance(n, dict):
+            continue
+        nid = str(n.get("id", "")).strip()
+        if not nid or nid not in note_ids or nid in seen_ids:
+            continue
+        seen_ids.add(nid)
+
+        folder = str(n.get("folder", "")).strip()
+        folder = folder_set_lower.get(folder.lower(), folder)
+        if not folder:
+            folder = folder_names[0]
+        if folder not in folder_names:
+            folder_names.append(folder)
+            folder_set_lower[folder.lower()] = folder
+
+        summary = str(n.get("summary", "")).strip()[:240]
+        tags_raw = n.get("tags") or []
+        tags = [str(t).strip()[:32] for t in tags_raw if str(t).strip()][:8]
+
+        related_raw = n.get("related_ids") or []
+        related: list[str] = []
+        for r in related_raw:
+            rs = str(r).strip()
+            if rs and rs in note_ids and rs != nid and rs not in related:
+                related.append(rs)
+            if len(related) >= 3:
+                break
+
+        nodes.append(
+            KnowledgeIndexedNode(
+                id=nid,
+                folder=folder,
+                summary=summary,
+                tags=tags,
+                related_ids=related,
+            )
+        )
+
+    # Make sure every input note is represented — fall back to the
+    # first folder if the model dropped some.
+    for n in request.notes:
+        if n.id and n.id not in seen_ids:
+            nodes.append(
+                KnowledgeIndexedNode(
+                    id=n.id,
+                    folder=folder_names[0],
+                    summary=(n.title or n.body[:120]),
+                    tags=n.tags,
+                    related_ids=[],
+                )
+            )
+
+    logger.info(
+        "Knowledge reindex: user=%s model=%s notes=%d folders=%d",
+        user["id"][:8],
+        raw.get("model", ""),
+        len(nodes),
+        len(folder_names),
+    )
+
+    return KnowledgeReindexResponse(
+        model=str(raw.get("model", "")),
+        folders=folder_names,
+        nodes=nodes,
+    )
 
 
 _ = Depends  # silence unused import warning when no other Depends is used here

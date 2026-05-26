@@ -281,3 +281,38 @@ class CoachResponse(BaseModel):
     mode: Literal["morning", "evening"]
     morning: MorningPlan | None = None
     evening: EveningReflection | None = None
+
+
+# ---------------------------------------------------------------------------
+# Knowledge — Obsidian-style librarian: folder buckets + semantic links.
+# ---------------------------------------------------------------------------
+
+
+class KnowledgeNoteInput(BaseModel):
+    """A single note/entry fed to the indexer."""
+
+    id: str
+    title: str = ""
+    body: str = ""
+    tags: list[str] = Field(default_factory=list)
+
+
+class KnowledgeReindexRequest(BaseModel):
+    """Reindex the user's notes: assign folders + propose semantic links."""
+
+    notes: list[KnowledgeNoteInput] = Field(default_factory=list)
+    max_folders: int = Field(default=6, ge=2, le=12)
+
+
+class KnowledgeIndexedNode(BaseModel):
+    id: str
+    folder: str = "Misc"
+    summary: str = ""
+    tags: list[str] = Field(default_factory=list)
+    related_ids: list[str] = Field(default_factory=list)
+
+
+class KnowledgeReindexResponse(BaseModel):
+    model: str
+    folders: list[str] = Field(default_factory=list)
+    nodes: list[KnowledgeIndexedNode] = Field(default_factory=list)

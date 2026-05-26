@@ -11,7 +11,7 @@ import '../../widgets/brand_glyph.dart';
 import '../calendar/calendar_screen.dart';
 import '../dashboard/dashboard_screen.dart';
 import '../entry/entry_editor_sheet.dart';
-import '../knowledge/knowledge_graph_screen.dart';
+import '../knowledge/knowledge_workspace_screen.dart';
 import '../notes/notes_screen.dart';
 import '../pomodoro/pomodoro_sheet.dart';
 import '../self/self_screen.dart';
@@ -236,7 +236,7 @@ class _HomeShellState extends ConsumerState<HomeShell> {
                         Navigator.pop(ctx);
                         Navigator.of(context).push(
                           MaterialPageRoute<void>(
-                            builder: (_) => const KnowledgeGraphScreen(),
+                            builder: (_) => const KnowledgeWorkspaceScreen(),
                           ),
                         );
                       },
@@ -320,7 +320,7 @@ class _HomeShellState extends ConsumerState<HomeShell> {
     const SelfScreen(),
     const TasksScreen(),
     const NotesScreen(),
-    const KnowledgeGraphScreen(),
+    const KnowledgeWorkspaceScreen(),
     const CalendarScreen(),
     const ToolsScreen(),
     const SettingsScreen(),

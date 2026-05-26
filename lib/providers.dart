@@ -10,11 +10,14 @@ import 'services/axes_api.dart';
 import 'services/backend_urls_service.dart';
 import 'services/builtin_generators.dart';
 import 'services/generator_manifest.dart';
+import 'services/knowledge_api.dart';
 import 'services/levels.dart';
 import 'services/premium_service.dart';
 import 'services/roadmap_api.dart';
 import 'services/sync_service.dart';
 import 'services/tools_api.dart';
+import 'data/knowledge_index_models.dart';
+import 'data/knowledge_index_service.dart';
 
 const _kOnboardedKey = 'noetica.onboarded.v1';
 
@@ -99,6 +102,23 @@ final toolsApiProvider = Provider<ToolsApi>((ref) {
   final auth = ref.watch(authServiceProvider);
   final url = ref.watch(activeBackendUrlProvider);
   return ToolsApi(authService: auth, baseUrl: url);
+});
+
+final knowledgeApiProvider = Provider<KnowledgeApi>((ref) {
+  final auth = ref.watch(authServiceProvider);
+  final url = ref.watch(activeBackendUrlProvider);
+  final api = KnowledgeApi(auth: auth, backendBaseUrl: url);
+  ref.onDispose(api.close);
+  return api;
+});
+
+final knowledgeIndexServiceProvider =
+    Provider<KnowledgeIndexService>((ref) => KnowledgeIndexService());
+
+final knowledgeIndexProvider = StreamProvider<KnowledgeIndex>((ref) async* {
+  final svc = ref.watch(knowledgeIndexServiceProvider);
+  yield await svc.load();
+  yield* KnowledgeIndexService.changes;
 });
 
 /// Catalog of generators surfaced on the «Ассистент» screen and

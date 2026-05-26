@@ -53,6 +53,7 @@ const apiPrefixes = [
   "/coach/",
   "/tools/",
   "/onboarding",
+  "/knowledge",
 ];
 
 function isApi(pathname: string) {

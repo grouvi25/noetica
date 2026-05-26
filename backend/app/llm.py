@@ -550,6 +550,85 @@ class LlmClient:
         parsed["mode"] = mode
         return parsed
 
+    async def generate_knowledge_index(
+        self,
+        notes: list[dict[str, Any]],
+        *,
+        max_folders: int = 6,
+    ) -> dict[str, Any]:
+        """Obsidian-style librarian pass.
+
+        Input: a list of {id, title, body, tags} dicts. Output JSON:
+            {
+              "folders": [{"name": "..."}, ...],
+              "nodes": [
+                {
+                  "id": "<note-id>",
+                  "folder": "<one of folders>",
+                  "summary": "<one sentence>",
+                  "tags": ["..."],
+                  "related_ids": ["<id>", ...]
+                }
+              ]
+            }
+
+        We truncate each note body to ~400 chars to keep the prompt
+        compact even with several dozen notes. The LLM is asked to be
+        concise — the goal is structure, not retelling.
+        """
+        if not notes:
+            return {"model": self.model, "folders": [], "nodes": []}
+
+        # Compact note payload — title + truncated body + tags.
+        compact: list[dict[str, Any]] = []
+        for n in notes[:60]:
+            body = (n.get("body") or "")[:400]
+            compact.append(
+                {
+                    "id": n.get("id", ""),
+                    "title": (n.get("title") or "")[:120],
+                    "body": body,
+                    "tags": list(n.get("tags") or [])[:8],
+                }
+            )
+
+        sys_prompt = (
+            "You are a librarian for a personal knowledge base, in the "
+            "Obsidian-style. You receive a list of short notes and must "
+            "organise them into a small number of semantic FOLDERS and "
+            "propose LINKS between related notes. Respond ONLY with "
+            "minified JSON of the form:\n"
+            '{"folders":[{"name":"<short name>"}],'
+            '"nodes":[{"id":"<id>","folder":"<folder name>",'
+            '"summary":"<one short sentence in the SAME language as '
+            'the note>","tags":["..."],"related_ids":["<id>", ...]}]}\n'
+            "Rules: keep folder names 1-2 words, prefer the note's own "
+            "language for folder names where possible; propose at most "
+            "3 related ids per node and only when there is a clear "
+            "semantic overlap; never invent ids that are not in the "
+            "input."
+        )
+
+        usr_prompt = (
+            f"max_folders = {max_folders}\n"
+            f"notes = {json.dumps(compact, ensure_ascii=False)}"
+        )
+
+        payload: dict[str, Any] = {
+            "model": self.model,
+            "messages": [
+                {"role": "system", "content": sys_prompt},
+                {"role": "user", "content": usr_prompt},
+            ],
+            "response_format": {"type": "json_object"},
+            "temperature": 0.3,
+            "max_tokens": 2400,
+        }
+        content, _finish = await self._chat_content(payload)
+        parsed = _parse_json(content)
+        parsed["model"] = self.model
+        return parsed
+
 
 def _axes_system_prompt(count: int) -> str:
     return (
