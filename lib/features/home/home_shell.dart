@@ -49,14 +49,19 @@ const double kFloatingTabBarReserve =
     kFloatingTabBarHeight + kFloatingTabBarMargin * 2;
 
 class HomeShell extends ConsumerStatefulWidget {
-  const HomeShell({super.key});
+  const HomeShell({super.key, this.initialTab = 1});
+
+  /// Index of the tab to show on first render. Defaults to the
+  /// self/древо tab (1) so a freshly onboarded user lands on their
+  /// pentagram instead of an empty dashboard.
+  final int initialTab;
 
   @override
   ConsumerState<HomeShell> createState() => _HomeShellState();
 }
 
 class _HomeShellState extends ConsumerState<HomeShell> {
-  int _index = 0;
+  late int _index = widget.initialTab;
   bool _alertOpen = false;
 
   @override

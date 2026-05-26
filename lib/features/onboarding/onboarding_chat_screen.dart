@@ -165,6 +165,7 @@ class _OnboardingChatScreenState
 
   void _advance() {
     if (!_canAdvance) return;
+    final wasLastStep = _step >= _stepCount - 1;
     setState(() {
       _thread.add(_ChatMsg.user(_userReplyFor(_step)));
       _customOpen = false;
@@ -178,7 +179,7 @@ class _OnboardingChatScreenState
     AnalyticsService.instance.track(AnalyticsEvents.onboardingStepCompleted, {
       'step': _step,
     });
-    if (_step >= _stepCount - 1) {
+    if (wasLastStep) {
       _finish();
     }
   }
