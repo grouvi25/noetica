@@ -369,6 +369,7 @@ class LlmClient:
         servings: int,
         restrictions: str,
         extra_notes: str,
+        duration_days: int = 7,
     ) -> MenuPlan:
         """Stage 1 — full week structure (names + ingredients + macros).
 
@@ -381,18 +382,20 @@ class LlmClient:
             "messages": [
                 {
                     "role": "system",
-                    "content": menu_system_prompt(servings, goal, restrictions),
+                    "content": menu_system_prompt(
+                        servings, goal, restrictions, duration_days
+                    ),
                 },
                 {
                     "role": "user",
-                    "content": menu_user_prompt(extra_notes),
+                    "content": menu_user_prompt(extra_notes, duration_days),
                 },
             ],
             "response_format": {"type": "json_object"},
             "temperature": 0.7,
             # 21 meals + shopping list comfortably fit; bump if we ever
             # add a snack-by-default mode.
-            "max_tokens": 6000,
+            "max_tokens": 1500 + duration_days * 650,
         }
         content, finish = await self._chat_content(payload)
         if finish == "length":

@@ -41,7 +41,9 @@ def goal_description(goal: str) -> str:
     return GOAL_DESCRIPTIONS.get(goal, GOAL_DESCRIPTIONS["classic"])
 
 
-def menu_system_prompt(servings: int, goal: str, restrictions: str) -> str:
+def menu_system_prompt(
+    servings: int, goal: str, restrictions: str, days: int
+) -> str:
     """System prompt for stage 1 — week structure only, no recipes.
 
     The model must return strict JSON matching `MenuPlan` (see
@@ -50,7 +52,7 @@ def menu_system_prompt(servings: int, goal: str, restrictions: str) -> str:
     """
     restr = restrictions.strip() or "(нет)"
     return (
-        "Ты — AI-повар Noetica. Составь структуру меню на 7 дней.\n\n"
+        f"Ты — AI-повар Noetica. Составь структуру меню на {days} ден{'ь' if days==1 else 'я' if 2<=days<=4 else 'ей'}.\n\n"
         "ПРАВИЛА:\n"
         "1. Для каждого дня: завтрак, обед, ужин. Перекус — опционально, "
         "добавляй только если уместно для цели.\n"
@@ -60,8 +62,8 @@ def menu_system_prompt(servings: int, goal: str, restrictions: str) -> str:
         f"4. Порций на каждое блюдо: {servings}.\n"
         f"5. Ограничения и аллергии пользователя: {restr}.\n"
         "6. Только продукты из обычных российских магазинов, сезонные.\n"
-        "7. Не повторять блюдо дважды за неделю. Чередуй: птица, рыба, "
-        "мясо, яйца, крупы, бобовые.\n"
+        f"7. Не повторять блюдо дважды за {days} ден{'ь' if days==1 else 'я' if 2<=days<=4 else 'ей'}"
+        " (если days==1, то повторение невозможно).\n"
         "8. НЕ включай шаги приготовления — только название блюда, "
         "ингредиенты с граммовкой и КБЖУ на одну порцию.\n"
         "9. Также верни сводный shopping_list (список покупок на всю "
@@ -71,7 +73,7 @@ def menu_system_prompt(servings: int, goal: str, restrictions: str) -> str:
     )
 
 
-def menu_user_prompt(extra_notes: str) -> str:
+def menu_user_prompt(extra_notes: str, days: int) -> str:
     """User-side prompt — schema + free-form preferences from the form."""
     schema = (
         '{\n'
@@ -101,7 +103,7 @@ def menu_user_prompt(extra_notes: str) -> str:
     sections = [f"СХЕМА (строго в этом виде):\n{schema}"]
     if notes:
         sections.append(f"ДОПОЛНИТЕЛЬНЫЕ ПОЖЕЛАНИЯ:\n{notes}")
-    sections.append("Сгенерируй меню на 7 дней.")
+    sections.append(f"Сгенерируй меню на {days} ден{'ь' if days==1 else 'я' if 2<=days<=4 else 'ей'}")
     return "\n\n".join(sections)
 
 

@@ -307,6 +307,7 @@ async def tools_menu_generate(
             servings=request.servings,
             restrictions=request.restrictions,
             extra_notes=request.extra_notes,
+            duration_days=request.duration_days,
         )
     except LlmUpstreamError as exc:
         logger.warning("LLM menu upstream error: status=%s", exc.status)
