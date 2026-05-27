@@ -206,8 +206,8 @@ class _HomeShellState extends ConsumerState<HomeShell> {
                       },
                     ),
                     _MoreGridItem(
-                      icon: Icons.bookmark_border_outlined,
-                      label: 'Журнал',
+                      icon: Icons.history_outlined,
+                      label: 'Прошлое',
                       palette: palette,
                       onTap: () {
                         Navigator.pop(ctx);
@@ -312,7 +312,7 @@ class _HomeShellState extends ConsumerState<HomeShell> {
       onOpenJournal: _openJournal,
       onOpenCalendar: _openCalendar,
     ),
-    const SelfScreen(),
+    SelfScreen(onSwitchToTasks: () => _switchTab(_tasksIndex)),
     const TasksScreen(),
     const NotesScreen(),
     const KnowledgeGraphScreen(),
@@ -345,19 +345,19 @@ class _HomeShellState extends ConsumerState<HomeShell> {
 
   static const _destinations = <_Destination>[
     _Destination(
-      icon: Icons.dashboard_outlined,
-      selectedIcon: Icons.dashboard,
-      label: 'Сейчас',
+      icon: Icons.today_outlined,
+      selectedIcon: Icons.today,
+      label: 'Настоящее',
     ),
     _Destination(
-      icon: Icons.auto_graph_outlined,
-      selectedIcon: Icons.auto_graph,
-      label: 'Я',
+      icon: Icons.park_outlined,
+      selectedIcon: Icons.park,
+      label: 'Древо',
     ),
     _Destination(
-      icon: Icons.checklist_outlined,
-      selectedIcon: Icons.checklist,
-      label: 'Задачи',
+      icon: Icons.rocket_launch_outlined,
+      selectedIcon: Icons.rocket_launch,
+      label: 'Будущее',
     ),
     _Destination(
       icon: Icons.grid_view_outlined,
@@ -597,9 +597,9 @@ class _DesktopSidebar extends StatelessWidget {
                 onTap: onCalendar,
               ),
               _SidebarTile(
-                icon: Icons.bookmark_border_outlined,
-                selectedIcon: Icons.bookmark,
-                label: 'Журнал',
+                icon: Icons.history_outlined,
+                selectedIcon: Icons.history,
+                label: 'Прошлое',
                 selected: journalSelected,
                 extended: extended,
                 palette: palette,

@@ -153,7 +153,7 @@ class _RoadmapScreenState extends ConsumerState<RoadmapScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Импортировано задач: $imported')),
       );
-      Navigator.of(context).pop();
+      Navigator.of(context).pop(true);
     } catch (e) {
       if (!mounted) return;
       setState(() {

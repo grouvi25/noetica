@@ -122,7 +122,7 @@ class _TasksScreenState extends ConsumerState<TasksScreen> {
           child: BrandGlyph(size: 24),
         ),
         leadingWidth: 48,
-        title: const Text('Задачи'),
+        title: const Text('Будущее'),
         actions: [
           PopupMenuButton<_SortMode>(
             tooltip: 'Сортировка',
@@ -798,7 +798,7 @@ class _EmptyState extends StatelessWidget {
     final title = hasAnyTasks ? 'Под фильтр ничего не попало' : 'Задач нет';
     final body = hasAnyTasks
         ? 'Сбрось фильтры или поменяй сортировку, чтобы увидеть остальные задачи.'
-        : 'Создай задачу через «+». Привяжи её к осям — выполнение начислит очки в пентаграмму.';
+        : 'Создай задачу через «+». Привяжи её к осям — выполнение начислит очки в древо.';
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(32),

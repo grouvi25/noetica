@@ -18,7 +18,9 @@ import 'epoch_ceremony.dart';
 import 'pentagon_painter.dart';
 
 class SelfScreen extends ConsumerStatefulWidget {
-  const SelfScreen({super.key});
+  const SelfScreen({super.key, this.onSwitchToTasks});
+
+  final VoidCallback? onSwitchToTasks;
 
   @override
   ConsumerState<SelfScreen> createState() => _SelfScreenState();
@@ -162,9 +164,14 @@ class _SelfScreenState extends ConsumerState<SelfScreen> {
                   updatedAt: DateTime.now(),
                 ));
               },
-              onOpenRoadmap: () => Navigator.of(context).push(
-                MaterialPageRoute(builder: (_) => const RoadmapScreen()),
-              ),
+              onOpenRoadmap: () async {
+                final imported = await Navigator.of(context).push<bool>(
+                  MaterialPageRoute(builder: (_) => const RoadmapScreen()),
+                );
+                if (imported == true && widget.onSwitchToTasks != null) {
+                  widget.onSwitchToTasks!();
+                }
+              },
             );
           } else {
             final snap = archive.firstWhere(
@@ -267,6 +274,28 @@ class _CurrentEpochBody extends ConsumerWidget {
           epoch: profile?.currentEpoch ?? 1,
           tier: profile?.epochTier ?? 1,
         ),
+        const SizedBox(height: 12),
+        SizedBox(
+          width: double.infinity,
+          child: FilledButton.icon(
+            onPressed: onOpenRoadmap,
+            icon: const Icon(Icons.auto_awesome, size: 20),
+            label: const Padding(
+              padding: EdgeInsets.symmetric(vertical: 14),
+              child: Text(
+                'Сгенерировать план',
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+              ),
+            ),
+            style: FilledButton.styleFrom(
+              backgroundColor: palette.fg,
+              foregroundColor: palette.bg,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(14),
+              ),
+            ),
+          ),
+        ),
         const SizedBox(height: 16),
         if (profile != null &&
             scores.length >= 3 &&
@@ -305,18 +334,9 @@ class _CurrentEpochBody extends ConsumerWidget {
               score: s,
               levelStats: axisLevels?[s.axis.id],
             ),
-          const SizedBox(height: 20),
-          OutlinedButton.icon(
-            onPressed: onOpenRoadmap,
-            icon: const Icon(Icons.auto_awesome),
-            label: const Padding(
-              padding: EdgeInsets.symmetric(vertical: 12),
-              child: Text('Сгенерировать план'),
-            ),
-          ),
           const SizedBox(height: 16),
           Text(
-            'Очки начисляются за выполнение задач, привязанных к осям. Со временем затухают — пентаграмма отражает тебя за последний месяц.',
+            'Очки начисляются за выполнение задач, привязанных к осям. Со временем затухают — древо отражает тебя за последний месяц.',
             style: Theme.of(context)
                 .textTheme
                 .bodySmall
