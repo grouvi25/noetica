@@ -2,7 +2,7 @@ name: backend
 
 on:
   push:
-    branches: [main, 'devin/1777096530-noetica-mvp-1']
+    branches: [main]
     paths:
       - 'backend/**'
       - '.github/workflows/backend.yml'
