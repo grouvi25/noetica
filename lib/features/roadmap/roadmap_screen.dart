@@ -44,8 +44,11 @@ class _RoadmapScreenState extends ConsumerState<RoadmapScreen> {
       final profile = ref.read(profileProvider).valueOrNull;
       final aspiration = profile?.aspiration.trim() ?? '';
       if (aspiration.isNotEmpty && _goalCtrl.text.isEmpty && !_prefilled) {
+        final painPoint = profile?.painPoint.trim() ?? '';
         setState(() {
-          _goalCtrl.text = aspiration;
+          _goalCtrl.text = painPoint.isNotEmpty
+              ? '$aspiration\n(мешает: $painPoint)'
+              : aspiration;
           _prefilled = true;
           // Smart defaults: scale task count + horizon by weekly hours.
           // 0–5 ч/нед → 30 дней, 4 задачи; 6–14 → 30/6 (current default);
