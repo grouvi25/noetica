@@ -92,6 +92,19 @@ class _KnowledgeGraph3DState extends State<KnowledgeGraph3D>
       colorIdx++;
     }
 
+    // Pre-compute folder center offsets so clusters start separated.
+    final folderOffsets = <String, (double, double, double)>{};
+    final nFolders = widget.index.folders.length;
+    for (var i = 0; i < nFolders; i++) {
+      final angle = (2 * math.pi * i) / math.max(nFolders, 1);
+      final r = 2.0;
+      folderOffsets[widget.index.folders[i]] = (
+        r * math.cos(angle),
+        r * math.sin(angle),
+        (rng.nextDouble() - 0.5) * 1.5,
+      );
+    }
+
     final entryById = {for (final e in widget.entries) e.id: e};
 
     for (final node in widget.index.nodes) {
@@ -99,6 +112,7 @@ class _KnowledgeGraph3DState extends State<KnowledgeGraph3D>
       if (entry == null) continue;
       final color = _folderColors[node.folder] ??
           widget.palette.fg.withOpacity(0.7);
+      final offset = folderOffsets[node.folder] ?? (0.0, 0.0, 0.0);
       _nodes.add(
         _Node3D(
           id: node.id,
@@ -109,9 +123,9 @@ class _KnowledgeGraph3DState extends State<KnowledgeGraph3D>
           color: color,
           entry: entry,
           relatedCount: node.relatedIds.length,
-          x: (rng.nextDouble() - 0.5) * 3,
-          y: (rng.nextDouble() - 0.5) * 3,
-          z: (rng.nextDouble() - 0.5) * 3,
+          x: offset.$1 + (rng.nextDouble() - 0.5) * 1.0,
+          y: offset.$2 + (rng.nextDouble() - 0.5) * 1.0,
+          z: offset.$3 + (rng.nextDouble() - 0.5) * 1.0,
         ),
       );
     }
@@ -641,7 +655,6 @@ class _GraphPainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    // Background
     canvas.drawRect(
         Offset.zero & size, Paint()..color = palette.bg);
 
@@ -649,76 +662,122 @@ class _GraphPainter extends CustomPainter {
       for (final p in projected) p.node.id: p,
     };
 
-    // Draw edges
+    // ── Draw edges ──
     for (final e in edges) {
       final a = byId[e.aId];
       final b = byId[e.bId];
       if (a == null || b == null) continue;
 
       if (e.ghost) {
+        // Ghost edges: very subtle dotted appearance
         canvas.drawLine(
           Offset(a.x, a.y),
           Offset(b.x, b.y),
           Paint()
-            ..strokeWidth = 0.5
-            ..color = palette.muted.withOpacity(0.08),
+            ..strokeWidth = 0.4
+            ..color = palette.muted.withOpacity(0.06),
         );
       } else {
-        // Colored edge: blend the two node colors
-        final paint = Paint()
-          ..strokeWidth = 1.5
-          ..shader = _createEdgeGradient(a, b);
-        canvas.drawLine(Offset(a.x, a.y), Offset(b.x, b.y), paint);
+        // Real edges: curved bezier with gradient color
+        final midX = (a.x + b.x) / 2;
+        final midY = (a.y + b.y) / 2;
+        // Offset the control point perpendicular to the line
+        final dx = b.x - a.x;
+        final dy = b.y - a.y;
+        final len = math.sqrt(dx * dx + dy * dy) + 0.001;
+        final curveAmount = (len * 0.12).clamp(4.0, 25.0);
+        final cpX = midX + (-dy / len) * curveAmount;
+        final cpY = midY + (dx / len) * curveAmount;
+
+        final path = Path()
+          ..moveTo(a.x, a.y)
+          ..quadraticBezierTo(cpX, cpY, b.x, b.y);
+
+        final avgAlpha =
+            ((a.persp + b.persp) / 2 - 0.5).clamp(0.1, 1.0);
+
+        canvas.drawPath(
+          path,
+          Paint()
+            ..style = PaintingStyle.stroke
+            ..strokeWidth = 1.5
+            ..shader = ui.Gradient.linear(
+              Offset(a.x, a.y),
+              Offset(b.x, b.y),
+              [
+                a.node.color.withOpacity(0.4 * avgAlpha),
+                b.node.color.withOpacity(0.4 * avgAlpha),
+              ],
+            ),
+        );
       }
     }
 
-    // Draw nodes (back to front)
+    // ── Draw nodes (back to front) ──
     for (final p in projected) {
       final r = _KnowledgeGraph3DState._nodeRadius(p);
       final isHover = p.node.id == hoverId;
       final alpha =
           (0.6 + (p.persp - 1.0).clamp(-0.3, 0.5)).clamp(0.3, 1.0);
+      final center = Offset(p.x, p.y);
 
-      // Glow behind node
-      if (!isHover) {
-        canvas.drawCircle(
-          Offset(p.x, p.y),
-          r + 3,
-          Paint()
-            ..color = p.node.color.withOpacity(alpha * 0.15)
-            ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 6),
-        );
-      }
-
-      // Node circle
+      // Outer glow
       canvas.drawCircle(
-        Offset(p.x, p.y),
+        center,
+        r + (isHover ? 10 : 4),
+        Paint()
+          ..color =
+              p.node.color.withOpacity(isHover ? 0.25 : alpha * 0.12)
+          ..maskFilter =
+              MaskFilter.blur(BlurStyle.normal, isHover ? 14 : 6),
+      );
+
+      // Main circle
+      canvas.drawCircle(
+        center,
         r,
         Paint()..color = p.node.color.withOpacity(alpha),
+      );
+
+      // Inner highlight (makes it look 3D / glossy)
+      canvas.drawCircle(
+        Offset(p.x - r * 0.25, p.y - r * 0.25),
+        r * 0.35,
+        Paint()..color = Colors.white.withOpacity(alpha * 0.3),
       );
 
       // Hover ring
       if (isHover) {
         canvas.drawCircle(
-          Offset(p.x, p.y),
-          r + 4,
+          center,
+          r + 3,
           Paint()
             ..style = PaintingStyle.stroke
             ..strokeWidth = 2.0
             ..color = p.node.color,
         );
-        // Larger glow on hover
-        canvas.drawCircle(
-          Offset(p.x, p.y),
-          r + 8,
-          Paint()
-            ..color = p.node.color.withOpacity(0.2)
-            ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 10),
-        );
       }
 
-      // Labels — show for close-enough nodes or hovered
-      if (p.persp > 0.85 || isHover) {
+      // Connected node highlighting
+      if (hoverId != null && !isHover) {
+        final isConnected = edges.any((e) =>
+            (!e.ghost) &&
+            ((e.aId == hoverId && e.bId == p.node.id) ||
+                (e.bId == hoverId && e.aId == p.node.id)));
+        if (isConnected) {
+          canvas.drawCircle(
+            center,
+            r + 3,
+            Paint()
+              ..style = PaintingStyle.stroke
+              ..strokeWidth = 1.5
+              ..color = p.node.color.withOpacity(0.6),
+          );
+        }
+      }
+
+      // Labels
+      if (p.persp > 0.82 || isHover) {
         _drawLabel(canvas, p, r, isHover);
       }
     }
@@ -730,52 +789,47 @@ class _GraphPainter extends CustomPainter {
       maxLines: 1,
       ellipsis: '…',
     );
-    // Truncate label for readability
     var label = p.node.label;
-    if (label.length > 24) label = '${label.substring(0, 22)}…';
+    if (label.length > 20) label = '${label.substring(0, 18)}…';
+
+    final fontSize = isHover ? 12.0 : 10.0;
+    final opacity = isHover ? 1.0 :
+        (0.5 + (p.persp - 0.8) * 2.0).clamp(0.3, 0.85);
 
     textPainter.text = TextSpan(
       text: label,
       style: TextStyle(
-        color: isHover ? palette.fg : palette.fg.withOpacity(0.8),
-        fontSize: isHover ? 12.0 : 10.0,
+        color: palette.fg.withOpacity(opacity),
+        fontSize: fontSize,
         fontFamily: 'IBMPlexMono',
         fontWeight: isHover ? FontWeight.w600 : FontWeight.w400,
       ),
     );
-    textPainter.layout(maxWidth: 140);
+    textPainter.layout(maxWidth: 150);
 
-    // Position label below node
     final tx = p.x - textPainter.width / 2;
-    final ty = p.y + r + 4;
+    final ty = p.y + r + 5;
 
-    // Background pill
+    // Background pill with slight color tint
     final rect = RRect.fromRectAndRadius(
       Rect.fromLTWH(
-        tx - 4,
+        tx - 5,
         ty - 2,
-        textPainter.width + 8,
+        textPainter.width + 10,
         textPainter.height + 4,
       ),
       const Radius.circular(4),
     );
+
     canvas.drawRRect(
       rect,
-      Paint()..color = palette.bg.withOpacity(isHover ? 0.9 : 0.7),
+      Paint()
+        ..color = Color.lerp(
+            palette.bg, p.node.color, isHover ? 0.12 : 0.05)!
+            .withOpacity(isHover ? 0.92 : 0.75),
     );
 
     textPainter.paint(canvas, Offset(tx, ty));
-  }
-
-  Shader _createEdgeGradient(_ProjectedNode a, _ProjectedNode b) {
-    return ui.Gradient.linear(
-      Offset(a.x, a.y),
-      Offset(b.x, b.y),
-      [
-        a.node.color.withOpacity(0.35),
-        b.node.color.withOpacity(0.35),
-      ],
-    );
   }
 
   @override

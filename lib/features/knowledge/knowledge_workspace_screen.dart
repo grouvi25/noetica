@@ -51,7 +51,15 @@ class _KnowledgeWorkspaceScreenState
       final repo = await ref.read(repositoryProvider.future);
       final entries = await repo.listEntries();
       final filtered = entries
-          .where((e) => !e.isDeleted && (e.body.isNotEmpty || e.title.isNotEmpty))
+          .where((e) =>
+              !e.isDeleted &&
+              (e.body.isNotEmpty || e.title.isNotEmpty) &&
+              !e.tags.any((t) =>
+                  t.startsWith('menu/') ||
+                  t.startsWith('challenge/') ||
+                  t == 'meal' ||
+                  t == 'recipe' ||
+                  t == 'shopping'))
           .toList();
       if (filtered.isEmpty) {
         messenger.showSnackBar(
