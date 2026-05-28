@@ -11,6 +11,7 @@ import '../../data/models.dart';
 import '../../providers.dart';
 import '../../services/backend_urls_service.dart';
 import '../../services/notifications.dart';
+import '../../services/modules_service.dart';
 import '../../services/sync_service.dart';
 import '../../theme/app_theme.dart';
 import '../onboarding/onboarding_screen.dart';
@@ -32,11 +33,23 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   bool _coachNotifEnabled = false;
   bool _loadingNotif = true;
   bool _showDebug = false;
+  Set<AppModule> _activeModules = {};
 
   @override
   void initState() {
     super.initState();
     _loadNotifPrefs();
+    _loadModules();
+  }
+
+  Future<void> _loadModules() async {
+    final active = await ModulesService.instance.loadActive();
+    if (mounted) setState(() => _activeModules = active);
+  }
+
+  Future<void> _toggleModule(AppModule module, bool enabled) async {
+    await ModulesService.instance.toggle(module, enabled);
+    await _loadModules();
   }
 
   Future<void> _loadNotifPrefs() async {
@@ -438,6 +451,19 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             trailing: const Icon(Icons.chevron_right),
             onTap: _editProfile,
           ),
+          const Divider(height: 1),
+          const _SectionHeader(title: 'Модули'),
+          for (final module in AppModule.values)
+            SwitchListTile(
+              secondary: Text(module.icon, style: const TextStyle(fontSize: 20)),
+              title: Text(module.title),
+              subtitle: Text(
+                module.description,
+                style: TextStyle(color: palette.muted, fontSize: 12),
+              ),
+              value: _activeModules.contains(module),
+              onChanged: (v) => _toggleModule(module, v),
+            ),
           const Divider(height: 1),
           const _SectionHeader(title: 'Оси роста'),
           ListTile(

@@ -4,6 +4,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../data/personal_knowledge_service.dart';
 import '../../../theme/app_theme.dart';
+import '../../../widgets/xp_reward_overlay.dart';
 
 const _kMoodKey = 'noetica.mood.today';
 const _kMoodDateKey = 'noetica.mood.date';
@@ -48,6 +49,7 @@ class _MoodPickerState extends State<MoodPicker> {
   }
 
   Future<void> _pick(int index) async {
+    final wasFirst = _selected == null;
     HapticFeedback.selectionClick();
     setState(() => _selected = index);
     final prefs = await SharedPreferences.getInstance();
@@ -59,6 +61,10 @@ class _MoodPickerState extends State<MoodPicker> {
       mood: kMoodLabels[index],
       emoji: kMoodEmojis[index],
     );
+    // +5 XP for daily mood check-in (first pick today only).
+    if (wasFirst && mounted) {
+      XpRewardOverlay.show(context, xp: 5);
+    }
   }
 
   @override

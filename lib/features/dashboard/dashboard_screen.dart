@@ -4,27 +4,24 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../data/models.dart';
 import '../../l10n/generated/app_localizations.dart';
 import '../../providers.dart';
+import '../../services/levels.dart';
 import '../../theme/app_theme.dart';
 import '../../widgets/brand_glyph.dart';
 import '../../services/weekly_reflection_service.dart';
 import '../calendar/calendar_screen.dart';
-import '../calendar/day_detail_sheet.dart';
 import '../entry/entry_editor_sheet.dart';
 import '../home/home_shell.dart';
 import '../knowledge/knowledge_graph_screen.dart';
 import '../notes/notes_screen.dart';
-import '../pomodoro/pomodoro_sheet.dart';
 import '../reflection/weekly_reflection_sheet.dart';
 import '../roadmap/roadmap_screen.dart';
 import '../self/self_screen.dart';
 import '../settings/settings_screen.dart';
 import '../tasks/tasks_screen.dart';
-import 'widgets/activity_heatmap.dart';
 import 'widgets/dashboard_stats.dart';
 import 'widgets/mini_tree_card.dart';
 import 'widgets/dashboard_cards.dart';
 import 'widgets/mood_picker.dart';
-import 'widgets/pulse_section.dart';
 
 /// "Сейчас" tab — focused dashboard.
 ///
@@ -146,6 +143,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
     final entriesAsync = ref.watch(entriesProvider);
     final axesAsync = ref.watch(axesProvider);
     final profileAsync = ref.watch(profileProvider);
+    final levelAsync = ref.watch(levelStatsProvider);
     // ignore: unused_local_variable
     final isDesktop = MediaQuery.of(context).size.width >= 900;
 
@@ -231,24 +229,31 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
               !t.dueAt!.isBefore(today) &&
               t.dueAt!.isBefore(endOfToday));
 
-          // Now-focus pick: first overdue → first due-today → first active.
-          final focus = overdue.isNotEmpty
-              ? overdue.first
-              : (dueToday.isNotEmpty
-                  ? dueToday.first
-                  : (activeTasks.isNotEmpty ? activeTasks.first : null));
-
-          // Today list (excludes the focus pick to avoid duplicate row).
-          final todayList = [
-            ...overdue.where((e) => e.id != focus?.id),
-            ...dueToday.where((e) => e.id != focus?.id),
-          ];
-
           final stats = DashboardStats.from(entries);
           final greeting = _greeting(now, profileAsync.valueOrNull?.name, tr);
 
+          // Level info for greeting subtitle.
+          final lvl = levelAsync.valueOrNull;
+          final levelLabel = lvl != null
+              ? 'L${lvl.level} ${globalRankName(lvl.level)}'
+              : '';
+
+          // XP earned today.
+          final xpToday = entries
+              .where((e) =>
+                  e.isTask &&
+                  e.isCompleted &&
+                  e.completedAt != null &&
+                  e.completedAt!.isAfter(today))
+              .fold<int>(0, (sum, e) => sum + e.xp);
+
+          // All tasks for today (overdue + due today).
+          final allTodayTasks = [
+            ...overdue,
+            ...dueToday.where((e) => !overdue.contains(e)),
+          ];
+
           return ListView(
-            // Reserve space for the floating capsule + FAB hovering above it.
             padding: const
                 EdgeInsets.fromLTRB(16, 8, 16, 24 + kFloatingTabBarReserve),
             children: [
@@ -261,70 +266,39 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
               ],
               DashGreeting(
                 title: greeting,
-                subtitle: _todaySubtitle(stats, overdue.length, dueToday.length, tr),
+                subtitle: levelLabel.isNotEmpty
+                    ? '$levelLabel · ${_todaySubtitle(stats, overdue.length, dueToday.length, tr)}'
+                    : _todaySubtitle(stats, overdue.length, dueToday.length, tr),
                 palette: palette,
               ),
               const SizedBox(height: 14),
               MoodPicker(palette: palette),
               const SizedBox(height: 18),
-              DashSectionHeader(label: tr.sectionNow, palette: palette),
-              const SizedBox(height: 8),
-              NowFocusCard(
-                task: focus,
-                axesById: axesById,
-                palette: palette,
-              ),
-              if (todayList.isNotEmpty) ...[
-                const SizedBox(height: 22),
-                DashSectionHeader(
-                  label: tr.sectionToday,
-                  palette: palette,
-                  trailing: '${todayList.length}',
-                ),
-                const SizedBox(height: 4),
-                for (final t in todayList.take(6))
-                  CompactTaskRow(
-                    task: t,
-                    axesById: axesById,
-                    palette: palette,
-                  ),
-                if (todayList.length > 6)
-                  AllTasksLink(
-                    label: '+${todayList.length - 6}',
-                    palette: palette,
-                  ),
-              ],
-              const SizedBox(height: 22),
-              DashSectionHeader(label: tr.sectionPulse, palette: palette),
-              const SizedBox(height: 8),
-              PulseSection(
-                stats: stats,
-                axesById: axesById,
-                palette: palette,
-                onTapDeadline: focus == null
-                    ? null
-                    : () => showEntryEditor(context, ref, existing: focus),
-              ),
-              const SizedBox(height: 22),
               DashSectionHeader(
-                label: tr.sectionHeatmap,
+                label: tr.sectionToday,
                 palette: palette,
-                trailing: tr.linkCalendar,
-                onTrailingTap: _openCalendar,
+                trailing: '${allTodayTasks.length}',
               ),
-              const SizedBox(height: 8),
-              // No width cap: the heatmap stretches to the card width on
-              // desktop and becomes horizontally scrollable on narrow
-              // viewports, matching GitHub's behaviour.
-              ActivityHeatmap(
-                entries: entries,
-                palette: palette,
-                onTapDay: (date) => showDayDetailSheet(
-                  context,
-                  date,
-                  onOpenCalendar: _openCalendar,
+              const SizedBox(height: 4),
+              if (allTodayTasks.isEmpty)
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 12),
+                  child: Text(
+                    'Нет задач на сегодня',
+                    style: TextStyle(color: palette.muted, fontSize: 13),
+                  ),
                 ),
-              ),
+              for (final t in allTodayTasks.take(8))
+                CompactTaskRow(
+                  task: t,
+                  axesById: axesById,
+                  palette: palette,
+                ),
+              if (allTodayTasks.length > 8)
+                AllTasksLink(
+                  label: '+${allTodayTasks.length - 8}',
+                  palette: palette,
+                ),
               if (axes.length >= 3) ...[
                 const SizedBox(height: 22),
                 DashSectionHeader(
@@ -337,36 +311,28 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                 MiniTreeCard(palette: palette, onTap: _openSelf),
               ],
               const SizedBox(height: 22),
-              DashSectionHeader(
-                // Previously this block was labelled "ПОСЛЕДНЕЕ" and routed
-                // to the journal, but the journal is for notes only —
-                // jumping there from a list of mixed entries felt broken.
-                // The dashboard's own "СЕГОДНЯ" block already covers tasks
-                // due today; this tail strip now shows the last few
-                // closed tasks and links to the full Tasks tab.
-                label: tr.sectionRecentlyClosed,
-                palette: palette,
-                trailing: tr.linkTasks,
-                onTrailingTap: _openTasks,
+              // Streak + XP today footer.
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
+                    '🔥 ${stats.streak}',
+                    style: TextStyle(
+                      color: palette.fg,
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  const SizedBox(width: 16),
+                  Text(
+                    'XP сегодня: $xpToday',
+                    style: TextStyle(
+                      color: palette.muted,
+                      fontSize: 13,
+                    ),
+                  ),
+                ],
               ),
-              const SizedBox(height: 4),
-              // `entries` is ordered by createdAt DESC; sort the
-              // completed-task subset by completion time before taking
-              // the top 4 so the header's "НЕДАВНО ЗАКРЫТО" promise
-              // actually holds (otherwise a task created long ago but
-              // just closed would be hidden behind recent creations).
-              for (final e in (entries
-                      .where((e) => e.isTask && e.isCompleted)
-                      .toList()
-                    ..sort((a, b) => (b.completedAt ?? b.updatedAt)
-                        .compareTo(a.completedAt ?? a.updatedAt)))
-                  .take(4))
-                CompactEntryRow(
-                  entry: e,
-                  axesById: axesById,
-                  palette: palette,
-                  useCompletedAt: true,
-                ),
             ],
           );
         },

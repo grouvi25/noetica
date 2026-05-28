@@ -304,12 +304,12 @@ class _HomeShellState extends ConsumerState<HomeShell> {
       onOpenJournal: _openJournal,
       onOpenCalendar: _openCalendar,
     ),
-    _GatedPage(gate: LevelGate.tree, child: const SelfScreen()),
+    const SelfScreen(),
     const TasksScreen(),
-    _GatedPage(gate: LevelGate.journal, child: const NotesScreen()),
+    const NotesScreen(),
     _GatedPage(gate: LevelGate.knowledge, child: const KnowledgeWorkspaceScreen()),
-    _GatedPage(gate: LevelGate.calendar, child: const CalendarScreen()),
-    _GatedPage(gate: LevelGate.generators, child: const ToolsScreen()),
+    const CalendarScreen(),
+    const ToolsScreen(),
     const SettingsScreen(),
   ];
 

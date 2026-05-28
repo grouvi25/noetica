@@ -5,26 +5,26 @@ import '../theme/app_theme.dart';
 /// Features unlocked at specific levels. Gives users a reason to keep
 /// growing — each new level opens something new.
 enum LevelGate {
-  /// L1: Dashboard, Tasks, Onboarding (always available).
+  /// L1: Dashboard, Tasks, Рефлексия, Древо (always available).
   dashboard(requiredLevel: 1, label: 'Дашборд'),
 
-  /// L2: Tree / Self screen.
-  tree(requiredLevel: 2, label: 'Древо'),
+  /// L2: AI Coach.
+  coach(requiredLevel: 2, label: 'AI-коуч'),
 
-  /// L3: Journal / Notes.
-  journal(requiredLevel: 3, label: 'Журнал'),
+  /// L3: Habits tracker.
+  habits(requiredLevel: 3, label: 'Привычки'),
 
-  /// L4: Calendar & Heatmap.
-  calendar(requiredLevel: 4, label: 'Календарь'),
+  /// L4: Knowledge graph + notes.
+  knowledge(requiredLevel: 4, label: 'База знаний + Граф'),
 
-  /// L5: Generators / AI plan creation.
-  generators(requiredLevel: 5, label: 'Генераторы планов'),
+  /// L5: Advanced analytics.
+  analytics(requiredLevel: 5, label: 'Аналитика'),
 
-  /// L6: Knowledge graph.
-  knowledge(requiredLevel: 6, label: 'База знаний'),
+  /// L6: Data export.
+  export(requiredLevel: 6, label: 'Экспорт данных'),
 
-  /// L7: AI Coach.
-  coach(requiredLevel: 7, label: 'AI-коуч');
+  /// L7+: Custom themes / tree visuals.
+  themes(requiredLevel: 7, label: 'Темы и визуал');
 
   const LevelGate({required this.requiredLevel, required this.label});
 
