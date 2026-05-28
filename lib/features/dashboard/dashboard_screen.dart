@@ -974,7 +974,7 @@ class _OnboardingHints extends StatelessWidget {
           accent: const Color(0xFFA78BFA),
           title: 'Сгенерируй план задач',
           subtitle: aspiration.isEmpty
-              ? 'AI разложит твою цель на 4–10 конкретных задач, привязанных к осям пентаграммы.'
+              ? 'AI разложит твою цель на 4–10 конкретных задач, привязанных к осям древа.'
               : 'AI разложит «$aspiration» на 4–10 задач. Поле уже заполнено — можно редактировать.',
           ctaLabel: 'Сгенерировать',
           onPressed: onOpenRoadmap,
@@ -1006,7 +1006,7 @@ class _OnboardingHints extends StatelessWidget {
           child: TextButton.icon(
             onPressed: onOpenSelf,
             icon: const Icon(Icons.radar_outlined, size: 16),
-            label: const Text('Посмотреть свою пентаграмму'),
+            label: const Text('Посмотреть своё древо'),
             style: TextButton.styleFrom(
               foregroundColor: palette.muted,
             ),

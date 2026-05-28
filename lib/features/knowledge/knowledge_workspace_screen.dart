@@ -99,45 +99,6 @@ class _KnowledgeWorkspaceScreenState
 
     return Scaffold(
       backgroundColor: palette.bg,
-      appBar: AppBar(
-        backgroundColor: palette.bg,
-        elevation: 0,
-        title: Text(
-          'База знаний',
-          style: TextStyle(
-            color: palette.fg,
-            fontFamily: 'IBMPlexMono',
-            fontWeight: FontWeight.w700,
-          ),
-        ),
-        actions: [
-          IconButton(
-            tooltip: 'Переиндексировать через AI',
-            onPressed: _busy ? null : _reindex,
-            icon: _busy
-                ? const SizedBox(
-                    width: 18,
-                    height: 18,
-                    child: CircularProgressIndicator(strokeWidth: 2),
-                  )
-                : Icon(Icons.auto_awesome, color: palette.fg),
-          ),
-        ],
-        bottom: TabBar(
-          controller: _tab,
-          indicatorColor: palette.fg,
-          labelColor: palette.fg,
-          unselectedLabelColor: palette.muted,
-          labelStyle: const TextStyle(
-            fontFamily: 'IBMPlexMono',
-            fontWeight: FontWeight.w700,
-          ),
-          tabs: const [
-            Tab(text: 'Папки'),
-            Tab(text: 'Граф 3D'),
-          ],
-        ),
-      ),
       body: entriesAsync.when(
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (e, _) => Center(child: Text('Ошибка: $e')),
@@ -145,27 +106,93 @@ class _KnowledgeWorkspaceScreenState
           final activeEntries =
               entries.where((e) => !e.isDeleted).toList(growable: false);
           final index = indexAsync.valueOrNull ?? KnowledgeIndex.empty();
-          return TabBarView(
-            controller: _tab,
+          return Column(
             children: [
-              _FoldersView(
-                index: index,
-                entries: activeEntries,
-                palette: palette,
-                selectedFolder: _selectedFolder,
-                onSelectFolder: (f) =>
-                    setState(() => _selectedFolder = f),
-                onOpenEntry: _openEntry,
-                onReindex: _reindex,
-                busy: _busy,
+              Padding(
+                padding: const EdgeInsets.fromLTRB(20, 20, 20, 0),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        'База знаний',
+                        style: TextStyle(
+                          color: palette.fg,
+                          fontFamily: 'IBMPlexMono',
+                          fontWeight: FontWeight.w700,
+                          fontSize: 20,
+                        ),
+                      ),
+                    ),
+                    IconButton(
+                      tooltip: 'Переиндексировать через AI',
+                      onPressed: _busy ? null : _reindex,
+                      icon: _busy
+                          ? const SizedBox(
+                              width: 18,
+                              height: 18,
+                              child: CircularProgressIndicator(strokeWidth: 2),
+                            )
+                          : Icon(Icons.auto_awesome, color: palette.fg),
+                    ),
+                  ],
+                ),
               ),
-              _GraphView(
-                index: index,
-                entries: activeEntries,
-                palette: palette,
-                onOpenEntry: _openEntry,
-                onReindex: _reindex,
-                busy: _busy,
+              Padding(
+                padding: const EdgeInsets.fromLTRB(20, 12, 20, 16),
+                child: SizedBox(
+                  width: double.infinity,
+                  child: SegmentedButton<int>(
+                    segments: [
+                      ButtonSegment<int>(
+                        value: 0,
+                        label: const Text('Папки'),
+                        icon: const Icon(Icons.folder_outlined, size: 18),
+                      ),
+                      ButtonSegment<int>(
+                        value: 1,
+                        label: const Text('Граф'),
+                        icon: const Icon(Icons.hub_outlined, size: 18),
+                      ),
+                    ],
+                    selected: {_tab.index},
+                    onSelectionChanged: (v) {
+                      setState(() => _tab.animateTo(v.first));
+                    },
+                    style: SegmentedButton.styleFrom(
+                      backgroundColor: palette.surface,
+                      selectedBackgroundColor: palette.fg.withOpacity(0.12),
+                      selectedForegroundColor: palette.fg,
+                      foregroundColor: palette.muted,
+                      side: BorderSide(color: palette.line),
+                    ),
+                  ),
+                ),
+              ),
+              Expanded(
+                child: TabBarView(
+                  controller: _tab,
+                  children: [
+                    _FoldersView(
+                      index: index,
+                      entries: activeEntries,
+                      palette: palette,
+                      selectedFolder: _selectedFolder,
+                      onSelectFolder: (f) =>
+                          setState(() => _selectedFolder = f),
+                      onOpenEntry: _openEntry,
+                      onReindex: _reindex,
+                      busy: _busy,
+                    ),
+                    _GraphView(
+                      index: index,
+                      entries: activeEntries,
+                      palette: palette,
+                      onOpenEntry: _openEntry,
+                      onReindex: _reindex,
+                      busy: _busy,
+                    ),
+                  ],
+                ),
               ),
             ],
           );

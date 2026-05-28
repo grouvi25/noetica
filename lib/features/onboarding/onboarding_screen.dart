@@ -168,7 +168,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
     if (clean.length < 3) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Заполни хотя бы 3 оси, чтобы пентаграмма имела смысл'),
+          content: Text('Заполни хотя бы 3 оси, чтобы древо имело смысл'),
         ),
       );
       return;
@@ -282,7 +282,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                     : (_generationError != null
                         ? 'Не удалось связаться с AI: $_generationError. Ниже — запасные оси, отредактируй как хочешь.'
                         : (_generating
-                            ? 'Из ${widget.seedInterests.length} твоих направлений AI рисует персональную пентаграмму…'
+                            ? 'Из ${widget.seedInterests.length} твоих направлений AI строит персональное древо…'
                             : 'Сгенерировано на ${_model.isEmpty ? "AI" : _model}. Переименуй, убери лишние, добавь свои. От 3 до 8.')),
                 style: Theme.of(context)
                     .textTheme
@@ -349,7 +349,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                   child: Text(
                     _saving
                         ? '…'
-                        : (canPop ? 'Сохранить' : 'Создать пентаграмму'),
+                        : (canPop ? 'Сохранить' : 'Создать древо'),
                   ),
                 ),
               ),

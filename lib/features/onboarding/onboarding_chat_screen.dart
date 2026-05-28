@@ -28,15 +28,11 @@ class OnboardingChatScreen extends ConsumerStatefulWidget {
 
 class _OnboardingChatScreenState
     extends ConsumerState<OnboardingChatScreen> {
-  static const int _stepCount = 4;
+  static const int _stepCount = 5;
   int _step = 0;
 
   // Collected answers.
   String _name = '';
-  // Multi-select on the aspiration step — user wanted to be able to
-  // pick more than one goal and also add a custom one. Internally we
-  // still flatten this back into the single `aspiration` string the
-  // backend / LLM expects, by joining with "; ".
   final List<String> _aspirations = [];
   final List<String> _interests = [];
   final Map<String, String> _interestLevels = {};
@@ -55,29 +51,34 @@ class _OnboardingChatScreenState
 
   // Suggestions.
   static const _aspirationOptions = <String>[
-    'поправить здоровье',
-    'сменить профессию',
-    'выучить новое',
-    'стать дисциплинированнее',
-    'развить отношения',
-    'найти баланс',
-    'запустить проект',
+    'стать здоровее и сильнее',
+    'построить карьеру мечты',
+    'найти гармонию в отношениях',
+    'научиться новому',
+    'обрести финансовую свободу',
+    'раскрыть творческий потенциал',
+    'обрести внутренний покой',
+    'запустить свой проект',
   ];
   static const _interestOptions = <String>[
-    'учёба',
-    'код',
-    'дизайн',
-    'спорт',
-    'медитация',
-    'чтение',
-    'музыка',
-    'языки',
-    'кулинария',
-    'отношения',
+    'здоровье и спорт',
+    'интеллект и учёба',
+    'карьера и проекты',
+    'отношения и семья',
+    'духовность и осознанность',
     'финансы',
     'творчество',
-    'карьера',
-    'семья',
+    'дисциплина и привычки',
+  ];
+  static const _painPointOptions = <String>[
+    'не хватает времени',
+    'прокрастинация',
+    'нет чёткого плана',
+    'нет мотивации',
+    'страх начать',
+    'нет поддержки окружения',
+    'выгорание',
+    'не знаю с чего начать',
   ];
 
 
@@ -117,15 +118,17 @@ class _OnboardingChatScreenState
   String _questionFor(int step) {
     switch (step) {
       case 0:
-        return 'Привет. Я твой ассистент роста. Как тебя зовут?';
+        return 'Привет! Я помогу тебе построить древо роста. Как тебя зовут?';
       case 1:
         return _name.isNotEmpty
-            ? 'Окей, ${_firstName(_name)}. Чего ты хочешь достичь в ближайший год?'
-            : 'Чего ты хочешь достичь в ближайший год?';
+            ? '${_firstName(_name)}, к какой версии себя ты хочешь прийти?'
+            : 'К какой версии себя ты хочешь прийти?';
       case 2:
-        return 'В каких сферах ты уже что-то делаешь? Выбери 3–8.';
+        return 'Какие сферы жизни для тебя сейчас важнее всего? Из них мы соберём твоё древо.';
       case 3:
-        return 'Сколько часов в неделю реально готов уделять?';
+        return 'Что сейчас мешает тебе расти?';
+      case 4:
+        return 'Сколько часов в неделю готов вкладывать в себя?';
       default:
         return '';
     }
@@ -144,6 +147,8 @@ class _OnboardingChatScreenState
       case 2:
         return _interests.length >= 3;
       case 3:
+        return _painPoints.isNotEmpty;
+      case 4:
         return _weeklyHours > 0;
     }
     return false;
@@ -158,6 +163,8 @@ class _OnboardingChatScreenState
       case 2:
         return _interests.join(', ');
       case 3:
+        return _painPoints.join(', ');
+      case 4:
         return '$_weeklyHours ч/нед';
     }
     return '';
@@ -395,7 +402,7 @@ class _OnboardingChatScreenState
                 .indexWhere((e) => e.toLowerCase() == v.toLowerCase());
             if (idx >= 0) {
               _interests.removeAt(idx);
-            } else if (_interests.length < 12) {
+            } else if (_interests.length < 8) {
               _interests.add(v);
               _interestLevels.putIfAbsent(v, () => 'novice');
             }
@@ -412,7 +419,7 @@ class _OnboardingChatScreenState
                       .where(
                           (e) => e.toLowerCase() == v.toLowerCase())
                       .isEmpty &&
-                  _interests.length < 12) {
+                  _interests.length < 8) {
                 _interests.add(v);
                 _interestLevels.putIfAbsent(v, () => 'novice');
               }
@@ -427,6 +434,43 @@ class _OnboardingChatScreenState
           onSubmit: _canAdvance ? _advance : null,
         );
       case 3:
+        return _ChipsReply(
+          options: _painPointOptions,
+          selected: _painPoints,
+          allowMultiple: true,
+          onPick: (v) => setState(() {
+            final idx = _painPoints
+                .indexWhere((e) => e.toLowerCase() == v.toLowerCase());
+            if (idx >= 0) {
+              _painPoints.removeAt(idx);
+            } else if (_painPoints.length < 5) {
+              _painPoints.add(v);
+            }
+          }),
+          customOpen: _customOpen,
+          onToggleCustom: () =>
+              setState(() => _customOpen = !_customOpen),
+          customCtrl: _customCtrl,
+          onSubmitCustom: () {
+            final v = _customCtrl.text.trim();
+            if (v.isEmpty) return;
+            setState(() {
+              if (_painPoints
+                      .where(
+                          (e) => e.toLowerCase() == v.toLowerCase())
+                      .isEmpty &&
+                  _painPoints.length < 5) {
+                _painPoints.add(v);
+              }
+              _customOpen = false;
+              _customCtrl.clear();
+            });
+          },
+          palette: palette,
+          submitLabel: _painPoints.isEmpty ? 'Выбери хотя бы одно' : 'Далее',
+          onSubmit: _canAdvance ? _advance : null,
+        );
+      case 4:
         return _HoursReply(
           value: _weeklyHours.clamp(1, 60),
           onChanged: (v) => setState(() => _weeklyHours = v),

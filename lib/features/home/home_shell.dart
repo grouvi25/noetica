@@ -357,7 +357,7 @@ class _HomeShellState extends ConsumerState<HomeShell> {
     _Destination(
       icon: Icons.auto_graph_outlined,
       selectedIcon: Icons.auto_graph,
-      label: 'Я',
+      label: 'Древо',
     ),
     _Destination(
       icon: Icons.checklist_outlined,
@@ -566,69 +566,7 @@ class _DesktopSidebar extends StatelessWidget {
                   ],
                 ),
               ),
-              const SizedBox(height: 24),
-              // Skip the "Ещё" tab (mobile-only) on desktop sidebar.
-              for (var i = 0; i < destinations.length; i++)
-                if (i != _HomeShellState._moreTabIndex)
-                  _SidebarTile(
-                    icon: destinations[i].icon,
-                    selectedIcon: destinations[i].selectedIcon,
-                    label: destinations[i].label,
-                    selected: selectedIndex == i &&
-                        !journalSelected &&
-                        !knowledgeSelected &&
-                        !calendarSelected &&
-                        !toolsSelected &&
-                        !settingsSelected,
-                    extended: extended,
-                    palette: palette,
-                    onTap: () => onDestinationSelected(i),
-                  ),
-              const Spacer(),
-              Padding(
-                padding: EdgeInsets.symmetric(
-                  horizontal: extended ? 16 : 0,
-                  vertical: 4,
-                ),
-                child: Divider(color: palette.line, height: 1),
-              ),
-              _SidebarTile(
-                icon: Icons.calendar_month_outlined,
-                selectedIcon: Icons.calendar_month,
-                label: 'Календарь',
-                selected: calendarSelected,
-                extended: extended,
-                palette: palette,
-                onTap: onCalendar,
-              ),
-              _SidebarTile(
-                icon: Icons.bookmark_border_outlined,
-                selectedIcon: Icons.bookmark,
-                label: 'Журнал',
-                selected: journalSelected,
-                extended: extended,
-                palette: palette,
-                onTap: onJournal,
-              ),
-              _SidebarTile(
-                icon: Icons.account_tree_outlined,
-                selectedIcon: Icons.account_tree,
-                label: 'База знаний',
-                selected: knowledgeSelected,
-                extended: extended,
-                palette: palette,
-                onTap: onKnowledge,
-              ),
-              _SidebarTile(
-                icon: Icons.auto_awesome_outlined,
-                selectedIcon: Icons.auto_awesome,
-                label: 'Ассистент',
-                selected: toolsSelected,
-                extended: extended,
-                palette: palette,
-                onTap: onTools,
-              ),
-              const SizedBox(height: 12),
+              const SizedBox(height: 16),
               Padding(
                 padding: EdgeInsets.symmetric(
                   horizontal: extended ? 16 : 12,
@@ -647,13 +585,78 @@ class _DesktopSidebar extends StatelessWidget {
                         ),
                       ),
               ),
-              const Spacer(),
-              Padding(
-                padding: EdgeInsets.symmetric(
-                  horizontal: extended ? 16 : 0,
-                  vertical: 4,
+              const SizedBox(height: 16),
+              // Skip the "Ещё" tab (mobile-only) on desktop sidebar.
+              for (var i = 0; i < destinations.length; i++)
+                if (i != _HomeShellState._moreTabIndex)
+                  _SidebarTile(
+                    icon: destinations[i].icon,
+                    selectedIcon: destinations[i].selectedIcon,
+                    label: destinations[i].label,
+                    selected: selectedIndex == i &&
+                        !journalSelected &&
+                        !knowledgeSelected &&
+                        !calendarSelected &&
+                        !toolsSelected &&
+                        !settingsSelected,
+                    extended: extended,
+                    palette: palette,
+                    onTap: () => onDestinationSelected(i),
+                  ),
+              _SidebarTile(
+                icon: Icons.bookmark_border_outlined,
+                selectedIcon: Icons.bookmark,
+                label: 'Журнал',
+                selected: journalSelected,
+                extended: extended,
+                palette: palette,
+                onTap: onJournal,
+              ),
+              const SizedBox(height: 8),
+              if (extended)
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 4),
+                  child: Text(
+                    'ИНСТРУМЕНТЫ',
+                    style: TextStyle(
+                      color: palette.muted.withOpacity(0.5),
+                      fontSize: 10,
+                      fontWeight: FontWeight.w700,
+                      letterSpacing: 2,
+                    ),
+                  ),
+                )
+              else
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  child: Divider(color: palette.line, height: 1),
                 ),
-                child: Divider(color: palette.line, height: 1),
+              _SidebarTile(
+                icon: Icons.account_tree_outlined,
+                selectedIcon: Icons.account_tree,
+                label: 'База знаний',
+                selected: knowledgeSelected,
+                extended: extended,
+                palette: palette,
+                onTap: onKnowledge,
+              ),
+              _SidebarTile(
+                icon: Icons.calendar_month_outlined,
+                selectedIcon: Icons.calendar_month,
+                label: 'Календарь',
+                selected: calendarSelected,
+                extended: extended,
+                palette: palette,
+                onTap: onCalendar,
+              ),
+              _SidebarTile(
+                icon: Icons.auto_awesome_outlined,
+                selectedIcon: Icons.auto_awesome,
+                label: 'Ассистент',
+                selected: toolsSelected,
+                extended: extended,
+                palette: palette,
+                onTap: onTools,
               ),
               _SidebarTile(
                 icon: Icons.timer_outlined,
@@ -663,6 +666,14 @@ class _DesktopSidebar extends StatelessWidget {
                 extended: extended,
                 palette: palette,
                 onTap: onPomodoro,
+              ),
+              const Spacer(),
+              Padding(
+                padding: EdgeInsets.symmetric(
+                  horizontal: extended ? 16 : 0,
+                  vertical: 4,
+                ),
+                child: Divider(color: palette.line, height: 1),
               ),
               _SidebarTile(
                 icon: Icons.settings_outlined,

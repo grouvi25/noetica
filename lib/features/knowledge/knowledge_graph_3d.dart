@@ -1,5 +1,6 @@
 import 'dart:math' as math;
 
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 
 import '../../data/knowledge_index_models.dart';
@@ -95,9 +96,9 @@ class _KnowledgeGraph3DState extends State<KnowledgeGraph3D>
           color: color,
           entry: entry,
           relatedCount: node.relatedIds.length,
-          x: (rng.nextDouble() - 0.5) * 6,
-          y: (rng.nextDouble() - 0.5) * 6,
-          z: (rng.nextDouble() - 0.5) * 6,
+          x: (rng.nextDouble() - 0.5) * 3,
+          y: (rng.nextDouble() - 0.5) * 3,
+          z: (rng.nextDouble() - 0.5) * 3,
         ),
       );
     }
@@ -160,7 +161,7 @@ class _KnowledgeGraph3DState extends State<KnowledgeGraph3D>
       a.fy = 0;
       a.fz = 0;
     }
-    // Repulsion.
+    // Repulsion — gentle so nodes stay clustered (Obsidian-style).
     for (var i = 0; i < n; i++) {
       final a = _nodes[i];
       for (var j = i + 1; j < n; j++) {
@@ -169,9 +170,8 @@ class _KnowledgeGraph3DState extends State<KnowledgeGraph3D>
         var dy = a.y - b.y;
         var dz = a.z - b.z;
         final d2 = dx * dx + dy * dy + dz * dz + 0.01;
-        final inv = 1.0 / d2;
-        final f = 1.5 * inv;
         final d = math.sqrt(d2);
+        final f = 0.4 / d2;
         dx /= d;
         dy /= d;
         dz /= d;
@@ -183,7 +183,7 @@ class _KnowledgeGraph3DState extends State<KnowledgeGraph3D>
         b.fz -= dz * f;
       }
     }
-    // Attraction.
+    // Attraction — stronger pull to keep connected nodes together.
     final nodeById = <String, _Node3D>{for (final n in _nodes) n.id: n};
     for (final e in _edges) {
       final a = nodeById[e.aId];
@@ -193,8 +193,8 @@ class _KnowledgeGraph3DState extends State<KnowledgeGraph3D>
       final dy = b.y - a.y;
       final dz = b.z - a.z;
       final d = math.sqrt(dx * dx + dy * dy + dz * dz) + 0.001;
-      final k = e.ghost ? 0.012 : 0.06;
-      final f = (d - 2.5) * k;
+      final k = e.ghost ? 0.025 : 0.10;
+      final f = (d - 1.5) * k;
       final ux = dx / d;
       final uy = dy / d;
       final uz = dz / d;
@@ -205,15 +205,19 @@ class _KnowledgeGraph3DState extends State<KnowledgeGraph3D>
       b.fy -= uy * f;
       b.fz -= uz * f;
     }
-    const damping = 0.82;
-    const centering = 0.005;
+    const damping = 0.90;
+    const centering = 0.02;
     for (final node in _nodes) {
       node.fx -= node.x * centering;
       node.fy -= node.y * centering;
       node.fz -= node.z * centering;
-      node.vx = (node.vx + node.fx * 0.03) * damping;
-      node.vy = (node.vy + node.fy * 0.03) * damping;
-      node.vz = (node.vz + node.fz * 0.03) * damping;
+      node.vx = (node.vx + node.fx * 0.02) * damping;
+      node.vy = (node.vy + node.fy * 0.02) * damping;
+      node.vz = (node.vz + node.fz * 0.02) * damping;
+      const maxV = 0.15;
+      node.vx = node.vx.clamp(-maxV, maxV);
+      node.vy = node.vy.clamp(-maxV, maxV);
+      node.vz = node.vz.clamp(-maxV, maxV);
       node.x += node.vx;
       node.y += node.vy;
       node.z += node.vz;
@@ -231,7 +235,16 @@ class _KnowledgeGraph3DState extends State<KnowledgeGraph3D>
         return Stack(
           children: [
             Positioned.fill(
-              child: GestureDetector(
+              child: Listener(
+                onPointerSignal: (event) {
+                  if (event is PointerScrollEvent) {
+                    setState(() {
+                      final delta = event.scrollDelta.dy;
+                      _zoom = (_zoom * (1 - delta * 0.001)).clamp(0.3, 5.0);
+                    });
+                  }
+                },
+                child: GestureDetector(
                 behavior: HitTestBehavior.opaque,
                 onPanUpdate: (d) {
                   setState(() {
@@ -243,7 +256,7 @@ class _KnowledgeGraph3DState extends State<KnowledgeGraph3D>
                 onScaleUpdate: (d) {
                   if (d.scale != 1.0) {
                     setState(() {
-                      _zoom = (_zoom * d.scale).clamp(0.4, 4.0);
+                      _zoom = (_zoom * d.scale).clamp(0.3, 5.0);
                     });
                   }
                 },
@@ -265,6 +278,7 @@ class _KnowledgeGraph3DState extends State<KnowledgeGraph3D>
                     hoverId: _hoverId,
                   ),
                 ),
+              ),
               ),
             ),
             Positioned(

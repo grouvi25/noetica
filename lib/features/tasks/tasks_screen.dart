@@ -798,7 +798,7 @@ class _EmptyState extends StatelessWidget {
     final title = hasAnyTasks ? 'Под фильтр ничего не попало' : 'Задач нет';
     final body = hasAnyTasks
         ? 'Сбрось фильтры или поменяй сортировку, чтобы увидеть остальные задачи.'
-        : 'Создай задачу через «+». Привяжи её к осям — выполнение начислит очки в пентаграмму.';
+        : 'Создай задачу через «+». Привяжи её к осям — выполнение начислит очки в древо.';
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(32),
