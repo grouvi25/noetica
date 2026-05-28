@@ -412,7 +412,12 @@ async def generate_coach(
 ):
     """AI Coach — morning plan or evening reflection."""
     try:
-        result = await llm.generate_coach(
+        client = LlmClient()
+    except LlmConfigError as exc:
+        logger.error("LLM config error: %s", exc)
+        raise HTTPException(status_code=503, detail=str(exc)) from exc
+    try:
+        result = await client.generate_coach(
             mode=request.mode,
             name=request.name,
             aspiration=request.aspiration,
