@@ -264,8 +264,9 @@ class _CurrentEpochBody extends ConsumerWidget {
           level: level,
           streak: streak,
           aspiration: profile?.aspiration ?? '',
-          epoch: profile?.currentEpoch ?? 1,
-          tier: profile?.epochTier ?? 1,
+          completedTasks: ref.watch(entriesProvider).valueOrNull
+              ?.where((e) => e.isTask && e.isCompleted && !e.isDeleted)
+              .length ?? 0,
         ),
         const SizedBox(height: 16),
         if (profile != null &&
@@ -316,7 +317,7 @@ class _CurrentEpochBody extends ConsumerWidget {
           ),
           const SizedBox(height: 16),
           Text(
-            'Очки начисляются за выполнение задач, привязанных к осям. Со временем затухают — древо отражает тебя за последний месяц.',
+            'Прогресс по каждой ветке — это твоя активность за последний месяц. Выполняй задачи, чтобы ветки росли.',
             style: Theme.of(context)
                 .textTheme
                 .bodySmall
@@ -569,20 +570,17 @@ class _ProfileHeader extends StatelessWidget {
     required this.level,
     required this.streak,
     required this.aspiration,
-    required this.epoch,
-    this.tier = 1,
+    required this.completedTasks,
   });
 
   final LevelStats? level;
   final int streak;
   final String aspiration;
-  final int epoch;
-  final int tier;
+  final int completedTasks;
 
   @override
   Widget build(BuildContext context) {
     final palette = context.palette;
-    final l = level;
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
@@ -593,58 +591,36 @@ class _ProfileHeader extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              _BigNumber(
-                label: 'ЭПОХА',
-                value: tier > 1 ? 'Э$epoch.$tier' : 'Э$epoch',
-              ),
-              const SizedBox(width: 20),
-              _BigNumber(
-                label: 'УРОВЕНЬ',
-                value: l == null ? '—' : 'L${l.level}',
-              ),
-              const SizedBox(width: 20),
-              _BigNumber(
-                label: 'XP',
-                value: l == null ? '—' : '${l.totalXp}',
-              ),
-              const SizedBox(width: 20),
-              _BigNumber(
-                label: 'СТРИК',
-                value: streak == 0 ? '—' : '$streak д.',
-              ),
-            ],
-          ),
-          if (l != null) ...[
-            const SizedBox(height: 16),
-            ClipRRect(
-              borderRadius: BorderRadius.circular(2),
-              child: LinearProgressIndicator(
-                value: l.progress.clamp(0.0, 1.0),
-                minHeight: 6,
-                backgroundColor: palette.line,
-                valueColor: AlwaysStoppedAnimation<Color>(palette.fg),
-              ),
-            ),
-            const SizedBox(height: 6),
-            Text(
-              'до L${l.level + 1}: ${l.xpForLevel - l.xpIntoLevel} xp',
-              style: TextStyle(color: palette.muted, fontSize: 12),
-            ),
-          ],
           if (aspiration.isNotEmpty) ...[
-            const SizedBox(height: 16),
             Text(
               '«$aspiration»',
               style: Theme.of(context)
                   .textTheme
                   .bodyMedium
-                  ?.copyWith(color: palette.muted, fontStyle: FontStyle.italic),
+                  ?.copyWith(color: palette.fg, fontStyle: FontStyle.italic),
             ),
+            const SizedBox(height: 16),
           ],
-          if (streak == 0 && l != null && l.totalXp > 0) ...[
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              _BigNumber(
+                label: 'ВЫПОЛНЕНО',
+                value: '$completedTasks',
+              ),
+              const SizedBox(width: 24),
+              _BigNumber(
+                label: 'СТРИК',
+                value: streak == 0 ? '—' : '$streak д.',
+              ),
+              const SizedBox(width: 24),
+              _BigNumber(
+                label: 'ОПЫТ',
+                value: level == null ? '—' : '${level!.totalXp}',
+              ),
+            ],
+          ),
+          if (streak == 0 && level != null && level!.totalXp > 0) ...[
             const SizedBox(height: 12),
             _StreakBreakBanner(),
           ],
@@ -841,45 +817,6 @@ class _AxisTile extends StatelessWidget {
                               overflow: TextOverflow.ellipsis,
                             ),
                           ),
-                          if (ls != null) ...[
-                            const SizedBox(width: 8),
-                            Container(
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: 6, vertical: 2),
-                              decoration: BoxDecoration(
-                                border:
-                                    Border.all(color: palette.line),
-                                borderRadius: BorderRadius.circular(4),
-                              ),
-                              child: Text(
-                                'L${ls.level}',
-                                style: TextStyle(
-                                  color: palette.muted,
-                                  fontSize: 10,
-                                  letterSpacing: 1.2,
-                                  fontWeight: FontWeight.w600,
-                                ),
-                              ),
-                            ),
-                            const SizedBox(width: 4),
-                            Container(
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: 6, vertical: 2),
-                              decoration: BoxDecoration(
-                                color: palette.fg,
-                                borderRadius: BorderRadius.circular(4),
-                              ),
-                              child: Text(
-                                'Э${epochFromXp(ls.totalXp)}',
-                                style: TextStyle(
-                                  color: palette.bg,
-                                  fontSize: 10,
-                                  letterSpacing: 1.2,
-                                  fontWeight: FontWeight.w700,
-                                ),
-                              ),
-                            ),
-                          ],
                         ],
                       ),
                     ),
@@ -907,11 +844,10 @@ class _AxisTile extends StatelessWidget {
                     ),
                   ),
                 ),
-                if (ls != null) ...[
+                if (ls != null && ls.totalXp > 0) ...[
                   const SizedBox(height: 4),
                   Text(
-                    '${ls.totalXp} XP · до L${ls.level + 1}: '
-                    '${ls.xpAtNextLevel - ls.totalXp}',
+                    '${ls.totalXp} опыта',
                     style: TextStyle(
                       color: palette.muted,
                       fontSize: 11,
