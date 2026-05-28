@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../l10n/generated/app_localizations.dart';
 import '../../data/models.dart';
+import '../../data/personal_knowledge_service.dart';
 import '../../providers.dart';
 import '../../services/coach_api.dart';
 import '../../theme/app_theme.dart';
@@ -47,6 +48,9 @@ class _CoachScreenState extends ConsumerState<CoachScreen> {
       final scores = ref.read(scoresProvider).valueOrNull ?? [];
       final stats = DashboardStats.from(entries);
 
+      // Load personal knowledge for contextual coaching.
+      final knowledge = await PersonalKnowledgeService().load();
+
       final now = DateTime.now();
       final todayStart = DateTime(now.year, now.month, now.day);
 
@@ -70,6 +74,14 @@ class _CoachScreenState extends ConsumerState<CoachScreen> {
           .where((e) => e.createdAt.isAfter(todayStart))
           .length;
 
+      final knowledgeCtx = <String, dynamic>{
+        'goals': knowledge.goals,
+        'summary': knowledge.summary,
+        'mood': knowledge.preferences['currentMood'] ?? '',
+        'recentReflections': knowledge.recentReflections,
+        'completedHighlights': knowledge.completedHighlights,
+      };
+
       if (_isMorning) {
         final plan = await api.generateMorningPlan(
           name: profile?.name ?? '',
@@ -77,6 +89,7 @@ class _CoachScreenState extends ConsumerState<CoachScreen> {
           axes: scores.map((s) => s.axis.name).toList(),
           activeTasks: activeTasks,
           streak: stats.streak,
+          knowledgeContext: knowledgeCtx,
         );
         if (!mounted) return;
         setState(() {
@@ -90,6 +103,7 @@ class _CoachScreenState extends ConsumerState<CoachScreen> {
           remaining: activeTasks.take(5).toList(),
           entriesToday: entriesToday,
           streak: stats.streak,
+          knowledgeContext: knowledgeCtx,
         );
         if (!mounted) return;
         setState(() {

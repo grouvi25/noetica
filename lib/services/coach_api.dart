@@ -83,6 +83,7 @@ class CoachApi {
     required List<String> axes,
     required List<String> activeTasks,
     required int streak,
+    Map<String, dynamic>? knowledgeContext,
   }) async {
     final body = await _call({
       'mode': 'morning',
@@ -91,6 +92,7 @@ class CoachApi {
       'axes': axes,
       'active_tasks': activeTasks,
       'streak': streak,
+      if (knowledgeContext != null) 'context': knowledgeContext,
     });
     final morning = body['morning'] as Map<String, dynamic>?;
     if (morning == null) {
@@ -105,6 +107,7 @@ class CoachApi {
     required List<String> remaining,
     required int entriesToday,
     required int streak,
+    Map<String, dynamic>? knowledgeContext,
   }) async {
     final body = await _call({
       'mode': 'evening',
@@ -113,6 +116,7 @@ class CoachApi {
       'remaining': remaining,
       'entries_today': entriesToday,
       'streak': streak,
+      if (knowledgeContext != null) 'context': knowledgeContext,
     });
     final evening = body['evening'] as Map<String, dynamic>?;
     if (evening == null) {

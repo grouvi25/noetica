@@ -7,7 +7,7 @@ import '../../../data/models.dart';
 import '../../../theme/app_theme.dart';
 import '../axis_detail_sheet.dart';
 import '../epoch_ceremony.dart';
-import '../pentagon_painter.dart';
+import '../tree_painter.dart';
 
 /// Animated Древо: every time `scores` changes (new task completed,
 /// reflection submitted, etc.) the polygon tweens out from 0 → its new
@@ -80,7 +80,7 @@ class _DrevoCanvasState extends ConsumerState<DrevoCanvas>
         return GestureDetector(
           behavior: HitTestBehavior.opaque,
           onTapUp: (d) {
-            final probe = PentagonPainter(
+            final probe = TreePainter(
               scores: widget.scores,
               fg: palette.fg,
               muted: palette.muted,
@@ -112,7 +112,7 @@ class _DrevoCanvasState extends ConsumerState<DrevoCanvas>
                   : 1.0;
               final progress = grow * breath * pulse;
               return CustomPaint(
-                painter: PentagonPainter(
+                painter: TreePainter(
                   scores: widget.scores,
                   fg: palette.fg,
                   muted: palette.muted,

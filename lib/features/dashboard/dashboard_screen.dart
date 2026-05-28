@@ -23,6 +23,7 @@ import 'widgets/activity_heatmap.dart';
 import 'widgets/dashboard_stats.dart';
 import 'widgets/mini_tree_card.dart';
 import 'widgets/dashboard_cards.dart';
+import 'widgets/mood_picker.dart';
 import 'widgets/pulse_section.dart';
 
 /// "Сейчас" tab — focused dashboard.
@@ -158,9 +159,22 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
         title: Text(tr.tabDashboard),
         actions: [
           IconButton(
-            tooltip: 'Pomodoro',
-            icon: const Icon(Icons.timer_outlined),
-            onPressed: () => PomodoroSheet.show(context),
+            tooltip: tr.navJournal,
+            icon: const Icon(Icons.bookmark_border_outlined),
+            onPressed: () => Navigator.of(context).push(
+              MaterialPageRoute<void>(
+                builder: (_) => const NotesScreen(),
+              ),
+            ),
+          ),
+          IconButton(
+            tooltip: tr.navSettings,
+            icon: const Icon(Icons.settings_outlined),
+            onPressed: () => Navigator.of(context).push(
+              MaterialPageRoute<void>(
+                builder: (_) => const SettingsScreen(),
+              ),
+            ),
           ),
           const SizedBox(width: 4),
         ],
@@ -250,6 +264,8 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                 subtitle: _todaySubtitle(stats, overdue.length, dueToday.length, tr),
                 palette: palette,
               ),
+              const SizedBox(height: 14),
+              MoodPicker(palette: palette),
               const SizedBox(height: 18),
               DashSectionHeader(label: tr.sectionNow, palette: palette),
               const SizedBox(height: 8),

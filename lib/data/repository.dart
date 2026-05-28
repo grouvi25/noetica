@@ -8,12 +8,9 @@ import '../services/notifications.dart';
 import 'db.dart';
 import 'models.dart' as m;
 
-/// Window over which completed-task XP contributes to axis scores.
-const Duration _xpDecayWindow = Duration(days: 30);
-
-/// Maximum total XP we expect a healthy axis to accumulate in the window.
-/// Used to normalise scores to a 0..100 scale.
-const double _maxAxisXpInWindow = 200.0;
+/// Lifetime XP needed for an axis to reach 100% on the pentagon.
+/// Progress is permanent — the tree only grows, never shrinks.
+const double _maxAxisXpForFull = 500.0;
 
 class NoeticaRepository {
   NoeticaRepository(this._db);
@@ -988,83 +985,24 @@ class NoeticaRepository {
 
   // ---------- scores ----------
 
-  /// Compute a 0..100 axis score based on completed tasks within
-  /// [_xpDecayWindow].
+  /// Compute a 0..100 axis score based on **lifetime** completed-task XP.
   ///
-  /// Each task's XP is split across its attached axes via *normalised*
-  /// weights — i.e. the per-axis contribution is `xp * decayFactor *
-  /// weight / sumOfWeightsForThisTask`. With the default `weight = 1.0`
-  /// this is exactly an even 1/N split, which is the deterministic
-  /// "fair share" the user asked for. LLM-generated tasks ship explicit
-  /// weights; manual tasks fall through to the even split.
-  /// Computes per-axis scores from the rolling XP-decay window.
+  /// Progress is permanent — the tree only grows, never shrinks. 500 XP
+  /// on an axis = 100%. This replaces the old 30-day decay window that
+  /// demotivated users who took a break.
   ///
-  /// [baselineCutoff] is an optional override that shifts the window's
-  /// earliest contribution forward. Callers pass it when the user
-  /// taps «Углубиться» on the эпоха-overlay — that timestamp gets
-  /// stored on the profile and fed back here, which effectively
-  /// resets the pentagon without deleting any history.
+  /// [baselineCutoff] is kept for API compatibility but no longer
+  /// restricts the query window; lifetime XP is always used.
   Future<List<m.AxisScore>> computeScores({
     DateTime? baselineCutoff,
   }) async {
+    final perAxis = await axisLifetimeXp();
     final axes = await listAxes();
     if (axes.isEmpty) return const [];
-    final now = DateTime.now();
-    final defaultCutoff =
-        now.subtract(_xpDecayWindow).millisecondsSinceEpoch;
-    final cutoff = baselineCutoff != null
-        ? math.max(defaultCutoff, baselineCutoff.millisecondsSinceEpoch)
-        : defaultCutoff;
-    final rows = await _db.raw.rawQuery(
-      '''
-      SELECT ea.entry_id AS entry_id,
-             ea.axis_id AS axis_id,
-             ea.weight AS weight,
-             e.completed_at AS completed_at,
-             e.xp AS xp
-      FROM entries e
-      JOIN entry_axes ea ON ea.entry_id = e.id
-      WHERE e.kind = ?
-        AND e.completed_at IS NOT NULL
-        AND e.completed_at >= ?
-        AND e.deleted_at IS NULL
-      ''',
-      [m.EntryKind.task.name, cutoff],
-    );
-    final knownAxisIds = {for (final a in axes) a.id};
-
-    // Group rows by entry so we can normalise weights per task.
-    final perEntry = <String, List<Map<String, Object?>>>{};
-    for (final r in rows) {
-      final eid = r['entry_id']! as String;
-      perEntry.putIfAbsent(eid, () => []).add(r);
-    }
-
-    final raw = <String, double>{for (final a in axes) a.id: 0.0};
-    for (final entry in perEntry.values) {
-      // Filter to known axes only — drops orphan link rows from deleted
-      // axes that haven't been hard-deleted yet.
-      final live =
-          entry.where((r) => knownAxisIds.contains(r['axis_id'])).toList();
-      if (live.isEmpty) continue;
-      final totalWeight =
-          live.fold<double>(0, (s, r) => s + ((r['weight'] as num?) ?? 1.0));
-      if (totalWeight <= 0) continue;
-      final completedAt = live.first['completed_at']! as int;
-      final xp = (live.first['xp'] as int?) ?? 0;
-      final ageMs = now.millisecondsSinceEpoch - completedAt;
-      final decay = 1.0 - (ageMs / _xpDecayWindow.inMilliseconds);
-      if (decay <= 0) continue;
-      for (final r in live) {
-        final axisId = r['axis_id']! as String;
-        final w = ((r['weight'] as num?) ?? 1.0) / totalWeight;
-        raw[axisId] = (raw[axisId] ?? 0) + xp * decay * w;
-      }
-    }
     return axes.map((axis) {
-      final r = raw[axis.id] ?? 0.0;
-      final v = (r / _maxAxisXpInWindow * 100).clamp(0.0, 100.0);
-      return m.AxisScore(axis: axis, value: v, rawXp: r);
+      final xp = (perAxis[axis.id] ?? 0).toDouble();
+      final v = (xp / _maxAxisXpForFull * 100).clamp(0.0, 100.0);
+      return m.AxisScore(axis: axis, value: v, rawXp: xp);
     }).toList();
   }
 

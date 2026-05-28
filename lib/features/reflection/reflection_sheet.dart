@@ -6,8 +6,10 @@ import '../../data/models.dart';
 import '../../data/personal_knowledge_service.dart';
 import '../../providers.dart';
 import '../../services/analytics_service.dart';
+import '../../services/levels.dart';
 import '../../theme/app_theme.dart';
 import '../../utils/body_utils.dart';
+import '../../widgets/xp_reward_overlay.dart';
 
 /// Result returned by the Reflection sheet. `null` if the user dismissed
 /// without saving (the task should still complete with default XP).
@@ -78,10 +80,30 @@ Future<void> toggleTaskWithReflection(
   if (shouldOfferReflection(task) && context.mounted) {
     result = await showReflectionSheet(context, task: task);
   }
+  // Snapshot XP before completion to detect level-ups.
+  final xpBefore = await repo.lifetimeXp();
+  final levelBefore = levelStatsFor(xpBefore).level;
+
   await repo.toggleTaskComplete(
     task,
     reflectionStatus: result?.status,
   );
+
+  // Detect level-up.
+  final xpAfter = await repo.lifetimeXp();
+  final statsAfter = levelStatsFor(xpAfter);
+  final didLevelUp = statsAfter.level > levelBefore;
+
+  // Show reward overlay.
+  if (context.mounted) {
+    XpRewardOverlay.show(
+      context,
+      xp: task.xp,
+      levelUp: didLevelUp ? statsAfter.level : null,
+      levelName: didLevelUp ? globalRankName(statsAfter.level) : null,
+    );
+  }
+
   AnalyticsService.instance.track(AnalyticsEvents.taskCompleted, {
     'task_id': task.id,
     'xp': task.xp,

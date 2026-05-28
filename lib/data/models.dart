@@ -441,6 +441,6 @@ class AxisScore {
   /// 0..100 — used for pentagon rendering.
   final double value;
 
-  /// Sum of decayed XP contributions over the look-back window.
+  /// Lifetime XP for this axis (no decay).
   final double rawXp;
 }

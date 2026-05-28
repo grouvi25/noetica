@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../l10n/generated/app_localizations.dart';
 import '../../providers.dart';
 import '../../services/analytics_service.dart';
+import '../../services/level_gates.dart';
 import '../../services/notifications.dart';
 import '../../services/pomodoro_service.dart';
 import '../../services/tray_service.dart';
@@ -124,9 +125,7 @@ class _HomeShellState extends ConsumerState<HomeShell> {
   // mobile bottom bar). The rest are "secondary" desktop-only entries
   // reached from the sidebar; on mobile they push onto the navigator.
   //
-  // Mobile tab order: Dashboard → Я → Задачи. The Себя sits between
-  // dashboard and tasks because the user wants quick access to their
-  // Древо from the home screen.
+  // Mobile tab order: Сейчас → Древо → Задачи (3 tabs, no "Ещё").
   static const _selfIndex = 1;
   static const _tasksIndex = 2;
   static const _journalIndex = 3;
@@ -134,7 +133,6 @@ class _HomeShellState extends ConsumerState<HomeShell> {
   static const _calendarIndex = 5;
   static const _toolsIndex = 6;
   static const _settingsIndex = 7;
-  static const _moreTabIndex = 3; // "Ещё" tab in the floating bar
 
   static const _screenNames = [
     'dashboard', 'self', 'tasks', 'journal',
@@ -150,10 +148,6 @@ class _HomeShellState extends ConsumerState<HomeShell> {
   }
 
   void _onMobileTabTap(int i) {
-    if (i == _moreTabIndex) {
-      _showMoreSheet();
-      return;
-    }
     _switchTab(i);
   }
 
@@ -310,12 +304,12 @@ class _HomeShellState extends ConsumerState<HomeShell> {
       onOpenJournal: _openJournal,
       onOpenCalendar: _openCalendar,
     ),
-    const SelfScreen(),
+    _GatedPage(gate: LevelGate.tree, child: const SelfScreen()),
     const TasksScreen(),
-    const NotesScreen(),
-    const KnowledgeWorkspaceScreen(),
-    const CalendarScreen(),
-    const ToolsScreen(),
+    _GatedPage(gate: LevelGate.journal, child: const NotesScreen()),
+    _GatedPage(gate: LevelGate.knowledge, child: const KnowledgeWorkspaceScreen()),
+    _GatedPage(gate: LevelGate.calendar, child: const CalendarScreen()),
+    _GatedPage(gate: LevelGate.generators, child: const ToolsScreen()),
     const SettingsScreen(),
   ];
 
@@ -357,11 +351,6 @@ class _HomeShellState extends ConsumerState<HomeShell> {
       selectedIcon: Icons.checklist,
       label: tr.tabTasks,
     ),
-    ShellDestination(
-      icon: Icons.grid_view_outlined,
-      selectedIcon: Icons.grid_view,
-      label: tr.tabMore,
-    ),
   ];
 
   @override
@@ -383,13 +372,8 @@ class _HomeShellState extends ConsumerState<HomeShell> {
     final body = IndexedStack(index: _index, children: _pages);
 
     if (!useRail) {
-      // On mobile the bottom bar shows only the first 3 destinations;
-      // Journal stays accessible via the AppBar bookmark icon. We clamp
-      // the bar's selectedIndex so it doesn't break when index = 3 (would
-      // happen if user navigated to journal then resized to mobile).
-      // Clamp to the first 3 real tabs; "Ещё" (index 3) is a menu trigger,
-      // not a real page — never show it as selected.
-      final mobileSelected = _index < _moreTabIndex ? _index : 0;
+      // On mobile the bottom bar shows 3 tabs. Clamp to valid range.
+      final mobileSelected = _index < 3 ? _index : 0;
       final bottomSafe = MediaQuery.of(context).padding.bottom;
       // Telegram-style truly-floating capsule: drop the bottomNavigationBar
       // slot (which forced Scaffold to reserve a strip and made the bar
@@ -471,11 +455,40 @@ class _HomeShellState extends ConsumerState<HomeShell> {
             onSettings: () => _switchTab(_settingsIndex),
             onPomodoro: () => PomodoroSheet.show(context),
             palette: palette,
-            moreTabIndex: _moreTabIndex,
+            moreTabIndex: -1,
           ),
           Expanded(child: body),
         ],
       ),
+    );
+  }
+}
+
+/// Wraps a screen behind a [LevelGate]. Reads the current user level
+/// from providers and either shows the child or the locked overlay.
+class _GatedPage extends ConsumerWidget {
+  const _GatedPage({required this.gate, required this.child});
+
+  final LevelGate gate;
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final levelAsync = ref.watch(levelStatsProvider);
+    return levelAsync.when(
+      loading: () => const Center(child: CircularProgressIndicator()),
+      error: (_, __) => child,
+      data: (stats) {
+        if (gate.isUnlocked(stats.level)) return child;
+        return Scaffold(
+          appBar: AppBar(title: Text(gate.label)),
+          body: LevelGateGuard(
+            gate: gate,
+            currentLevel: stats.level,
+            child: child,
+          ),
+        );
+      },
     );
   }
 }

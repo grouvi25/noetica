@@ -29,7 +29,7 @@ class OnboardingChatScreen extends ConsumerStatefulWidget {
 
 class _OnboardingChatScreenState
     extends ConsumerState<OnboardingChatScreen> {
-  static const int _stepCount = 4;
+  static const int _stepCount = 3;
   int _step = 0;
 
   // Collected answers.
@@ -110,8 +110,6 @@ class _OnboardingChatScreenState
             : tr.onboardQ2NoName;
       case 2:
         return tr.onboardQ3;
-      case 3:
-        return tr.onboardQ4;
       default:
         return '';
     }
@@ -129,8 +127,6 @@ class _OnboardingChatScreenState
         return _aspirations.isNotEmpty;
       case 2:
         return _interests.length >= 3;
-      case 3:
-        return _weeklyHours > 0;
     }
     return false;
   }
@@ -143,8 +139,6 @@ class _OnboardingChatScreenState
         return _aspirations.join('; ');
       case 2:
         return _interests.join(', ');
-      case 3:
-        return '$_weeklyHours ${S.of(context)!.onboardHoursWeek}';
     }
     return '';
   }

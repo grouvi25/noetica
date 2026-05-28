@@ -93,6 +93,23 @@ class PersonalKnowledgeService {
     return next;
   }
 
+  /// Record today's mood for AI context.
+  Future<PersonalKnowledge> recordMood({
+    required String mood,
+    required String emoji,
+  }) async {
+    final current = await load();
+    final next = current.copyWith(
+      preferences: {
+        ...current.preferences,
+        'currentMood': '$emoji $mood',
+      },
+      updatedAt: DateTime.now(),
+    );
+    await save(next);
+    return next;
+  }
+
   static String _buildLine({
     required String title,
     required ReflectionStatus status,
