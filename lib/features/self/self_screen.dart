@@ -264,9 +264,8 @@ class _CurrentEpochBody extends ConsumerWidget {
           level: level,
           streak: streak,
           aspiration: profile?.aspiration ?? '',
-          completedTasks: ref.watch(entriesProvider).valueOrNull
-              ?.where((e) => e.isTask && e.isCompleted && !e.isDeleted)
-              .length ?? 0,
+          epoch: profile?.currentEpoch ?? 1,
+          tier: profile?.epochTier ?? 1,
         ),
         const SizedBox(height: 16),
         if (profile != null &&
@@ -317,7 +316,7 @@ class _CurrentEpochBody extends ConsumerWidget {
           ),
           const SizedBox(height: 16),
           Text(
-            'Прогресс по каждой ветке — это твоя активность за последний месяц. Выполняй задачи, чтобы ветки росли.',
+            'Очки начисляются за выполнение задач, привязанных к осям. Со временем затухают — древо отражает тебя за последний месяц.',
             style: Theme.of(context)
                 .textTheme
                 .bodySmall
@@ -565,22 +564,49 @@ class _EpochChip extends StatelessWidget {
   }
 }
 
+/// Level titles and their unlocks.
+String _levelTitle(int level) => switch (level) {
+  1 => 'Начало',
+  2 => 'Ученик',
+  3 => 'Практик',
+  4 => 'Мастер',
+  5 => 'Наставник',
+  6 => 'Мудрец',
+  _ => 'Легенда',
+};
+
+String? _levelUnlockHint(int level) => switch (level) {
+  2 => 'Разблокировано: AI-коуч',
+  3 => 'Разблокировано: микро-привычки',
+  4 => 'Разблокировано: меню недели',
+  5 => 'Разблокировано: продвинутая аналитика',
+  6 => 'Разблокировано: экспорт данных',
+  _ => null,
+};
+
+String? _nextLevelUnlock(int level) => _levelUnlockHint(level + 1);
+
 class _ProfileHeader extends StatelessWidget {
   const _ProfileHeader({
     required this.level,
     required this.streak,
     required this.aspiration,
-    required this.completedTasks,
+    required this.epoch,
+    this.tier = 1,
   });
 
   final LevelStats? level;
   final int streak;
   final String aspiration;
-  final int completedTasks;
+  final int epoch;
+  final int tier;
 
   @override
   Widget build(BuildContext context) {
     final palette = context.palette;
+    final l = level;
+    final title = l != null ? _levelTitle(l.level) : '';
+    final nextUnlock = l != null ? _nextLevelUnlock(l.level) : null;
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
@@ -605,22 +631,58 @@ class _ProfileHeader extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               _BigNumber(
-                label: 'ВЫПОЛНЕНО',
-                value: '$completedTasks',
+                label: 'ЭПОХА',
+                value: tier > 1 ? 'Э$epoch.$tier' : 'Э$epoch',
               ),
-              const SizedBox(width: 24),
+              const SizedBox(width: 20),
+              _BigNumber(
+                label: title.toUpperCase(),
+                value: l == null ? '—' : 'L${l.level}',
+              ),
+              const SizedBox(width: 20),
+              _BigNumber(
+                label: 'XP',
+                value: l == null ? '—' : '${l.totalXp}',
+              ),
+              const SizedBox(width: 20),
               _BigNumber(
                 label: 'СТРИК',
                 value: streak == 0 ? '—' : '$streak д.',
               ),
-              const SizedBox(width: 24),
-              _BigNumber(
-                label: 'ОПЫТ',
-                value: level == null ? '—' : '${level!.totalXp}',
-              ),
             ],
           ),
-          if (streak == 0 && level != null && level!.totalXp > 0) ...[
+          if (l != null) ...[
+            const SizedBox(height: 16),
+            ClipRRect(
+              borderRadius: BorderRadius.circular(2),
+              child: LinearProgressIndicator(
+                value: l.progress.clamp(0.0, 1.0),
+                minHeight: 6,
+                backgroundColor: palette.line,
+                valueColor: AlwaysStoppedAnimation<Color>(palette.fg),
+              ),
+            ),
+            const SizedBox(height: 6),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  'до L${l.level + 1} «${_levelTitle(l.level + 1)}»: ${l.xpForLevel - l.xpIntoLevel} xp',
+                  style: TextStyle(color: palette.muted, fontSize: 12),
+                ),
+                if (nextUnlock != null)
+                  Text(
+                    nextUnlock,
+                    style: TextStyle(
+                      color: palette.fg.withOpacity(0.6),
+                      fontSize: 11,
+                      fontStyle: FontStyle.italic,
+                    ),
+                  ),
+              ],
+            ),
+          ],
+          if (streak == 0 && l != null && l.totalXp > 0) ...[
             const SizedBox(height: 12),
             _StreakBreakBanner(),
           ],
@@ -817,6 +879,45 @@ class _AxisTile extends StatelessWidget {
                               overflow: TextOverflow.ellipsis,
                             ),
                           ),
+                          if (ls != null) ...[
+                            const SizedBox(width: 8),
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 6, vertical: 2),
+                              decoration: BoxDecoration(
+                                border:
+                                    Border.all(color: palette.line),
+                                borderRadius: BorderRadius.circular(4),
+                              ),
+                              child: Text(
+                                'L${ls.level}',
+                                style: TextStyle(
+                                  color: palette.muted,
+                                  fontSize: 10,
+                                  letterSpacing: 1.2,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 4),
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 6, vertical: 2),
+                              decoration: BoxDecoration(
+                                color: palette.fg,
+                                borderRadius: BorderRadius.circular(4),
+                              ),
+                              child: Text(
+                                'Э${epochFromXp(ls.totalXp)}',
+                                style: TextStyle(
+                                  color: palette.bg,
+                                  fontSize: 10,
+                                  letterSpacing: 1.2,
+                                  fontWeight: FontWeight.w700,
+                                ),
+                              ),
+                            ),
+                          ],
                         ],
                       ),
                     ),
@@ -844,10 +945,11 @@ class _AxisTile extends StatelessWidget {
                     ),
                   ),
                 ),
-                if (ls != null && ls.totalXp > 0) ...[
+                if (ls != null) ...[
                   const SizedBox(height: 4),
                   Text(
-                    '${ls.totalXp} опыта',
+                    '${ls.totalXp} XP · до L${ls.level + 1}: '
+                    '${ls.xpAtNextLevel - ls.totalXp}',
                     style: TextStyle(
                       color: palette.muted,
                       fontSize: 11,
