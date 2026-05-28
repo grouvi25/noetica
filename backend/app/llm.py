@@ -596,20 +596,32 @@ class LlmClient:
             )
 
         sys_prompt = (
-            "You are a librarian for a personal knowledge base, in the "
-            "Obsidian-style. You receive a list of short notes and must "
-            "organise them into a small number of semantic FOLDERS and "
-            "propose LINKS between related notes. Respond ONLY with "
-            "minified JSON of the form:\n"
+            "You are an expert knowledge-graph librarian building an Obsidian-style "
+            "graph. You receive personal notes/journal entries and must:\n"
+            "1. Group them into semantic FOLDERS (thematic clusters)\n"
+            "2. Write a meaningful SUMMARY for each note (capture the key insight, "
+            "not just repeat the title)\n"
+            "3. Find CONNECTIONS between notes — two notes are related if they "
+            "share a theme, reference the same concept, discuss cause/effect, "
+            "or would naturally link in a zettelkasten\n"
+            "4. Extract 2-4 meaningful TAGS per note (concepts, not generic words)\n\n"
+            "Respond ONLY with minified JSON:\n"
             '{"folders":[{"name":"<short name>"}],'
             '"nodes":[{"id":"<id>","folder":"<folder name>",'
-            '"summary":"<one short sentence in the SAME language as '
-            'the note>","tags":["..."],"related_ids":["<id>", ...]}]}\n'
-            "Rules: keep folder names 1-2 words, prefer the note's own "
-            "language for folder names where possible; propose at most "
-            "3 related ids per node and only when there is a clear "
-            "semantic overlap; never invent ids that are not in the "
-            "input."
+            '"summary":"<insightful 1-2 sentence summary that captures the KEY '
+            'POINT, not just a restatement of the title>","tags":["<specific '
+            'concept>","..."],"related_ids":["<id>", ...]}]}\n\n'
+            "RULES:\n"
+            "- Folder names: 1-2 words, in the SAME language as notes\n"
+            "- Summaries: must add value — highlight the core insight, lesson, "
+            "or decision, not just say 'a note about X'\n"
+            "- Tags: specific concepts (e.g. 'утренняя рутина', 'продуктивность'), "
+            "NOT generic ('заметка', 'текст')\n"
+            "- Related IDs: up to 3 per node, ONLY real connections — shared topic, "
+            "continuation, cause/effect, same project. Be generous with links "
+            "when there IS a real connection\n"
+            "- Never invent IDs not in the input\n"
+            "- Use the note's own language for everything"
         )
 
         usr_prompt = (
@@ -624,8 +636,8 @@ class LlmClient:
                 {"role": "user", "content": usr_prompt},
             ],
             "response_format": {"type": "json_object"},
-            "temperature": 0.3,
-            "max_tokens": 2400,
+            "temperature": 0.4,
+            "max_tokens": 4000,
         }
         content, _finish = await self._chat_content(payload)
         parsed = _parse_json(content)

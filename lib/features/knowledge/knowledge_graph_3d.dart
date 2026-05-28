@@ -1,17 +1,17 @@
 import 'dart:math' as math;
+import 'dart:ui' as ui;
 
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 
 import '../../data/knowledge_index_models.dart';
 import '../../data/models.dart';
 import '../../theme/app_theme.dart';
 
-/// Interactive 3D-projected force-directed graph of indexed knowledge.
+/// Obsidian-style 3D force-directed knowledge graph.
 ///
-/// Simulates positions in 3D space (x,y,z), projects to 2D with a simple
-/// perspective transform, and lets the user rotate by dragging. Notes
-/// are spheres; their colour comes from the folder, size from related-
-/// count. Tap a node → open the entry editor sheet.
+/// Colored nodes grouped by folder, readable labels, interactive
+/// rotation/zoom, tap to open. Designed to be beautiful and functional.
 class KnowledgeGraph3D extends StatefulWidget {
   const KnowledgeGraph3D({
     super.key,
@@ -35,6 +35,7 @@ class _KnowledgeGraph3DState extends State<KnowledgeGraph3D>
   late final AnimationController _ticker;
   final List<_Node3D> _nodes = [];
   final List<_Edge> _edges = [];
+  final Map<String, Color> _folderColors = {};
   double _yaw = 0.4;
   double _pitch = -0.25;
   double _zoom = 1.0;
@@ -54,7 +55,8 @@ class _KnowledgeGraph3DState extends State<KnowledgeGraph3D>
   @override
   void didUpdateWidget(covariant KnowledgeGraph3D oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (widget.index != oldWidget.index || widget.entries != oldWidget.entries) {
+    if (widget.index != oldWidget.index ||
+        widget.entries != oldWidget.entries) {
       _buildGraph();
     }
   }
@@ -65,18 +67,42 @@ class _KnowledgeGraph3DState extends State<KnowledgeGraph3D>
     super.dispose();
   }
 
+  static const _colorPool = [
+    Color(0xFF6C9CFF), // blue
+    Color(0xFFFF8C69), // coral
+    Color(0xFF7ED891), // green
+    Color(0xFFE87FBF), // pink
+    Color(0xFFB98EFF), // purple
+    Color(0xFFFFCC55), // gold
+    Color(0xFF5ECFCF), // teal
+    Color(0xFFFF7070), // red
+    Color(0xFF8BC4FF), // light blue
+    Color(0xFFFFAB5E), // orange
+  ];
+
   void _buildGraph() {
     _nodes.clear();
     _edges.clear();
+    _folderColors.clear();
     final rng = math.Random(42);
-    final folderToColor = <String, Color>{};
-    final palette = widget.palette;
-    final colors = _folderPalette(palette);
 
     int colorIdx = 0;
     for (final f in widget.index.folders) {
-      folderToColor[f] = colors[colorIdx % colors.length];
+      _folderColors[f] = _colorPool[colorIdx % _colorPool.length];
       colorIdx++;
+    }
+
+    // Pre-compute folder center offsets so clusters start separated.
+    final folderOffsets = <String, (double, double, double)>{};
+    final nFolders = widget.index.folders.length;
+    for (var i = 0; i < nFolders; i++) {
+      final angle = (2 * math.pi * i) / math.max(nFolders, 1);
+      final r = 2.0;
+      folderOffsets[widget.index.folders[i]] = (
+        r * math.cos(angle),
+        r * math.sin(angle),
+        (rng.nextDouble() - 0.5) * 1.5,
+      );
     }
 
     final entryById = {for (final e in widget.entries) e.id: e};
@@ -84,20 +110,22 @@ class _KnowledgeGraph3DState extends State<KnowledgeGraph3D>
     for (final node in widget.index.nodes) {
       final entry = entryById[node.id];
       if (entry == null) continue;
-      final color =
-          folderToColor[node.folder] ?? palette.fg.withOpacity(0.7);
+      final color = _folderColors[node.folder] ??
+          widget.palette.fg.withOpacity(0.7);
+      final offset = folderOffsets[node.folder] ?? (0.0, 0.0, 0.0);
       _nodes.add(
         _Node3D(
           id: node.id,
           label: entry.title.isEmpty ? '(без названия)' : entry.title,
           folder: node.folder,
+          summary: node.summary,
           tags: node.tags,
           color: color,
           entry: entry,
           relatedCount: node.relatedIds.length,
-          x: (rng.nextDouble() - 0.5) * 6,
-          y: (rng.nextDouble() - 0.5) * 6,
-          z: (rng.nextDouble() - 0.5) * 6,
+          x: offset.$1 + (rng.nextDouble() - 0.5) * 1.0,
+          y: offset.$2 + (rng.nextDouble() - 0.5) * 1.0,
+          z: offset.$3 + (rng.nextDouble() - 0.5) * 1.0,
         ),
       );
     }
@@ -118,6 +146,7 @@ class _KnowledgeGraph3DState extends State<KnowledgeGraph3D>
       }
     }
 
+    // Add folder-group ghost edges for spatial clustering.
     final byFolder = <String, List<String>>{};
     for (final n in _nodes) {
       byFolder.putIfAbsent(n.folder, () => []).add(n.id);
@@ -134,33 +163,16 @@ class _KnowledgeGraph3DState extends State<KnowledgeGraph3D>
     }
   }
 
-  List<Color> _folderPalette(NoeticaPalette palette) {
-    // Mono-tinted set that works on both light and dark backgrounds.
-    return [
-      const Color(0xFF7AB8FF),
-      const Color(0xFFFFA869),
-      const Color(0xFF9CE08C),
-      const Color(0xFFFF9CCB),
-      const Color(0xFFD4B0FF),
-      const Color(0xFFFFD78A),
-      const Color(0xFF8DE2D7),
-      const Color(0xFFFF8C8C),
-    ];
-  }
-
   void _step() {
     if (_nodes.length < 2) return;
-    // Lightweight force-directed step: repulsion between all nodes,
-    // attraction along edges, mild centering. Tweaked for 60fps with
-    // a couple hundred notes.
     final n = _nodes.length;
     for (var i = 0; i < n; i++) {
-      final a = _nodes[i];
-      a.fx = 0;
-      a.fy = 0;
-      a.fz = 0;
+      _nodes[i].fx = 0;
+      _nodes[i].fy = 0;
+      _nodes[i].fz = 0;
     }
-    // Repulsion.
+
+    // Repulsion — gentle, nodes cluster tightly.
     for (var i = 0; i < n; i++) {
       final a = _nodes[i];
       for (var j = i + 1; j < n; j++) {
@@ -169,9 +181,10 @@ class _KnowledgeGraph3DState extends State<KnowledgeGraph3D>
         var dy = a.y - b.y;
         var dz = a.z - b.z;
         final d2 = dx * dx + dy * dy + dz * dz + 0.01;
-        final inv = 1.0 / d2;
-        final f = 1.5 * inv;
         final d = math.sqrt(d2);
+        // Same-folder nodes repel less → tighter clusters.
+        final repK = (a.folder == b.folder) ? 0.2 : 0.5;
+        final f = repK / d2;
         dx /= d;
         dy /= d;
         dz /= d;
@@ -183,7 +196,8 @@ class _KnowledgeGraph3DState extends State<KnowledgeGraph3D>
         b.fz -= dz * f;
       }
     }
-    // Attraction.
+
+    // Attraction along edges.
     final nodeById = <String, _Node3D>{for (final n in _nodes) n.id: n};
     for (final e in _edges) {
       final a = nodeById[e.aId];
@@ -193,8 +207,8 @@ class _KnowledgeGraph3DState extends State<KnowledgeGraph3D>
       final dy = b.y - a.y;
       final dz = b.z - a.z;
       final d = math.sqrt(dx * dx + dy * dy + dz * dz) + 0.001;
-      final k = e.ghost ? 0.012 : 0.06;
-      final f = (d - 2.5) * k;
+      final k = e.ghost ? 0.04 : 0.12;
+      final f = (d - 1.2) * k;
       final ux = dx / d;
       final uy = dy / d;
       final uz = dz / d;
@@ -205,15 +219,20 @@ class _KnowledgeGraph3DState extends State<KnowledgeGraph3D>
       b.fy -= uy * f;
       b.fz -= uz * f;
     }
-    const damping = 0.82;
-    const centering = 0.005;
+
+    const damping = 0.92;
+    const centering = 0.015;
     for (final node in _nodes) {
       node.fx -= node.x * centering;
       node.fy -= node.y * centering;
       node.fz -= node.z * centering;
-      node.vx = (node.vx + node.fx * 0.03) * damping;
-      node.vy = (node.vy + node.fy * 0.03) * damping;
-      node.vz = (node.vz + node.fz * 0.03) * damping;
+      node.vx = (node.vx + node.fx * 0.018) * damping;
+      node.vy = (node.vy + node.fy * 0.018) * damping;
+      node.vz = (node.vz + node.fz * 0.018) * damping;
+      const maxV = 0.12;
+      node.vx = node.vx.clamp(-maxV, maxV);
+      node.vy = node.vy.clamp(-maxV, maxV);
+      node.vz = node.vz.clamp(-maxV, maxV);
       node.x += node.vx;
       node.y += node.vy;
       node.z += node.vz;
@@ -230,43 +249,120 @@ class _KnowledgeGraph3DState extends State<KnowledgeGraph3D>
         final projected = _project(size);
         return Stack(
           children: [
+            // Main graph canvas
             Positioned.fill(
-              child: GestureDetector(
-                behavior: HitTestBehavior.opaque,
-                onPanUpdate: (d) {
-                  setState(() {
-                    _yaw += d.delta.dx * 0.005;
-                    _pitch -= d.delta.dy * 0.005;
-                    _pitch = _pitch.clamp(-math.pi / 2 + 0.1, math.pi / 2 - 0.1);
-                  });
-                },
-                onScaleUpdate: (d) {
-                  if (d.scale != 1.0) {
+              child: Listener(
+                onPointerSignal: (event) {
+                  if (event is PointerScrollEvent) {
                     setState(() {
-                      _zoom = (_zoom * d.scale).clamp(0.4, 4.0);
+                      final delta = event.scrollDelta.dy;
+                      _zoom =
+                          (_zoom * (1 - delta * 0.001)).clamp(0.3, 5.0);
                     });
                   }
                 },
-                onTapUp: (d) {
-                  final hit = _hitTest(d.localPosition, projected);
-                  if (hit != null) widget.onTap(hit.entry);
-                },
-                onLongPressStart: (d) {
-                  final hit = _hitTest(d.localPosition, projected);
-                  setState(() => _hoverId = hit?.id);
-                },
-                onLongPressEnd: (_) => setState(() => _hoverId = null),
-                child: CustomPaint(
-                  size: size,
-                  painter: _GraphPainter(
-                    projected: projected,
-                    edges: _edges,
-                    palette: palette,
-                    hoverId: _hoverId,
+                child: MouseRegion(
+                  onHover: (event) {
+                    final hit =
+                        _hitTest(event.localPosition, projected);
+                    final newId = hit?.id;
+                    if (newId != _hoverId) {
+                      setState(() => _hoverId = newId);
+                    }
+                  },
+                  onExit: (_) {
+                    if (_hoverId != null) {
+                      setState(() => _hoverId = null);
+                    }
+                  },
+                  child: GestureDetector(
+                    behavior: HitTestBehavior.opaque,
+                    onPanUpdate: (d) {
+                      setState(() {
+                        _yaw += d.delta.dx * 0.005;
+                        _pitch -= d.delta.dy * 0.005;
+                        _pitch = _pitch.clamp(
+                            -math.pi / 2 + 0.1, math.pi / 2 - 0.1);
+                      });
+                    },
+                    onScaleUpdate: (d) {
+                      if (d.scale != 1.0) {
+                        setState(() {
+                          _zoom = (_zoom * d.scale).clamp(0.3, 5.0);
+                        });
+                      }
+                    },
+                    onTapUp: (d) {
+                      final hit =
+                          _hitTest(d.localPosition, projected);
+                      if (hit != null) widget.onTap(hit.entry);
+                    },
+                    child: CustomPaint(
+                      size: size,
+                      painter: _GraphPainter(
+                        projected: projected,
+                        edges: _edges,
+                        palette: palette,
+                        hoverId: _hoverId,
+                        folderColors: _folderColors,
+                      ),
+                    ),
                   ),
                 ),
               ),
             ),
+
+            // Folder legend (top-left)
+            if (_folderColors.isNotEmpty)
+              Positioned(
+                left: 12,
+                top: 12,
+                child: Container(
+                  padding: const EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    color: palette.bg.withOpacity(0.85),
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(color: palette.line),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      for (final entry in _folderColors.entries)
+                        Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 2),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Container(
+                                width: 10,
+                                height: 10,
+                                decoration: BoxDecoration(
+                                  color: entry.value,
+                                  shape: BoxShape.circle,
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                              Text(
+                                entry.key,
+                                style: TextStyle(
+                                  color: palette.fg,
+                                  fontSize: 11,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                    ],
+                  ),
+                ),
+              ),
+
+            // Hover tooltip
+            if (_hoverId != null)
+              ..._buildTooltip(projected, palette, size),
+
+            // Stats (bottom-right)
             Positioned(
               right: 12,
               bottom: 12,
@@ -276,11 +372,12 @@ class _KnowledgeGraph3DState extends State<KnowledgeGraph3D>
                   vertical: 6,
                 ),
                 decoration: BoxDecoration(
-                  color: palette.fg.withOpacity(0.08),
+                  color: palette.bg.withOpacity(0.85),
                   borderRadius: BorderRadius.circular(6),
+                  border: Border.all(color: palette.line),
                 ),
                 child: Text(
-                  '${_nodes.length} узлов · ${_edges.where((e) => !e.ghost).length} связей · zoom ${_zoom.toStringAsFixed(1)}x',
+                  '${_nodes.length} узлов · ${_edges.where((e) => !e.ghost).length} связей',
                   style: TextStyle(
                     color: palette.muted,
                     fontSize: 11,
@@ -289,20 +386,23 @@ class _KnowledgeGraph3DState extends State<KnowledgeGraph3D>
                 ),
               ),
             ),
+
+            // Controls hint (bottom-left)
             Positioned(
               left: 12,
-              top: 12,
+              bottom: 12,
               child: Container(
                 padding: const EdgeInsets.symmetric(
                   horizontal: 10,
                   vertical: 6,
                 ),
                 decoration: BoxDecoration(
-                  color: palette.fg.withOpacity(0.08),
+                  color: palette.bg.withOpacity(0.85),
                   borderRadius: BorderRadius.circular(6),
+                  border: Border.all(color: palette.line),
                 ),
                 child: Text(
-                  'Тяни — вращай · щипком — масштаб · тап — открыть',
+                  'Тяни — вращай · скролл — масштаб · тап — открыть',
                   style: TextStyle(
                     color: palette.muted,
                     fontSize: 11,
@@ -317,6 +417,119 @@ class _KnowledgeGraph3DState extends State<KnowledgeGraph3D>
     );
   }
 
+  List<Widget> _buildTooltip(
+      List<_ProjectedNode> projected, NoeticaPalette palette, Size size) {
+    final p = projected.cast<_ProjectedNode?>().firstWhere(
+        (p) => p!.node.id == _hoverId,
+        orElse: () => null);
+    if (p == null) return [];
+    final x = p.x.clamp(0, size.width - 200);
+    final y = (p.y - 60).clamp(0, size.height - 60);
+    return [
+      Positioned(
+        left: x.toDouble(),
+        top: y.toDouble(),
+        child: IgnorePointer(
+          child: Container(
+            constraints: const BoxConstraints(maxWidth: 220),
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+            decoration: BoxDecoration(
+              color: palette.surface,
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(color: palette.line),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.15),
+                  blurRadius: 8,
+                  offset: const Offset(0, 2),
+                ),
+              ],
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  p.node.label,
+                  style: TextStyle(
+                    color: palette.fg,
+                    fontWeight: FontWeight.w600,
+                    fontSize: 13,
+                  ),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                const SizedBox(height: 4),
+                Row(
+                  children: [
+                    Container(
+                      width: 8,
+                      height: 8,
+                      decoration: BoxDecoration(
+                        color: p.node.color,
+                        shape: BoxShape.circle,
+                      ),
+                    ),
+                    const SizedBox(width: 6),
+                    Text(
+                      p.node.folder,
+                      style: TextStyle(
+                        color: palette.muted,
+                        fontSize: 11,
+                      ),
+                    ),
+                    if (p.node.relatedCount > 0) ...[
+                      const SizedBox(width: 8),
+                      Icon(Icons.link, size: 12, color: palette.muted),
+                      const SizedBox(width: 2),
+                      Text(
+                        '${p.node.relatedCount}',
+                        style: TextStyle(
+                          color: palette.muted,
+                          fontSize: 11,
+                        ),
+                      ),
+                    ],
+                  ],
+                ),
+                if (p.node.summary.isNotEmpty) ...[
+                  const SizedBox(height: 4),
+                  Text(
+                    p.node.summary,
+                    style: TextStyle(
+                      color: palette.muted,
+                      fontSize: 11,
+                      height: 1.3,
+                    ),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ],
+                if (p.node.tags.isNotEmpty) ...[
+                  const SizedBox(height: 4),
+                  Wrap(
+                    spacing: 4,
+                    children: [
+                      for (final t in p.node.tags.take(3))
+                        Text(
+                          '#$t',
+                          style: TextStyle(
+                            color: p.node.color,
+                            fontSize: 10,
+                            fontFamily: 'IBMPlexMono',
+                          ),
+                        ),
+                    ],
+                  ),
+                ],
+              ],
+            ),
+          ),
+        ),
+      ),
+    ];
+  }
+
   List<_ProjectedNode> _project(Size size) {
     final cx = size.width / 2;
     final cy = size.height / 2;
@@ -327,14 +540,11 @@ class _KnowledgeGraph3DState extends State<KnowledgeGraph3D>
     final sinX = math.sin(_pitch);
     final result = <_ProjectedNode>[];
     for (final n in _nodes) {
-      // Yaw (around Y axis): rotate x,z
       var x1 = n.x * cosY + n.z * sinY;
       var z1 = -n.x * sinY + n.z * cosY;
       var y1 = n.y;
-      // Pitch (around X axis): rotate y,z
       final y2 = y1 * cosX - z1 * sinX;
       final z2 = y1 * sinX + z1 * cosX;
-      // Perspective.
       const camDist = 12.0;
       final pz = camDist - z2;
       final pp = pz <= 0.1 ? 0.1 : pz;
@@ -351,24 +561,28 @@ class _KnowledgeGraph3DState extends State<KnowledgeGraph3D>
         ),
       );
     }
-    // Painter expects nodes sorted back-to-front.
     result.sort((a, b) => a.depth.compareTo(b.depth));
     return result;
   }
 
   _Node3D? _hitTest(Offset local, List<_ProjectedNode> projected) {
-    // Iterate front-to-back.
     for (var i = projected.length - 1; i >= 0; i--) {
       final p = projected[i];
-      final r = (4 + p.node.relatedCount * 1.4) * p.persp;
+      final r = _nodeRadius(p);
       final dx = local.dx - p.x;
       final dy = local.dy - p.y;
-      if (dx * dx + dy * dy <= r * r) return p.node;
+      if (dx * dx + dy * dy <= (r + 4) * (r + 4)) return p.node;
     }
     return null;
   }
+
+  static double _nodeRadius(_ProjectedNode p) {
+    return (5 + p.node.relatedCount * 1.8).clamp(5.0, 20.0) * p.persp;
+  }
 }
 
+// ---------------------------------------------------------------------------
+// Data types
 // ---------------------------------------------------------------------------
 
 class _Node3D {
@@ -376,6 +590,7 @@ class _Node3D {
     required this.id,
     required this.label,
     required this.folder,
+    required this.summary,
     required this.tags,
     required this.color,
     required this.entry,
@@ -388,19 +603,14 @@ class _Node3D {
   final String id;
   final String label;
   final String folder;
+  final String summary;
   final List<String> tags;
   final Color color;
   final Entry entry;
   final int relatedCount;
-  double x;
-  double y;
-  double z;
-  double vx = 0;
-  double vy = 0;
-  double vz = 0;
-  double fx = 0;
-  double fy = 0;
-  double fz = 0;
+  double x, y, z;
+  double vx = 0, vy = 0, vz = 0;
+  double fx = 0, fy = 0, fz = 0;
 }
 
 class _Edge {
@@ -419,11 +629,14 @@ class _ProjectedNode {
     required this.persp,
   });
   final _Node3D node;
-  final double x;
-  final double y;
+  final double x, y;
   final double depth;
   final double persp;
 }
+
+// ---------------------------------------------------------------------------
+// Painter
+// ---------------------------------------------------------------------------
 
 class _GraphPainter extends CustomPainter {
   _GraphPainter({
@@ -431,69 +644,192 @@ class _GraphPainter extends CustomPainter {
     required this.edges,
     required this.palette,
     required this.hoverId,
+    required this.folderColors,
   });
 
   final List<_ProjectedNode> projected;
   final List<_Edge> edges;
   final NoeticaPalette palette;
   final String? hoverId;
+  final Map<String, Color> folderColors;
 
   @override
   void paint(Canvas canvas, Size size) {
-    final bg = Paint()..color = palette.bg;
-    canvas.drawRect(Offset.zero & size, bg);
+    canvas.drawRect(
+        Offset.zero & size, Paint()..color = palette.bg);
 
     final byId = <String, _ProjectedNode>{
       for (final p in projected) p.node.id: p,
     };
 
+    // ── Draw edges ──
     for (final e in edges) {
       final a = byId[e.aId];
       final b = byId[e.bId];
       if (a == null || b == null) continue;
-      final paint = Paint()
-        ..strokeWidth = e.ghost ? 0.6 : 1.2
-        ..color = (e.ghost ? palette.muted : palette.fg)
-            .withOpacity(e.ghost ? 0.12 : 0.32);
-      canvas.drawLine(Offset(a.x, a.y), Offset(b.x, b.y), paint);
+
+      if (e.ghost) {
+        // Ghost edges: very subtle dotted appearance
+        canvas.drawLine(
+          Offset(a.x, a.y),
+          Offset(b.x, b.y),
+          Paint()
+            ..strokeWidth = 0.4
+            ..color = palette.muted.withOpacity(0.06),
+        );
+      } else {
+        // Real edges: curved bezier with gradient color
+        final midX = (a.x + b.x) / 2;
+        final midY = (a.y + b.y) / 2;
+        // Offset the control point perpendicular to the line
+        final dx = b.x - a.x;
+        final dy = b.y - a.y;
+        final len = math.sqrt(dx * dx + dy * dy) + 0.001;
+        final curveAmount = (len * 0.12).clamp(4.0, 25.0);
+        final cpX = midX + (-dy / len) * curveAmount;
+        final cpY = midY + (dx / len) * curveAmount;
+
+        final path = Path()
+          ..moveTo(a.x, a.y)
+          ..quadraticBezierTo(cpX, cpY, b.x, b.y);
+
+        final avgAlpha =
+            ((a.persp + b.persp) / 2 - 0.5).clamp(0.1, 1.0);
+
+        canvas.drawPath(
+          path,
+          Paint()
+            ..style = PaintingStyle.stroke
+            ..strokeWidth = 1.5
+            ..shader = ui.Gradient.linear(
+              Offset(a.x, a.y),
+              Offset(b.x, b.y),
+              [
+                a.node.color.withOpacity(0.4 * avgAlpha),
+                b.node.color.withOpacity(0.4 * avgAlpha),
+              ],
+            ),
+        );
+      }
     }
 
+    // ── Draw nodes (back to front) ──
+    for (final p in projected) {
+      final r = _KnowledgeGraph3DState._nodeRadius(p);
+      final isHover = p.node.id == hoverId;
+      final alpha =
+          (0.6 + (p.persp - 1.0).clamp(-0.3, 0.5)).clamp(0.3, 1.0);
+      final center = Offset(p.x, p.y);
+
+      // Outer glow
+      canvas.drawCircle(
+        center,
+        r + (isHover ? 10 : 4),
+        Paint()
+          ..color =
+              p.node.color.withOpacity(isHover ? 0.25 : alpha * 0.12)
+          ..maskFilter =
+              MaskFilter.blur(BlurStyle.normal, isHover ? 14 : 6),
+      );
+
+      // Main circle
+      canvas.drawCircle(
+        center,
+        r,
+        Paint()..color = p.node.color.withOpacity(alpha),
+      );
+
+      // Inner highlight (makes it look 3D / glossy)
+      canvas.drawCircle(
+        Offset(p.x - r * 0.25, p.y - r * 0.25),
+        r * 0.35,
+        Paint()..color = Colors.white.withOpacity(alpha * 0.3),
+      );
+
+      // Hover ring
+      if (isHover) {
+        canvas.drawCircle(
+          center,
+          r + 3,
+          Paint()
+            ..style = PaintingStyle.stroke
+            ..strokeWidth = 2.0
+            ..color = p.node.color,
+        );
+      }
+
+      // Connected node highlighting
+      if (hoverId != null && !isHover) {
+        final isConnected = edges.any((e) =>
+            (!e.ghost) &&
+            ((e.aId == hoverId && e.bId == p.node.id) ||
+                (e.bId == hoverId && e.aId == p.node.id)));
+        if (isConnected) {
+          canvas.drawCircle(
+            center,
+            r + 3,
+            Paint()
+              ..style = PaintingStyle.stroke
+              ..strokeWidth = 1.5
+              ..color = p.node.color.withOpacity(0.6),
+          );
+        }
+      }
+
+      // Labels
+      if (p.persp > 0.82 || isHover) {
+        _drawLabel(canvas, p, r, isHover);
+      }
+    }
+  }
+
+  void _drawLabel(Canvas canvas, _ProjectedNode p, double r, bool isHover) {
     final textPainter = TextPainter(
       textDirection: TextDirection.ltr,
       maxLines: 1,
       ellipsis: '…',
     );
-    for (final p in projected) {
-      final r = (4 + p.node.relatedCount * 1.4) * p.persp;
-      final isHover = p.node.id == hoverId;
-      final paint = Paint()
-        ..color = p.node.color.withOpacity(
-          (0.55 + (p.persp - 1.0).clamp(-0.4, 0.7)).clamp(0.2, 1.0),
-        );
-      canvas.drawCircle(Offset(p.x, p.y), r, paint);
-      if (isHover) {
-        canvas.drawCircle(
-          Offset(p.x, p.y),
-          r + 4,
-          Paint()
-            ..style = PaintingStyle.stroke
-            ..strokeWidth = 1.5
-            ..color = palette.fg,
-        );
-      }
-      if (p.persp > 0.9 || isHover) {
-        textPainter.text = TextSpan(
-          text: p.node.label,
-          style: TextStyle(
-            color: palette.fg.withOpacity(0.85),
-            fontSize: 10,
-            fontFamily: 'IBMPlexMono',
-          ),
-        );
-        textPainter.layout(maxWidth: 120);
-        textPainter.paint(canvas, Offset(p.x + r + 4, p.y - 6));
-      }
-    }
+    var label = p.node.label;
+    if (label.length > 20) label = '${label.substring(0, 18)}…';
+
+    final fontSize = isHover ? 12.0 : 10.0;
+    final opacity = isHover ? 1.0 :
+        (0.5 + (p.persp - 0.8) * 2.0).clamp(0.3, 0.85);
+
+    textPainter.text = TextSpan(
+      text: label,
+      style: TextStyle(
+        color: palette.fg.withOpacity(opacity),
+        fontSize: fontSize,
+        fontFamily: 'IBMPlexMono',
+        fontWeight: isHover ? FontWeight.w600 : FontWeight.w400,
+      ),
+    );
+    textPainter.layout(maxWidth: 150);
+
+    final tx = p.x - textPainter.width / 2;
+    final ty = p.y + r + 5;
+
+    // Background pill with slight color tint
+    final rect = RRect.fromRectAndRadius(
+      Rect.fromLTWH(
+        tx - 5,
+        ty - 2,
+        textPainter.width + 10,
+        textPainter.height + 4,
+      ),
+      const Radius.circular(4),
+    );
+
+    canvas.drawRRect(
+      rect,
+      Paint()
+        ..color = Color.lerp(
+            palette.bg, p.node.color, isHover ? 0.12 : 0.05)!
+            .withOpacity(isHover ? 0.92 : 0.75),
+    );
+
+    textPainter.paint(canvas, Offset(tx, ty));
   }
 
   @override
