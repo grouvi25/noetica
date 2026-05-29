@@ -92,6 +92,8 @@ jobs:
             ARGS=()
             if [ -n "$GOOGLE_OAUTH_WEB_CLIENT_ID" ]; then
               ARGS+=("--dart-define=GOOGLE_OAUTH_WEB_CLIENT_ID=$GOOGLE_OAUTH_WEB_CLIENT_ID")
+            else
+              ARGS+=("--dart-define=DEV_SKIP_AUTH=true")
             fi
             if [ -n "$NOETICA_BACKEND_URL" ]; then
               ARGS+=("--dart-define=NOETICA_BACKEND_URL=$NOETICA_BACKEND_URL")
@@ -136,6 +138,8 @@ jobs:
           ARGS=()
           if [ -n "$GOOGLE_OAUTH_DESKTOP_CLIENT_ID" ]; then
             ARGS+=("--dart-define=GOOGLE_OAUTH_DESKTOP_CLIENT_ID=$GOOGLE_OAUTH_DESKTOP_CLIENT_ID")
+          else
+            ARGS+=("--dart-define=DEV_SKIP_AUTH=true")
           fi
           if [ -n "$GOOGLE_OAUTH_DESKTOP_CLIENT_SECRET" ]; then
             ARGS+=("--dart-define=GOOGLE_OAUTH_DESKTOP_CLIENT_SECRET=$GOOGLE_OAUTH_DESKTOP_CLIENT_SECRET")
