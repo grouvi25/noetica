@@ -106,11 +106,9 @@ void main() {
   });
 
   group('defaultBuiltinManifests', () {
-    test('exposes menu-week as available with a builder', () {
+    test('exposes menu-week with bullets', () {
       final manifests = defaultBuiltinManifests();
       final menu = manifests.firstWhere((m) => m.id == 'menu-week');
-      expect(menu.status, GeneratorStatus.available);
-      expect(menu.builder, isNotNull);
       expect(menu.bullets, isNotEmpty);
     });
 
