@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../l10n/generated/app_localizations.dart';
 import '../../data/personal_knowledge_service.dart';
 import '../../data/profile.dart';
 import '../../providers.dart';
@@ -34,10 +33,6 @@ class _OnboardingChatScreenState
 
   // Collected answers.
   String _name = '';
-  // Multi-select on the aspiration step — user wanted to be able to
-  // pick more than one goal and also add a custom one. Internally we
-  // still flatten this back into the single `aspiration` string the
-  // backend / LLM expects, by joining with "; ".
   final List<String> _aspirations = [];
   final List<String> _interests = [];
   final Map<String, String> _interestLevels = {};
@@ -55,10 +50,36 @@ class _OnboardingChatScreenState
   bool _saving = false;
 
   // Suggestions.
-  List<String> _aspirationOptions(BuildContext context) =>
-      S.of(context)!.onboardGoals.split(',');
-  List<String> _interestOptions(BuildContext context) =>
-      S.of(context)!.onboardInterests.split(',');
+  static const _aspirationOptions = <String>[
+    'стать здоровее и сильнее',
+    'построить карьеру мечты',
+    'найти гармонию в отношениях',
+    'научиться новому',
+    'обрести финансовую свободу',
+    'раскрыть творческий потенциал',
+    'обрести внутренний покой',
+    'запустить свой проект',
+  ];
+  static const _interestOptions = <String>[
+    'здоровье и спорт',
+    'интеллект и учёба',
+    'карьера и проекты',
+    'отношения и семья',
+    'духовность и осознанность',
+    'финансы',
+    'творчество',
+    'дисциплина и привычки',
+  ];
+  static const _painPointOptions = <String>[
+    'не хватает времени',
+    'прокрастинация',
+    'нет чёткого плана',
+    'нет мотивации',
+    'страх начать',
+    'нет поддержки окружения',
+    'выгорание',
+    'не знаю с чего начать',
+  ];
 
 
   @override
@@ -80,12 +101,7 @@ class _OnboardingChatScreenState
       );
       _weeklyHours = e.weeklyHours;
     }
-  }
-
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    if (_thread.isEmpty) _seedThread();
+    _seedThread();
   }
 
   @override
@@ -96,22 +112,21 @@ class _OnboardingChatScreenState
   }
 
   void _seedThread() {
-    final tr = S.of(context)!;
-    _thread.add(_ChatMsg.bot(_questionFor(0, tr)));
+    _thread.add(_ChatMsg.bot(_questionFor(0)));
   }
 
-  String _questionFor(int step, S tr) {
+  String _questionFor(int step) {
     switch (step) {
       case 0:
-        return tr.onboardQ1;
+        return 'Привет! Я помогу тебе построить древо роста. Как тебя зовут?';
       case 1:
         return _name.isNotEmpty
-            ? tr.onboardQ2(_firstName(_name))
-            : tr.onboardQ2NoName;
+            ? '${_firstName(_name)}, к какой версии себя ты хочешь прийти?'
+            : 'К какой версии себя ты хочешь прийти?';
       case 2:
-        return tr.onboardQ3;
+        return 'Какие сферы жизни для тебя сейчас важнее всего? Из них мы соберём твоё древо.';
       case 3:
-        return tr.onboardQ4;
+        return 'Что сейчас мешает тебе расти?';
       default:
         return '';
     }
@@ -130,7 +145,7 @@ class _OnboardingChatScreenState
       case 2:
         return _interests.length >= 3;
       case 3:
-        return _weeklyHours > 0;
+        return _painPoints.isNotEmpty;
     }
     return false;
   }
@@ -144,7 +159,7 @@ class _OnboardingChatScreenState
       case 2:
         return _interests.join(', ');
       case 3:
-        return '$_weeklyHours ${S.of(context)!.onboardHoursWeek}';
+        return _painPoints.join(', ');
     }
     return '';
   }
@@ -159,7 +174,7 @@ class _OnboardingChatScreenState
       _textCtrl.clear();
       if (_step < _stepCount - 1) {
         _step += 1;
-        _thread.add(_ChatMsg.bot(_questionFor(_step, S.of(context)!)));
+        _thread.add(_ChatMsg.bot(_questionFor(_step)));
       }
     });
     AnalyticsService.instance.track(AnalyticsEvents.onboardingStepCompleted, {
@@ -191,7 +206,7 @@ class _OnboardingChatScreenState
     setState(() => _saving = true);
     HapticFeedback.selectionClick();
     try {
-      final svc = await ref.read(profileServiceProvider.future);
+      final svc = ref.read(profileServiceProvider);
       final cleanLevels = <String, String>{
         for (final i in _interests)
           i: _interestLevels[i] ?? 'novice',
@@ -222,10 +237,10 @@ class _OnboardingChatScreenState
         summary: summary,
         goals: profile.aspiration.isEmpty ? const [] : [profile.aspiration],
         constraints: [
-          S.of(context)!.onboardWeeklyTime(profile.weeklyHours),
-          if (_windows.isNotEmpty) S.of(context)!.onboardTimeSummary(_windows.join(', ')),
+          'В неделю на развитие: ~${profile.weeklyHours} ч',
+          if (_windows.isNotEmpty) 'Время: ${_windows.join(", ")}',
           if (_painPoints.isNotEmpty)
-            S.of(context)!.onboardPainSummary(_painPoints.join(', ')),
+            'Что мешает: ${_painPoints.join(", ")}',
         ],
       );
       AnalyticsService.instance.track(AnalyticsEvents.onboardingCompleted);
@@ -236,7 +251,7 @@ class _OnboardingChatScreenState
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(S.of(context)!.onboardSaveError('$e'))),
+          SnackBar(content: Text('Не удалось сохранить профиль: $e')),
         );
       }
     } finally {
@@ -250,22 +265,22 @@ class _OnboardingChatScreenState
         .map((e) => '${e.key} (${_levelRu(e.value)})')
         .join(', ');
     final parts = <String>[
-      if (profile.name.isNotEmpty) S.of(context)!.onboardProfileName(profile.name),
-      if (profile.aspiration.isNotEmpty) S.of(context)!.onboardProfileGoal(profile.aspiration),
-      if (levelsBlurb.isNotEmpty) S.of(context)!.onboardProfileNow(levelsBlurb),
+      if (profile.name.isNotEmpty) 'Зовут ${profile.name}.',
+      if (profile.aspiration.isNotEmpty) 'Цель: ${profile.aspiration}.',
+      if (levelsBlurb.isNotEmpty) 'Сейчас: $levelsBlurb.',
       if (_painPoints.isNotEmpty)
-        S.of(context)!.onboardPainSummary(_painPoints.join(', ')),
-      S.of(context)!.onboardProfileHours(profile.weeklyHours),
-      if (_windows.isNotEmpty) S.of(context)!.onboardTimeSummary(_windows.join(', ')),
+        'Что мешает: ${_painPoints.join(", ")}.',
+      'Готов уделять около ${profile.weeklyHours} ч/нед.',
+      if (_windows.isNotEmpty) 'Удобное время: ${_windows.join(", ")}.',
     ];
     return parts.join(' ');
   }
 
   String _levelRu(String level) => switch (level) {
-        'novice' => S.of(context)!.onboardLevelNovice,
-        'learning' => S.of(context)!.onboardLevelLearning,
-        'confident' => S.of(context)!.onboardLevelConfident,
-        'expert' => S.of(context)!.onboardLevelExpert,
+        'novice' => 'новичок',
+        'learning' => 'учусь',
+        'confident' => 'уверенно',
+        'expert' => 'эксперт',
         _ => level,
       };
 
@@ -328,14 +343,14 @@ class _OnboardingChatScreenState
       case 0:
         return _TextReply(
           controller: _textCtrl,
-          hint: S.of(context)!.onboardNameHint,
+          hint: 'Имя',
           onChange: (v) => setState(() => _name = v),
           onSubmit: _canAdvance ? _advance : null,
           palette: palette,
         );
       case 1:
         return _ChipsReply(
-          options: _aspirationOptions(context),
+          options: _aspirationOptions,
           selected: _aspirations,
           allowMultiple: true,
           onPick: (v) => setState(() {
@@ -368,12 +383,12 @@ class _OnboardingChatScreenState
           },
           palette: palette,
           submitLabel:
-              _aspirations.isEmpty ? S.of(context)!.onboardSelectOne : S.of(context)!.actionNext,
+              _aspirations.isEmpty ? 'Выбери хотя бы одну' : 'Далее',
           onSubmit: _aspirations.isEmpty ? null : _advance,
         );
       case 2:
         return _ChipsReply(
-          options: _interestOptions(context),
+          options: _interestOptions,
           selected: _interests,
           allowMultiple: true,
           onPick: (v) => setState(() {
@@ -381,7 +396,7 @@ class _OnboardingChatScreenState
                 .indexWhere((e) => e.toLowerCase() == v.toLowerCase());
             if (idx >= 0) {
               _interests.removeAt(idx);
-            } else if (_interests.length < 12) {
+            } else if (_interests.length < 8) {
               _interests.add(v);
               _interestLevels.putIfAbsent(v, () => 'novice');
             }
@@ -398,7 +413,7 @@ class _OnboardingChatScreenState
                       .where(
                           (e) => e.toLowerCase() == v.toLowerCase())
                       .isEmpty &&
-                  _interests.length < 12) {
+                  _interests.length < 8) {
                 _interests.add(v);
                 _interestLevels.putIfAbsent(v, () => 'novice');
               }
@@ -408,16 +423,46 @@ class _OnboardingChatScreenState
           },
           palette: palette,
           submitLabel: _canAdvance
-              ? S.of(context)!.actionNext
-              : S.of(context)!.onboardSelectMore(3 - _interests.length),
+              ? 'Далее'
+              : 'Выбери ещё ${3 - _interests.length}',
           onSubmit: _canAdvance ? _advance : null,
         );
       case 3:
-        return _HoursReply(
-          value: _weeklyHours.clamp(1, 60),
-          onChanged: (v) => setState(() => _weeklyHours = v),
-          onSubmit: _canAdvance ? _advance : null,
+        return _ChipsReply(
+          options: _painPointOptions,
+          selected: _painPoints,
+          allowMultiple: true,
+          onPick: (v) => setState(() {
+            final idx = _painPoints
+                .indexWhere((e) => e.toLowerCase() == v.toLowerCase());
+            if (idx >= 0) {
+              _painPoints.removeAt(idx);
+            } else if (_painPoints.length < 5) {
+              _painPoints.add(v);
+            }
+          }),
+          customOpen: _customOpen,
+          onToggleCustom: () =>
+              setState(() => _customOpen = !_customOpen),
+          customCtrl: _customCtrl,
+          onSubmitCustom: () {
+            final v = _customCtrl.text.trim();
+            if (v.isEmpty) return;
+            setState(() {
+              if (_painPoints
+                      .where(
+                          (e) => e.toLowerCase() == v.toLowerCase())
+                      .isEmpty &&
+                  _painPoints.length < 5) {
+                _painPoints.add(v);
+              }
+              _customOpen = false;
+              _customCtrl.clear();
+            });
+          },
           palette: palette,
+          submitLabel: _painPoints.isEmpty ? 'Выбери хотя бы одно' : 'Далее',
+          onSubmit: _canAdvance ? _advance : null,
         );
     }
     return const SizedBox.shrink();
@@ -589,7 +634,7 @@ class _ChipsReply extends StatelessWidget {
                 ),
             if (onToggleCustom != null)
               _Chip(
-                label: customOpen ? S.of(context)!.onboardCustomOpen : S.of(context)!.onboardCustomClosed,
+                label: customOpen ? '× своё' : '+ своё',
                 selected: customOpen,
                 onTap: onToggleCustom!,
                 palette: palette,
@@ -606,7 +651,7 @@ class _ChipsReply extends StatelessWidget {
                   autofocus: true,
                   onSubmitted: (_) => onSubmitCustom?.call(),
                   decoration: InputDecoration(
-                    hintText: S.of(context)!.onboardCustomValue,
+                    hintText: 'Своё значение',
                     isDense: true,
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(8),
@@ -745,12 +790,12 @@ class _HoursReply extends StatelessWidget {
   final VoidCallback? onSubmit;
   final NoeticaPalette palette;
 
-  String _hint(int v, BuildContext context) {
-    if (v <= 3) return S.of(context)!.onboardVolumeMini;
-    if (v <= 8) return S.of(context)!.onboardVolumeComfort;
-    if (v <= 15) return S.of(context)!.onboardVolumeSerious;
-    if (v <= 25) return S.of(context)!.onboardVolumeAlmost;
-    return S.of(context)!.onboardVolumeMax;
+  String _hint(int v) {
+    if (v <= 3) return 'мини-объём, по чуть-чуть';
+    if (v <= 8) return 'комфортный темп';
+    if (v <= 15) return 'серьёзная вовлечённость';
+    if (v <= 25) return 'почти второй джоб';
+    return 'максимальный режим';
   }
 
   @override
@@ -772,7 +817,7 @@ class _HoursReply extends StatelessWidget {
             ),
             const SizedBox(width: 6),
             Text(
-              S.of(context)!.onboardHoursWeek,
+              'ч/нед',
               style: TextStyle(
                 fontFamily: 'IBMPlexMono',
                 fontSize: 14,
@@ -781,7 +826,7 @@ class _HoursReply extends StatelessWidget {
             ),
             const Spacer(),
             Text(
-              _hint(value, context),
+              _hint(value),
               style: TextStyle(
                 fontFamily: 'IBMPlexMono',
                 fontSize: 11,
@@ -808,7 +853,7 @@ class _HoursReply extends StatelessWidget {
             min: 1,
             max: 60,
             divisions: 59,
-            label: S.of(context)!.onboardHoursLabel(value),
+            label: '$value ч',
             onChanged: (v) => onChanged(v.round()),
           ),
         ),
@@ -828,7 +873,7 @@ class _HoursReply extends StatelessWidget {
             padding: const EdgeInsets.symmetric(vertical: 14),
           ),
           onPressed: onSubmit,
-          child: Text(S.of(context)!.actionNext, style: const TextStyle(fontFamily: 'IBMPlexMono', fontWeight: FontWeight.w700)),
+          child: const Text('Далее', style: TextStyle(fontFamily: 'IBMPlexMono', fontWeight: FontWeight.w700)),
         ),
       ],
     );

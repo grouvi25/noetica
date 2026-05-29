@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 
-import '../features/tools/menu/menu_generator_screen.dart';
 import 'generator_input.dart';
 import 'generator_manifest.dart';
 import 'generator_run_spec.dart';
@@ -155,15 +154,13 @@ List<GeneratorManifest> defaultBuiltinManifests() => [
         description:
             '7 дней × завтрак / обед / ужин с КБЖУ под твою цель питания.',
         icon: Icons.restaurant_menu_outlined,
-        status: GeneratorStatus.available,
+        status: GeneratorStatus.soon,
         category: 'health',
         bullets: const [
           '21 задача на оси «Тело» с дедлайнами',
           'Список покупок отдельной заметкой-чеклистом',
           'Полные рецепты подгружаются по тапу',
         ],
-        inputs: menuWeekInputs(),
-        builder: (_) => const MenuGeneratorScreen(),
       ),
       const GeneratorManifest(
         id: 'training-program',

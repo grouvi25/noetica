@@ -6,7 +6,7 @@ import '../../../providers.dart';
 import '../../../l10n/generated/app_localizations.dart';
 import '../../../theme/app_theme.dart';
 import '../../../utils/plural.dart';
-import '../../self/pentagon_painter.dart';
+import '../../self/tree_painter.dart';
 import '../../self/self_screen.dart';
 
 class MiniTreeCard extends ConsumerWidget {
@@ -84,7 +84,7 @@ class MiniTreeCard extends ConsumerWidget {
                       curve: Curves.easeOutCubic,
                       tween: Tween(begin: 0, end: 1),
                       builder: (_, t, __) => CustomPaint(
-                        painter: PentagonPainter(
+                        painter: TreePainter(
                           scores: scores,
                           fg: palette.fg,
                           muted: palette.muted,

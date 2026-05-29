@@ -1,5 +1,6 @@
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
-import '../../l10n/generated/app_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../data/models.dart';
@@ -12,9 +13,9 @@ import '../roadmap/roadmap_screen.dart';
 import '../settings/settings_screen.dart';
 import '../home/home_shell.dart';
 import 'axes_editor_screen.dart';
+import 'axis_detail_sheet.dart';
 import 'epoch_ceremony.dart';
-import 'widgets/axis_tile.dart';
-import 'widgets/drevo_canvas.dart';
+import 'pentagon_painter.dart';
 
 class SelfScreen extends ConsumerStatefulWidget {
   const SelfScreen({super.key});
@@ -61,7 +62,7 @@ class _SelfScreenState extends ConsumerState<SelfScreen> {
         _rearmInFlight = true;
         WidgetsBinding.instance.addPostFrameCallback((_) async {
           if (!mounted) return;
-          final svc = await ref.read(profileServiceProvider.future);
+          final svc = ref.read(profileServiceProvider);
           await svc.save(profile.copyWith(
             clearEpochAckedAt: true,
             updatedAt: DateTime.now(),
@@ -85,10 +86,10 @@ class _SelfScreenState extends ConsumerState<SelfScreen> {
                 child: BrandGlyph(size: 24),
               ),
         leadingWidth: canPop ? null : 48,
-        title: Text(hasName ? profile.name : S.of(context)!.tabSelf),
+        title: Text(hasName ? profile.name : 'Я'),
         actions: [
           IconButton(
-            tooltip: S.of(context)!.selfBranchesTooltip,
+            tooltip: 'Ветви',
             icon: const Icon(Icons.tune),
             onPressed: () {
               Navigator.of(context).push(
@@ -102,7 +103,7 @@ class _SelfScreenState extends ConsumerState<SelfScreen> {
           // it in the AppBar. On mobile it's the primary way in.
           if (isMobile)
             IconButton(
-              tooltip: S.of(context)!.selfSettingsTooltip,
+              tooltip: 'Настройки',
               icon: const Icon(Icons.settings_outlined),
               onPressed: () {
                 Navigator.of(context).push(
@@ -147,7 +148,7 @@ class _SelfScreenState extends ConsumerState<SelfScreen> {
               axisLevels: axisLevelsAsync.valueOrNull,
               onClearAck: () async {
                 if (profile == null) return;
-                final svc = await ref.read(profileServiceProvider.future);
+                final svc = ref.read(profileServiceProvider);
                 await svc.save(profile.copyWith(
                   clearEpochAckedAt: true,
                   updatedAt: DateTime.now(),
@@ -155,7 +156,7 @@ class _SelfScreenState extends ConsumerState<SelfScreen> {
               },
               onAckDismiss: () async {
                 if (profile == null || profile.epochAckedAt != null) return;
-                final svc = await ref.read(profileServiceProvider.future);
+                final svc = ref.read(profileServiceProvider);
                 await svc.save(profile.copyWith(
                   epochAckedAt: DateTime.now(),
                   updatedAt: DateTime.now(),
@@ -279,18 +280,18 @@ class _CurrentEpochBody extends ConsumerWidget {
           SizedBox(
             height: 320,
             child: profile == null
-                ? DrevoCanvas(scores: scores)
+                ? _DrevoCanvas(scores: scores)
                 : EpochOverlay(
                     profile: profile!,
                     visible: EpochCeremony.pentagonFull(scores) &&
                         profile!.epochAckedAt == null,
                     onDismissed: onAckDismiss,
-                    child: DrevoCanvas(scores: scores),
+                    child: _DrevoCanvas(scores: scores),
                   ),
           ),
           const SizedBox(height: 24),
           Text(
-            S.of(context)!.selfTreeBranches,
+            'ДРЕВО · ВЕТКИ',
             style: TextStyle(
               color: palette.muted,
               fontSize: 11,
@@ -300,7 +301,7 @@ class _CurrentEpochBody extends ConsumerWidget {
           ),
           const SizedBox(height: 12),
           for (final s in scores)
-            AxisTile(
+            _AxisTile(
               score: s,
               levelStats: axisLevels?[s.axis.id],
             ),
@@ -308,14 +309,14 @@ class _CurrentEpochBody extends ConsumerWidget {
           OutlinedButton.icon(
             onPressed: onOpenRoadmap,
             icon: const Icon(Icons.auto_awesome),
-            label: Padding(
-              padding: const EdgeInsets.symmetric(vertical: 12),
-              child: Text(S.of(context)!.selfGeneratePlan),
+            label: const Padding(
+              padding: EdgeInsets.symmetric(vertical: 12),
+              child: Text('Сгенерировать план'),
             ),
           ),
           const SizedBox(height: 16),
           Text(
-            S.of(context)!.selfScoreExplain,
+            'Очки начисляются за выполнение задач, привязанных к осям. Со временем затухают — древо отражает тебя за последний месяц.',
             style: Theme.of(context)
                 .textTheme
                 .bodySmall
@@ -374,7 +375,7 @@ class _PastEpochBody extends StatelessWidget {
                   Icon(Icons.history, size: 18, color: palette.muted),
                   const SizedBox(width: 8),
                   Text(
-                    S.of(context)!.selfEpochArchive(snapshot.epoch),
+                    'ЭПОХА ${snapshot.epoch} · АРХИВ',
                     style: TextStyle(
                       color: palette.muted,
                       fontSize: 11,
@@ -394,7 +395,7 @@ class _PastEpochBody extends StatelessWidget {
               ),
               const SizedBox(height: 4),
               Text(
-                S.of(context)!.selfArchiveReadonly,
+                'Древо этой эпохи на момент перехода. Только просмотр.',
                 style: Theme.of(context)
                     .textTheme
                     .bodySmall
@@ -413,7 +414,9 @@ class _PastEpochBody extends StatelessWidget {
               borderRadius: BorderRadius.circular(12),
             ),
             child: Text(
-              S.of(context)!.selfArchiveEmpty,
+              'Архив этой эпохи пустой — она завершилась до того, '
+              'как мы начали записывать историю. Будущие переходы '
+              'сохранятся целиком.',
               style: Theme.of(context)
                   .textTheme
                   .bodyMedium
@@ -426,11 +429,11 @@ class _PastEpochBody extends StatelessWidget {
             // tap handling. We still get the lovely grow / breath
             // animations the live canvas uses.
             height: 320,
-            child: IgnorePointer(child: DrevoCanvas(scores: scores)),
+            child: IgnorePointer(child: _DrevoCanvas(scores: scores)),
           ),
           const SizedBox(height: 24),
           Text(
-            S.of(context)!.selfArchiveBranches,
+            'ВЕТВИ ТОЙ ЭПОХИ',
             style: TextStyle(
               color: palette.muted,
               fontSize: 11,
@@ -440,7 +443,7 @@ class _PastEpochBody extends StatelessWidget {
           ),
           const SizedBox(height: 12),
           for (final s in scores)
-            AxisTile(score: s, levelStats: null, readOnly: true),
+            _AxisTile(score: s, levelStats: null, readOnly: true),
         ],
       ],
     );
@@ -545,8 +548,8 @@ class _EpochChip extends StatelessWidget {
             ],
             Text(
               isCurrent
-                  ? '${S.of(context)!.selfEpoch(epoch)} · now'
-                  : (hasData ? S.of(context)!.selfEpoch(epoch) : S.of(context)!.selfEpochNoData(epoch)),
+                  ? 'Эпоха $epoch · сейчас'
+                  : (hasData ? 'Эпоха $epoch' : 'Эпоха $epoch · нет данных'),
               style: TextStyle(
                 color: fg,
                 fontSize: 12,
@@ -560,6 +563,28 @@ class _EpochChip extends StatelessWidget {
     );
   }
 }
+
+/// Level titles and their unlocks.
+String _levelTitle(int level) => switch (level) {
+  1 => 'Начало',
+  2 => 'Ученик',
+  3 => 'Практик',
+  4 => 'Мастер',
+  5 => 'Наставник',
+  6 => 'Мудрец',
+  _ => 'Легенда',
+};
+
+String? _levelUnlockHint(int level) => switch (level) {
+  2 => 'Разблокировано: AI-коуч',
+  3 => 'Разблокировано: микро-привычки',
+  4 => 'Разблокировано: меню недели',
+  5 => 'Разблокировано: продвинутая аналитика',
+  6 => 'Разблокировано: экспорт данных',
+  _ => null,
+};
+
+String? _nextLevelUnlock(int level) => _levelUnlockHint(level + 1);
 
 class _ProfileHeader extends StatelessWidget {
   const _ProfileHeader({
@@ -580,6 +605,8 @@ class _ProfileHeader extends StatelessWidget {
   Widget build(BuildContext context) {
     final palette = context.palette;
     final l = level;
+    final title = l != null ? _levelTitle(l.level) : '';
+    final nextUnlock = l != null ? _nextLevelUnlock(l.level) : null;
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
@@ -590,16 +617,26 @@ class _ProfileHeader extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          if (aspiration.isNotEmpty) ...[
+            Text(
+              '«$aspiration»',
+              style: Theme.of(context)
+                  .textTheme
+                  .bodyMedium
+                  ?.copyWith(color: palette.fg, fontStyle: FontStyle.italic),
+            ),
+            const SizedBox(height: 16),
+          ],
           Row(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               _BigNumber(
-                label: S.of(context)!.selfEpochLabel,
-                value: tier > 1 ? S.of(context)!.selfEpochTierShort('$epoch', '$tier') : S.of(context)!.selfEpochShort('$epoch'),
+                label: 'ЭПОХА',
+                value: tier > 1 ? 'Э$epoch.$tier' : 'Э$epoch',
               ),
               const SizedBox(width: 20),
               _BigNumber(
-                label: S.of(context)!.selfLevelLabel,
+                label: title.toUpperCase(),
                 value: l == null ? '—' : 'L${l.level}',
               ),
               const SizedBox(width: 20),
@@ -609,8 +646,8 @@ class _ProfileHeader extends StatelessWidget {
               ),
               const SizedBox(width: 20),
               _BigNumber(
-                label: S.of(context)!.selfStreakLabel,
-                value: streak == 0 ? '—' : S.of(context)!.selfStreakDays(streak),
+                label: 'СТРИК',
+                value: streak == 0 ? '—' : '$streak д.',
               ),
             ],
           ),
@@ -626,19 +663,23 @@ class _ProfileHeader extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 6),
-            Text(
-              S.of(context)!.selfToNextLevel(l.level + 1, l.xpForLevel - l.xpIntoLevel),
-              style: TextStyle(color: palette.muted, fontSize: 12),
-            ),
-          ],
-          if (aspiration.isNotEmpty) ...[
-            const SizedBox(height: 16),
-            Text(
-              '«$aspiration»',
-              style: Theme.of(context)
-                  .textTheme
-                  .bodyMedium
-                  ?.copyWith(color: palette.muted, fontStyle: FontStyle.italic),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  'до L${l.level + 1} «${_levelTitle(l.level + 1)}»: ${l.xpForLevel - l.xpIntoLevel} xp',
+                  style: TextStyle(color: palette.muted, fontSize: 12),
+                ),
+                if (nextUnlock != null)
+                  Text(
+                    nextUnlock,
+                    style: TextStyle(
+                      color: palette.fg.withOpacity(0.6),
+                      fontSize: 11,
+                      fontStyle: FontStyle.italic,
+                    ),
+                  ),
+              ],
             ),
           ],
           if (streak == 0 && l != null && l.totalXp > 0) ...[
@@ -713,7 +754,7 @@ class _TransitionReadyBanner extends StatelessWidget {
             const SizedBox(width: 10),
             Expanded(
               child: Text(
-                S.of(context)!.selfReadyTransition,
+                'Готов к переходу — тапни, чтобы открыть',
                 style: TextStyle(
                   color: palette.fg,
                   fontSize: 13,
@@ -746,7 +787,7 @@ class _StreakBreakBanner extends StatelessWidget {
           const SizedBox(width: 10),
           Expanded(
             child: Text(
-              S.of(context)!.selfStreakBroken,
+              'Стрик прервался. Закрой одну задачу сегодня — начнём заново.',
               style: TextStyle(color: palette.muted, fontSize: 13),
             ),
           ),
@@ -772,12 +813,290 @@ class _EmptyAxes extends StatelessWidget {
           Icon(Icons.workspaces_outline, size: 32, color: palette.muted),
           const SizedBox(height: 12),
           Text(
-            S.of(context)!.selfTreeHint,
+            'Древо вырастает от 3 ветвей. Добавь хотя бы 3 ветви, чтобы '
+            'увидеть его.',
             textAlign: TextAlign.center,
             style: TextStyle(color: palette.muted),
           ),
         ],
       ),
+    );
+  }
+}
+
+class _AxisTile extends StatelessWidget {
+  const _AxisTile({
+    required this.score,
+    this.levelStats,
+    this.readOnly = false,
+  });
+  final AxisScore score;
+  final LevelStats? levelStats;
+
+  /// Suppresses the level/XP badges + footer when rendering an
+  /// archived эпоха (we don't have those numbers for the past).
+  final bool readOnly;
+
+  @override
+  Widget build(BuildContext context) {
+    final palette = context.palette;
+    final v = score.value.clamp(0.0, 100.0) / 100.0;
+    final ls = levelStats;
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 6),
+      child: Row(
+        children: [
+          Container(
+            width: 36,
+            height: 36,
+            alignment: Alignment.center,
+            decoration: BoxDecoration(
+              border: Border.all(color: palette.line),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Text(
+              score.axis.symbol,
+              style:
+                  const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+            ),
+          ),
+          const SizedBox(width: 14),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    Expanded(
+                      child: Row(
+                        children: [
+                          Flexible(
+                            child: Text(
+                              score.axis.name,
+                              style: Theme.of(context).textTheme.bodyLarge,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                          if (ls != null) ...[
+                            const SizedBox(width: 8),
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 6, vertical: 2),
+                              decoration: BoxDecoration(
+                                border:
+                                    Border.all(color: palette.line),
+                                borderRadius: BorderRadius.circular(4),
+                              ),
+                              child: Text(
+                                'L${ls.level}',
+                                style: TextStyle(
+                                  color: palette.muted,
+                                  fontSize: 10,
+                                  letterSpacing: 1.2,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 4),
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 6, vertical: 2),
+                              decoration: BoxDecoration(
+                                color: palette.fg,
+                                borderRadius: BorderRadius.circular(4),
+                              ),
+                              child: Text(
+                                'Э${epochFromXp(ls.totalXp)}',
+                                style: TextStyle(
+                                  color: palette.bg,
+                                  fontSize: 10,
+                                  letterSpacing: 1.2,
+                                  fontWeight: FontWeight.w700,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ],
+                      ),
+                    ),
+                    Text(
+                      score.value.round().toString(),
+                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                            color: palette.muted,
+                            fontFeatures: const [],
+                          ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 6),
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(2),
+                  child: TweenAnimationBuilder<double>(
+                    tween: Tween(begin: 0, end: v),
+                    duration: const Duration(milliseconds: 600),
+                    curve: Curves.easeOutCubic,
+                    builder: (context, value, _) => LinearProgressIndicator(
+                      value: value,
+                      minHeight: 4,
+                      backgroundColor: palette.line,
+                      valueColor: AlwaysStoppedAnimation<Color>(palette.fg),
+                    ),
+                  ),
+                ),
+                if (ls != null) ...[
+                  const SizedBox(height: 4),
+                  Text(
+                    '${ls.totalXp} XP · до L${ls.level + 1}: '
+                    '${ls.xpAtNextLevel - ls.totalXp}',
+                    style: TextStyle(
+                      color: palette.muted,
+                      fontSize: 11,
+                    ),
+                  ),
+                ],
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Animated Древо: every time `scores` changes (new task completed,
+/// reflection submitted, etc.) the polygon tweens out from 0 → its new
+/// size, giving the user a visceral "ветка выросла" cue. Tap on a
+/// branch label to open the per-axis detail sheet.
+class _DrevoCanvas extends ConsumerStatefulWidget {
+  const _DrevoCanvas({required this.scores});
+  final List<AxisScore> scores;
+
+  @override
+  ConsumerState<_DrevoCanvas> createState() => _DrevoCanvasState();
+}
+
+class _DrevoCanvasState extends ConsumerState<_DrevoCanvas>
+    with TickerProviderStateMixin {
+  // One-shot grow animation, replayed when scores change. We use
+  // easeOutBack for a slight spring overshoot so the polygon visibly
+  // springs into place instead of merely settling.
+  late final AnimationController _grow = AnimationController(
+    vsync: this,
+    duration: const Duration(milliseconds: 1100),
+  )..forward();
+
+  // Continuous idle "breathing" — slow oscillation in radius (~±2%) so the
+  // tree never feels frozen. Loops indefinitely.
+  late final AnimationController _breath = AnimationController(
+    vsync: this,
+    duration: const Duration(seconds: 6),
+  )..repeat();
+
+  // Short reaction pulse fired every time a score increases. Drives a
+  // small overshoot that overlays on top of the steady-state shape.
+  late final AnimationController _pulse = AnimationController(
+    vsync: this,
+    duration: const Duration(milliseconds: 600),
+  );
+  int? _highlight;
+
+  @override
+  void didUpdateWidget(covariant _DrevoCanvas oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // Replay the grow animation only when the actual axis values changed
+    // — not on every parent rebuild — so casual scrolling doesn't jitter
+    // the canvas.
+    var changed = oldWidget.scores.length != widget.scores.length;
+    var increased = false;
+    if (!changed) {
+      for (var i = 0; i < oldWidget.scores.length; i++) {
+        final delta = widget.scores[i].value - oldWidget.scores[i].value;
+        if (delta.abs() > 0.01) changed = true;
+        if (delta > 0.01) increased = true;
+      }
+    }
+    if (changed) {
+      _grow
+        ..reset()
+        ..forward();
+    }
+    if (increased) {
+      _pulse
+        ..reset()
+        ..forward();
+    }
+  }
+
+  @override
+  void dispose() {
+    _grow.dispose();
+    _breath.dispose();
+    _pulse.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final palette = context.palette;
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final size = Size(constraints.maxWidth, constraints.maxHeight);
+        return GestureDetector(
+          behavior: HitTestBehavior.opaque,
+          onTapUp: (d) {
+            // Build a one-shot painter to reuse its hit-test math.
+            final probe = PentagonPainter(
+              scores: widget.scores,
+              fg: palette.fg,
+              muted: palette.muted,
+              line: palette.line,
+              bg: palette.bg,
+            );
+            final hit = probe.hitTestAxis(d.localPosition, size);
+            if (hit == null) return;
+            setState(() => _highlight = hit);
+            showAxisDetailSheet(
+              context,
+              ref,
+              score: widget.scores[hit],
+            ).whenComplete(() {
+              if (mounted) setState(() => _highlight = null);
+            });
+          },
+          child: AnimatedBuilder(
+            animation: Listenable.merge([_grow, _breath, _pulse]),
+            builder: (_, __) {
+              final grow = Curves.easeOutBack.transform(_grow.value).clamp(0.0, 1.05);
+              final breath = 1 + 0.018 *
+                  math.sin(_breath.value * 2 * math.pi);
+              final pulse = _pulse.isAnimating
+                  ? 1 +
+                      0.06 *
+                          math.sin(_pulse.value * math.pi) *
+                          (1 - _pulse.value)
+                  : 1.0;
+              final progress = grow * breath * pulse;
+              return CustomPaint(
+                painter: PentagonPainter(
+                  scores: widget.scores,
+                  fg: palette.fg,
+                  muted: palette.muted,
+                  line: palette.line,
+                  bg: palette.bg,
+                  progress: progress.toDouble(),
+                  highlightedAxisIndex: _highlight,
+                  bloomedAxes:
+                      EpochCeremony.bloomedAxes(widget.scores),
+                  bloomPulse: _breath.value,
+                ),
+                child: const SizedBox.expand(),
+              );
+            },
+          ),
+        );
+      },
     );
   }
 }

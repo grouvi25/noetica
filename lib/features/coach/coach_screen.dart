@@ -3,8 +3,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../l10n/generated/app_localizations.dart';
 import '../../data/models.dart';
+import '../../data/personal_knowledge_service.dart';
 import '../../providers.dart';
 import '../../services/coach_api.dart';
+import '../../services/level_gates.dart';
 import '../../theme/app_theme.dart';
 import '../dashboard/widgets/dashboard_stats.dart';
 
@@ -20,6 +22,11 @@ class _CoachScreenState extends ConsumerState<CoachScreen> {
   MorningPlan? _morning;
   EveningReflection? _evening;
   String? _error;
+
+  // Chat history.
+  final List<_ChatMessage> _chatMessages = [];
+  final _chatController = TextEditingController();
+  bool _chatSending = false;
 
   bool get _isMorning {
     final hour = DateTime.now().hour;
@@ -47,6 +54,9 @@ class _CoachScreenState extends ConsumerState<CoachScreen> {
       final scores = ref.read(scoresProvider).valueOrNull ?? [];
       final stats = DashboardStats.from(entries);
 
+      // Load personal knowledge for contextual coaching.
+      final knowledge = await PersonalKnowledgeService().load();
+
       final now = DateTime.now();
       final todayStart = DateTime(now.year, now.month, now.day);
 
@@ -70,6 +80,14 @@ class _CoachScreenState extends ConsumerState<CoachScreen> {
           .where((e) => e.createdAt.isAfter(todayStart))
           .length;
 
+      final knowledgeCtx = <String, dynamic>{
+        'goals': knowledge.goals,
+        'summary': knowledge.summary,
+        'mood': knowledge.preferences['currentMood'] ?? '',
+        'recentReflections': knowledge.recentReflections,
+        'completedHighlights': knowledge.completedHighlights,
+      };
+
       if (_isMorning) {
         final plan = await api.generateMorningPlan(
           name: profile?.name ?? '',
@@ -77,6 +95,7 @@ class _CoachScreenState extends ConsumerState<CoachScreen> {
           axes: scores.map((s) => s.axis.name).toList(),
           activeTasks: activeTasks,
           streak: stats.streak,
+          knowledgeContext: knowledgeCtx,
         );
         if (!mounted) return;
         setState(() {
@@ -90,6 +109,7 @@ class _CoachScreenState extends ConsumerState<CoachScreen> {
           remaining: activeTasks.take(5).toList(),
           entriesToday: entriesToday,
           streak: stats.streak,
+          knowledgeContext: knowledgeCtx,
         );
         if (!mounted) return;
         setState(() {
@@ -109,6 +129,21 @@ class _CoachScreenState extends ConsumerState<CoachScreen> {
   @override
   Widget build(BuildContext context) {
     final palette = context.palette;
+    final levelAsync = ref.watch(levelStatsProvider);
+    final currentLevel = levelAsync.valueOrNull?.level ?? 1;
+
+    // Level gate check — coach unlocks at L2.
+    if (!LevelGate.coach.isUnlocked(currentLevel)) {
+      return Scaffold(
+        appBar: AppBar(title: const Text('AI-коуч')),
+        body: LevelGateGuard(
+          gate: LevelGate.coach,
+          currentLevel: currentLevel,
+          child: const SizedBox.shrink(),
+        ),
+      );
+    }
+
     return Scaffold(
       appBar: AppBar(
         title: Text(_isMorning ? S.of(context)!.coachMorningTitle : S.of(context)!.coachEveningTitle),
@@ -124,12 +159,210 @@ class _CoachScreenState extends ConsumerState<CoachScreen> {
           ? const Center(child: CircularProgressIndicator())
           : _error != null
               ? _buildError(palette)
-              : _morning != null
-                  ? _buildMorning(palette)
-                  : _evening != null
-                      ? _buildEvening(palette)
-                      : const SizedBox.shrink(),
+              : Column(
+                  children: [
+                    Expanded(
+                      child: ListView(
+                        padding: const EdgeInsets.all(16),
+                        children: [
+                          if (_morning != null) _buildMorningContent(palette),
+                          if (_evening != null) _buildEveningContent(palette),
+                          // Chat messages.
+                          for (final msg in _chatMessages) ...[
+                            const SizedBox(height: 12),
+                            _buildChatBubble(msg, palette),
+                          ],
+                          if (_chatSending) ...[
+                            const SizedBox(height: 12),
+                            Center(
+                              child: SizedBox(
+                                width: 20,
+                                height: 20,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                  color: palette.muted,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ],
+                      ),
+                    ),
+                    // Quick-reply chips + text input.
+                    _buildChatInput(palette),
+                  ],
+                ),
     );
+  }
+
+  Widget _buildChatBubble(_ChatMessage msg, NoeticaPalette palette) {
+    final isUser = msg.isUser;
+    return Align(
+      alignment: isUser ? Alignment.centerRight : Alignment.centerLeft,
+      child: Container(
+        constraints: BoxConstraints(
+          maxWidth: MediaQuery.of(context).size.width * 0.78,
+        ),
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+        decoration: BoxDecoration(
+          color: isUser
+              ? palette.fg.withOpacity(0.1)
+              : palette.surface,
+          border: isUser ? null : Border.all(color: palette.line),
+          borderRadius: BorderRadius.circular(14),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            if (!isUser) ...[
+              Text('🤖 ', style: TextStyle(fontSize: 14, color: palette.muted)),
+              const SizedBox(width: 4),
+            ],
+            Flexible(
+              child: Text(
+                msg.text,
+                style: TextStyle(
+                  color: palette.fg,
+                  fontSize: 14,
+                  height: 1.4,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildChatInput(NoeticaPalette palette) {
+    const chips = [
+      'Что мне делать сегодня?',
+      'Как улучшить слабую ось?',
+      'Мне тяжело мотивироваться',
+    ];
+    return Container(
+      decoration: BoxDecoration(
+        color: palette.surface,
+        border: Border(top: BorderSide(color: palette.line)),
+      ),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      child: SafeArea(
+        top: false,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            if (_chatMessages.isEmpty)
+              SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                child: Row(
+                  children: [
+                    for (final chip in chips) ...[
+                      ActionChip(
+                        label: Text(chip, style: const TextStyle(fontSize: 12)),
+                        onPressed: _chatSending ? null : () => _sendChat(chip),
+                      ),
+                      const SizedBox(width: 6),
+                    ],
+                  ],
+                ),
+              ),
+            const SizedBox(height: 6),
+            Row(
+              children: [
+                Expanded(
+                  child: TextField(
+                    controller: _chatController,
+                    decoration: InputDecoration(
+                      hintText: 'Спросить коуча...',
+                      hintStyle: TextStyle(color: palette.muted, fontSize: 14),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(20),
+                        borderSide: BorderSide(color: palette.line),
+                      ),
+                      contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 14,
+                        vertical: 8,
+                      ),
+                      isDense: true,
+                    ),
+                    style: TextStyle(color: palette.fg, fontSize: 14),
+                    onSubmitted: _chatSending ? null : _sendChat,
+                  ),
+                ),
+                const SizedBox(width: 8),
+                IconButton(
+                  icon: Icon(Icons.send, color: palette.fg, size: 20),
+                  onPressed: _chatSending
+                      ? null
+                      : () => _sendChat(_chatController.text),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Future<void> _sendChat(String text) async {
+    final trimmed = text.trim();
+    if (trimmed.isEmpty) return;
+    _chatController.clear();
+    setState(() {
+      _chatMessages.add(_ChatMessage(text: trimmed, isUser: true));
+      _chatSending = true;
+    });
+    try {
+      final authService = ref.read(authServiceProvider);
+      final entries = ref.read(entriesProvider).valueOrNull ?? [];
+      final scores = ref.read(scoresProvider).valueOrNull ?? [];
+      final profile = ref.read(profileProvider).valueOrNull;
+      final stats = DashboardStats.from(entries);
+      final knowledge = await PersonalKnowledgeService().load();
+
+      final activeTasks = entries
+          .where((e) =>
+              e.kind == EntryKind.task && e.completedAt == null)
+          .map((e) => e.title)
+          .take(8)
+          .toList();
+
+      final knowledgeCtx = <String, dynamic>{
+        'question': trimmed,
+        'goals': knowledge.goals,
+        'summary': knowledge.summary,
+        'mood': knowledge.preferences['currentMood'] ?? '',
+        'recentReflections': knowledge.recentReflections,
+        'completedHighlights': knowledge.completedHighlights,
+      };
+
+      final api = CoachApi(auth: authService);
+      final plan = await api.generateMorningPlan(
+        name: profile?.name ?? '',
+        aspiration: profile?.aspiration ?? '',
+        axes: scores.map((s) => s.axis.name).toList(),
+        activeTasks: activeTasks,
+        streak: stats.streak,
+        knowledgeContext: knowledgeCtx,
+      );
+      final reply = plan.greeting.isNotEmpty
+          ? plan.greeting
+          : (plan.tasks.isNotEmpty
+              ? plan.tasks.map((t) => '• $t').join('\n')
+              : 'Нет ответа');
+      setState(() {
+        _chatMessages.add(_ChatMessage(text: reply, isUser: false));
+        _chatSending = false;
+      });
+    } catch (e) {
+      setState(() {
+        _chatMessages.add(
+          _ChatMessage(text: 'Ошибка: $e', isUser: false),
+        );
+        _chatSending = false;
+      });
+    }
   }
 
   Widget _buildError(NoeticaPalette palette) {
@@ -166,10 +399,10 @@ class _CoachScreenState extends ConsumerState<CoachScreen> {
     );
   }
 
-  Widget _buildMorning(NoeticaPalette palette) {
+  Widget _buildMorningContent(NoeticaPalette palette) {
     final plan = _morning!;
-    return ListView(
-      padding: const EdgeInsets.fromLTRB(20, 16, 20, 40),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
           plan.greeting,
@@ -246,10 +479,10 @@ class _CoachScreenState extends ConsumerState<CoachScreen> {
     );
   }
 
-  Widget _buildEvening(NoeticaPalette palette) {
+  Widget _buildEveningContent(NoeticaPalette palette) {
     final reflection = _evening!;
-    return ListView(
-      padding: const EdgeInsets.fromLTRB(20, 16, 20, 40),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
           S.of(context)!.coachDayResults,
@@ -411,4 +644,10 @@ class _CoachCard extends StatelessWidget {
       ),
     );
   }
+}
+
+class _ChatMessage {
+  const _ChatMessage({required this.text, required this.isUser});
+  final String text;
+  final bool isUser;
 }

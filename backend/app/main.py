@@ -32,8 +32,6 @@ from .schemas import (
     AxisDraft,
     CoachRequest,
     CoachResponse,
-    GeneratorRunRequest,
-    GeneratorRunResponse,
     HabitsPlan,
     HabitsRequest,
     KnowledgeIndexedNode,
@@ -72,17 +70,12 @@ app = FastAPI(
     lifespan=_lifespan,
 )
 
-_cors_origins = [
-    o.strip()
-    for o in os.getenv(
-        "CORS_ORIGINS",
-        "http://localhost:8080",
-    ).split(",")
-    if o.strip()
-]
+_cors_raw = os.getenv("CORS_ORIGINS", "")
+_cors_origins = [o.strip() for o in _cors_raw.split(",") if o.strip()]
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=_cors_origins if _cors_origins else ["http://localhost:8080"],
+    allow_origins=_cors_origins if _cors_origins else ["*"],
+    allow_credentials=True,
     allow_methods=["POST", "GET", "OPTIONS"],
     allow_headers=["*"],
 )
@@ -307,7 +300,6 @@ async def tools_menu_generate(
             servings=request.servings,
             restrictions=request.restrictions,
             extra_notes=request.extra_notes,
-            duration_days=request.duration_days,
         )
     except LlmUpstreamError as exc:
         logger.warning("LLM menu upstream error: status=%s", exc.status)
@@ -329,69 +321,6 @@ async def tools_menu_generate(
         request.servings,
     )
     return plan
-
-
-@app.post("/coach/generate", response_model=CoachResponse)
-async def generate_coach(
-    request: CoachRequest,
-    user: CurrentUser,
-) -> CoachResponse:
-    """AI Coach — morning plan or evening reflection."""
-    try:
-        client = LlmClient()
-    except LlmConfigError as exc:
-        logger.error("LLM config error: %s", exc)
-        raise HTTPException(status_code=503, detail=str(exc)) from exc
-
-    try:
-        result = await client.generate_coach(
-            mode=request.mode,
-            name=request.name,
-            aspiration=request.aspiration,
-            axes=request.axes,
-            active_tasks=request.active_tasks,
-            completed_today=request.completed_today,
-            remaining=request.remaining,
-            entries_today=request.entries_today,
-            streak=request.streak,
-        )
-    except LlmUpstreamError as exc:
-        logger.warning("LLM coach upstream error: status=%s", exc.status)
-        raise HTTPException(
-            status_code=502, detail="LLM upstream error.",
-        ) from exc
-
-    mode = request.mode
-    if mode == "morning":
-        resp = CoachResponse(
-            model=result.get("model", ""),
-            mode=mode,
-            morning={
-                "greeting": result.get("greeting", ""),
-                "focus": result.get("focus", ""),
-                "tasks": result.get("tasks", []),
-                "motivation": result.get("motivation", ""),
-            },
-        )
-    else:
-        resp = CoachResponse(
-            model=result.get("model", ""),
-            mode=mode,
-            evening={
-                "summary": result.get("summary", ""),
-                "wins": result.get("wins", []),
-                "improvements": result.get("improvements", []),
-                "encouragement": result.get("encouragement", ""),
-            },
-        )
-
-    logger.info(
-        "Coach generated: user=%s mode=%s model=%s",
-        user["id"][:8],
-        mode,
-        resp.model,
-    )
-    return resp
 
 
 @app.post("/tools/menu/recipe", response_model=MenuRecipeResponse)
@@ -476,51 +405,67 @@ async def tools_habits_generate(
     return plan
 
 
-@app.post("/tools/run", response_model=GeneratorRunResponse)
-async def tools_run(
-    request: GeneratorRunRequest,
+@app.post("/coach/generate", response_model=CoachResponse)
+async def generate_coach(
+    request: CoachRequest,
     user: CurrentUser,
-) -> GeneratorRunResponse:
-    """Universal manifest runtime.
-
-    Accepts a manifest's prompt template + form values, returns a
-    generic `{summary, items[]}` shape that the client knows how to
-    import. This is the endpoint user-authored tools (PR #33+) talk
-    to — builtins gradually migrate to it as well so we don't have
-    to maintain N specialised endpoints.
-
-    We log only the manifest_id and shape stats — NEVER prompts,
-    inputs or outputs (they are user content).
-    """
+):
+    """AI Coach — morning plan or evening reflection."""
     try:
         client = LlmClient()
     except LlmConfigError as exc:
         logger.error("LLM config error: %s", exc)
         raise HTTPException(status_code=503, detail=str(exc)) from exc
-
     try:
-        result = await client.run_generator(request)
-    except ValueError as exc:
-        # render_template raised on an unknown placeholder — surface
-        # to the author as 422 with a precise message.
-        raise HTTPException(status_code=422, detail=str(exc)) from exc
-    except LlmUpstreamError as exc:
-        logger.warning(
-            "LLM run upstream error: manifest=%s status=%s",
-            request.manifest_id, exc.status,
+        result = await client.generate_coach(
+            mode=request.mode,
+            name=request.name,
+            aspiration=request.aspiration,
+            axes=request.axes,
+            active_tasks=request.active_tasks,
+            completed_today=request.completed_today,
+            remaining=request.remaining,
+            entries_today=request.entries_today,
+            streak=request.streak,
         )
-        raise HTTPException(
-            status_code=502, detail="LLM upstream error.",
-        ) from exc
+    except LlmConfigError as exc:
+        raise HTTPException(status_code=503, detail=str(exc)) from exc
+    except LlmUpstreamError as exc:
+        raise HTTPException(status_code=exc.status, detail=str(exc)) from exc
+
+    mode = request.mode
+    if mode == "morning":
+        morning_data = {
+            "greeting": result.get("greeting", ""),
+            "focus": result.get("focus", ""),
+            "tasks": result.get("tasks", []),
+            "motivation": result.get("motivation", ""),
+        }
+        resp = CoachResponse(
+            model=result.get("model", ""),
+            mode=mode,
+            morning=morning_data,
+        )
+    else:
+        evening_data = {
+            "summary": result.get("summary", ""),
+            "wins": result.get("wins", []),
+            "improvements": result.get("improvements", []),
+            "encouragement": result.get("encouragement", ""),
+        }
+        resp = CoachResponse(
+            model=result.get("model", ""),
+            mode=mode,
+            evening=evening_data,
+        )
 
     logger.info(
-        "Generated run: user=%s manifest=%s model=%s items=%d",
+        "Coach generated: user=%s mode=%s model=%s",
         user["id"][:8],
-        request.manifest_id,
-        result.model,
-        len(result.items),
+        mode,
+        resp.model,
     )
-    return result
+    return resp
 
 
 # ---------- /knowledge/reindex (Obsidian-style librarian) ----------
