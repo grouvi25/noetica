@@ -230,7 +230,7 @@ void main() {
 
   group('menuWeekInputs sanity', () {
     test('menuWeekInputs() returns the documented schema', () {
-      final fs = menuWeekInputs(tr);
+      final fs = menuWeekInputs();
       expect(fs.map((f) => f.id), [
         'goal',
         'servings',

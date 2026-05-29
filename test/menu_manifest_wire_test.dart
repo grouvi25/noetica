@@ -9,7 +9,7 @@ void main() {
 
   group('menu-week manifest <-> backend wire contract', () {
     test('every goal option round-trips through MenuGoal.fromWire', () {
-      final goal = menuWeekInputs(tr).firstWhere((f) => f.id == 'goal')
+      final goal = menuWeekInputs().firstWhere((f) => f.id == 'goal')
           as GeneratorInputEnum;
       for (final opt in goal.options) {
         final parsed = MenuGoal.fromWire(opt.value);
@@ -24,14 +24,14 @@ void main() {
     });
 
     test('servings range matches backend tolerance', () {
-      final f = menuWeekInputs(tr).firstWhere((f) => f.id == 'servings')
+      final f = menuWeekInputs().firstWhere((f) => f.id == 'servings')
           as GeneratorInputInt;
       expect(f.min, 1);
       expect(f.max, 6);
     });
 
     test('manifest declares the same set of fields _generate() reads', () {
-      final ids = menuWeekInputs(tr).map((f) => f.id).toSet();
+      final ids = menuWeekInputs().map((f) => f.id).toSet();
       expect(
         ids,
         containsAll(<String>{

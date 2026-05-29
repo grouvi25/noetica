@@ -911,7 +911,7 @@ class _DebugEpochPanelState extends ConsumerState<_DebugEpochPanel> {
   }
 
   Future<void> _clearAck() async {
-    final svc = ref.read(profileServiceProvider);
+    final svc = await ref.read(profileServiceProvider.future);
     final profile = await svc.load();
     if (profile == null) return;
     await svc.save(profile.copyWith(
@@ -922,7 +922,7 @@ class _DebugEpochPanelState extends ConsumerState<_DebugEpochPanel> {
   }
 
   Future<void> _bumpEpoch() async {
-    final svc = ref.read(profileServiceProvider);
+    final svc = await ref.read(profileServiceProvider.future);
     final profile = await svc.load();
     if (profile == null) return;
     await svc.save(profile.copyWith(
@@ -938,7 +938,7 @@ class _DebugEpochPanelState extends ConsumerState<_DebugEpochPanel> {
   }
 
   Future<void> _reset() async {
-    final svc = ref.read(profileServiceProvider);
+    final svc = await ref.read(profileServiceProvider.future);
     final profile = await svc.load();
     if (profile == null) return;
     await svc.save(profile.copyWith(

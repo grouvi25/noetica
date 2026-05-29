@@ -107,7 +107,7 @@ void main() {
 
   group('defaultBuiltinManifests', () {
     test('exposes menu-week as available with a builder', () {
-      final manifests = defaultBuiltinManifests(tr);
+      final manifests = defaultBuiltinManifests();
       final menu = manifests.firstWhere((m) => m.id == 'menu-week');
       expect(menu.status, GeneratorStatus.available);
       expect(menu.builder, isNotNull);
@@ -115,12 +115,12 @@ void main() {
     });
 
     test('all ids are unique', () {
-      final ids = defaultBuiltinManifests(tr).map((m) => m.id).toList();
+      final ids = defaultBuiltinManifests().map((m) => m.id).toList();
       expect(ids.toSet().length, ids.length);
     });
 
     test('contains at least one "soon" placeholder', () {
-      final manifests = defaultBuiltinManifests(tr);
+      final manifests = defaultBuiltinManifests();
       expect(
         manifests.any((m) => m.status == GeneratorStatus.soon),
         isTrue,

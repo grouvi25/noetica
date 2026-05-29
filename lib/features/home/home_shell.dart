@@ -361,9 +361,6 @@ class _HomeShellState extends ConsumerState<HomeShell> {
     NotificationsService.instance.updateLocale(tr);
     WeeklyReflectionService.instance.updateLocale(tr);
     TrayService.instance.updateLocale(tr);
-    ref.read(roadmapApiProvider).updateLocale(tr);
-    ref.read(axesApiProvider).updateLocale(tr);
-    ref.read(toolsApiProvider).updateLocale(tr);
     ref.read(backendUrlsServiceProvider).updateLocale(tr);
     final width = MediaQuery.of(context).size.width;
     final useRail = width >= _kRailMin;
