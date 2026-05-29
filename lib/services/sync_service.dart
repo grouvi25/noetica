@@ -421,4 +421,21 @@ class SyncService {
   /// Currently bound user id, or null if no session is active. Useful for tests.
   @visibleForTesting
   String? get boundUserId => _boundUserId;
+
+  SyncStatus get currentStatus => _currentStatus;
+  SyncStatus _currentStatus = SyncStatus(phase: SyncPhase.idle);
+
+  void _setPhase(SyncPhase phase, {String? error}) {
+    _currentStatus = SyncStatus(phase: phase, lastError: error);
+  }
+}
+
+enum SyncPhase { idle, pulling, pushing, done, error }
+
+class SyncStatus {
+  const SyncStatus({required this.phase, this.lastError, this.lastSuccessAt});
+  final SyncPhase phase;
+  final String? lastError;
+  final DateTime? lastSuccessAt;
+  bool get isBusy => phase == SyncPhase.pulling || phase == SyncPhase.pushing;
 }

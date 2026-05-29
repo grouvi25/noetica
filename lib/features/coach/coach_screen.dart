@@ -46,8 +46,7 @@ class _CoachScreenState extends ConsumerState<CoachScreen> {
     });
     try {
       final authService = ref.read(authServiceProvider);
-      final api = CoachApi(auth: authService)
-        ..updateLocale(S.of(context)!);
+      final api = CoachApi(auth: authService);
       final profileAsync = ref.read(profileProvider);
       final profile = profileAsync.valueOrNull;
       final entries = ref.read(entriesProvider).valueOrNull ?? [];

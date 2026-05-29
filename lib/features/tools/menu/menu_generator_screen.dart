@@ -76,7 +76,7 @@ class _MenuGeneratorScreenState extends ConsumerState<MenuGeneratorScreen> {
 
   void _seedValuesFromManifest(S tr) {
     _values.clear();
-    for (final f in menuWeekInputs(tr)) {
+    for (final f in menuWeekInputs()) {
       _values[f.id] = f.defaultValue;
     }
     // Date default isn't covered by manifest defaults (intentionally
@@ -392,7 +392,7 @@ class _MenuGeneratorScreenState extends ConsumerState<MenuGeneratorScreen> {
       final shopping = StringBuffer();
       shopping.writeln('# ${tr.menuShoppingHeader}');
       shopping.writeln();
-      shopping.writeln(tr.menuGoalServings(_goal.localizedLabel(tr), _servings));
+      shopping.writeln(tr.menuGoalServings(_goal.label, _servings));
       shopping.writeln();
       plan.shoppingList.forEach((category, items) {
         shopping.writeln('## $category');
@@ -560,7 +560,7 @@ class _MenuGeneratorScreenState extends ConsumerState<MenuGeneratorScreen> {
             child: Text(_error!, style: TextStyle(color: palette.fg)),
           ),
         GeneratorFormView(
-          fields: menuWeekInputs(S.of(context)!),
+          fields: menuWeekInputs(),
           values: _values,
           axes: axes,
           onChanged: (id, v) => setState(() => _values[id] = v),
@@ -660,7 +660,7 @@ class _MenuGeneratorScreenState extends ConsumerState<MenuGeneratorScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      S.of(context)!.menuSummary(_goal.localizedLabel(S.of(context)!), _servings, _humanRange()),
+                      S.of(context)!.menuSummary(_goal.label, _servings, _humanRange()),
                       style: theme.textTheme.titleMedium?.copyWith(
                         fontWeight: FontWeight.w700,
                       ),

@@ -16,6 +16,7 @@ import 'services/premium_service.dart';
 import 'services/roadmap_api.dart';
 import 'services/sync_service.dart';
 import 'services/tools_api.dart';
+import 'services/user_manifest.dart';
 import 'data/knowledge_index_models.dart';
 import 'data/knowledge_index_service.dart';
 
@@ -72,7 +73,10 @@ Future<void> markOnboarded() async {
   await prefs.setBool(_kOnboardedKey, true);
 }
 
-final profileServiceProvider = Provider<ProfileService>((_) => ProfileService());
+final profileServiceProvider = FutureProvider<ProfileService>((ref) async {
+  final db = await ref.watch(dbProvider.future);
+  return ProfileService(db);
+});
 
 /// Streams the user profile. The initial value comes from
 /// [ProfileService.load] (SharedPreferences); every subsequent
@@ -81,7 +85,7 @@ final profileServiceProvider = Provider<ProfileService>((_) => ProfileService())
 /// header — see a fresh value without any call site having to remember
 /// `ref.invalidate(profileProvider)`.
 final profileProvider = StreamProvider<UserProfile?>((ref) async* {
-  final svc = ref.watch(profileServiceProvider);
+  final svc = await ref.watch(profileServiceProvider.future);
   yield await svc.load();
   yield* ProfileService.changes;
 });
@@ -224,7 +228,7 @@ final authSessionProvider = StreamProvider<AuthSession?>((ref) async* {
 final syncServiceProvider = FutureProvider<SyncService>((ref) async {
   final repo = await ref.watch(repositoryProvider.future);
   final auth = ref.watch(authServiceProvider);
-  final profile = ref.watch(profileServiceProvider);
+  final profile = await ref.watch(profileServiceProvider.future);
   final url = ref.watch(activeBackendUrlProvider);
   final service = SyncService(
     repository: repo,
@@ -235,4 +239,18 @@ final syncServiceProvider = FutureProvider<SyncService>((ref) async {
   service.start();
   ref.onDispose(service.dispose);
   return service;
+});
+
+final syncStatusProvider = FutureProvider<SyncStatus>((ref) async {
+  final sync = await ref.watch(syncServiceProvider.future);
+  return sync.currentStatus;
+});
+
+final userManifestStoreProvider = Provider<UserManifestStore>((_) {
+  return UserManifestStore();
+});
+
+final userManifestsProvider = StreamProvider<List<UserManifest>>((ref) {
+  final store = ref.watch(userManifestStoreProvider);
+  return store.changes;
 });
