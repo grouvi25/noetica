@@ -7,6 +7,9 @@ on:
   pull_request:
   workflow_dispatch:
 
+permissions:
+  contents: write
+
 jobs:
   # Cheap and platform-agnostic — runs lint + tests on the smallest
   # available runner so analyzer regressions are caught even when the
