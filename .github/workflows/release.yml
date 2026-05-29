@@ -108,7 +108,7 @@ jobs:
 
   windows-installer:
     name: Build Windows installer
-    runs-on: windows-latest
+    runs-on: windows-2022
     needs: analyze
     steps:
       - uses: actions/checkout@v4
